@@ -24,6 +24,7 @@ PREP = {
     "cobblestone_floor_08":      dict(size=1024, flatten=4),
     "floor_pebbles_01":          dict(size=512, flatten=4),
     "rounded_square_tiled_wall": dict(size=512, flatten=0),
+    "walnut_veneer":             dict(size=512, flatten=0),
 }
 OUT = C.BUILD / "textures"
 
@@ -83,6 +84,28 @@ def prepared(tex_id):
 def mask_path(name):
     """Masks are made by the build (terrain.build_mask), not downloaded."""
     return OUT / f"{name}.png"
+
+
+def picture_path(name):
+    """Pictures laid over one object: a downloaded model's colour map, or one the
+    build paints itself (the rug, the painting, the chessboard)."""
+    return OUT / f"{name}.png"
+
+
+def prepare_pictures(mats):
+    """Copy each downloaded model's colour map into build/textures at the size the
+    website will use. Pictures without a "src" are painted by the room scripts."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, m in mats.items():
+        if "src" not in m:
+            continue
+        src = C.SRC_MODELS / m["src"]
+        if not src.exists():
+            raise FileNotFoundError(f"{src} is missing. Run blender/fetch_assets.py first.")
+        lin = to_linear(load_pixels(src)[..., :3].astype(np.float64))
+        while lin.shape[0] > m["size"]:
+            lin = halve(lin)
+        save_png(picture_path(m["img"]), to_srgb(lin).astype(np.float32))
 
 
 def prepare_all(ids):

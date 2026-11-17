@@ -6,6 +6,7 @@ It serves the web/ folder like any static server. It also has one extra trick
 for review pictures: a page can send a picture of its canvas to /__shot?name=xyz
 and it is saved as previews/browser_xyz.jpg. Only this machine can reach it.
 """
+import os
 import re
 import sys
 from functools import partial
@@ -14,7 +15,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5173
+# a port given on the command line wins, then $PORT (preview tools set it), then 5173
+PORT = int(sys.argv[1] if len(sys.argv) > 1 else os.environ.get("PORT") or 5173)
 
 
 class Handler(SimpleHTTPRequestHandler):

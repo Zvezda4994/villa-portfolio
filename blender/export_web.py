@@ -3,8 +3,9 @@
     blender --background --python blender/export_web.py
 
 Needs build/villa_baked.blend from the bake step. Writes:
-  villa.glb         the model: shapes and material names only, Meshopt-compressed
-  textures/*.ktx2   the tiling colour textures, with mipmaps
+  villa.glb         the house and grounds: shapes and material names only, Meshopt-compressed
+  rooms/*.glb       each furnished room's furniture, loaded after the first view is up
+  textures/*.ktx2   the tiling colour textures and the furniture's pictures, with mipmaps
   sky/*.hdr         the sky as a background, as a reflection map that includes the desert,
                     and a reflection map seen from the pool (for the water)
   manifest.json     how the website should treat each material, plus sun, fog and file sizes
@@ -29,25 +30,34 @@ from villa.ktx2 import write_ktx2  # noqa: E402
 from villa.lighting import PREVIEW_CAMERAS, setup_render  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, srgb_to_linear  # noqa: E402
 from villa.exterior import RPOOL_X, RPOOL_Z  # noqa: E402
-from villa.textures import load_pixels, mask_path, prepared  # noqa: E402
+from villa.textures import load_pixels, mask_path, picture_path, prepared  # noqa: E402
 
 BAKED_BLEND = C.BUILD / "villa_baked.blend"
 ENV_CLAMP = 40.0      # the sun is far brighter than this; unclamped it makes reflections sparkle
 
 
-def export_glb(model):
-    for ob in model.objects:
-        has_water = any(m is not None and MATS.get(m.name, {}).get("kind") == "water" for m in ob.data.materials)
-        if ob.get("lit") != "lightmap" and not has_water:
-            # no textures on these, so their UVs would only be dead weight
-            # (the water keeps its UVs for the ripple pattern)
+def _needs_uvs(ob):
+    """Lightmapped surfaces, the water (for its ripples) and anything with a
+    picture on it keep their UVs. On everything else they would be dead weight."""
+    if ob.get("lit") == "lightmap":
+        return True
+    for m in ob.data.materials:
+        spec = MATS.get(m.name, {}) if m is not None else {}
+        if spec.get("kind") == "water" or "img" in spec:
+            return True
+    return False
+
+
+def export_glb(objects, path):
+    for ob in objects:
+        if not _needs_uvs(ob):
             for layer in list(ob.data.uv_layers):
                 ob.data.uv_layers.remove(layer)
     bpy.ops.object.select_all(action="DESELECT")
-    for ob in model.objects:
+    for ob in objects:
         ob.select_set(True)
-    bpy.context.view_layer.objects.active = model.objects[0]
-    path = C.ASSETS / "villa.glb"
+    bpy.context.view_layer.objects.active = objects[0]
+    path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(
         filepath=str(path), export_format="GLB", use_selection=True, export_yup=True,
         export_extras=True, export_cameras=False, export_lights=False, export_animations=False,
@@ -68,6 +78,10 @@ def export_textures():
     for mask in sorted({m["blend"]["mask"] for m in MATS.values() if "blend" in m}):
         rgb = load_pixels(mask_path(mask))[..., :3]
         sizes[mask] = write_ktx2(out / f"{mask}.ktx2", rgb, srgb=False)
+    # Furniture pictures: models' own colour maps, the rug, the painting, the chessboard.
+    for name in sorted({m["img"] for m in MATS.values() if "img" in m}):
+        rgb = load_pixels(picture_path(name))[..., :3]
+        sizes[name] = write_ktx2(out / f"{name}.ktx2", rgb, srgb=True)
     # Drop textures nothing uses any more, so they don't get deployed.
     for old in out.glob("*.ktx2"):
         if old.stem not in sizes:
@@ -217,7 +231,7 @@ def export_sky(model):
 
 
 # ---- manifest ----------------------------------------------------------------
-def write_manifest(fog, sizes, sky_paths):
+def write_manifest(fog, sizes, sky_paths, rooms):
     materials = {}
     for name, m in MATS.items():
         entry = dict(kind=m["kind"])
@@ -227,6 +241,10 @@ def write_manifest(fog, sizes, sky_paths):
             entry["color"] = list(m.get("tint", (1, 1, 1)))
         else:
             entry["color"] = list(srgb_to_linear(m["color"]))
+            if "img" in m:
+                entry["map"] = f"textures/{m['img']}.ktx2"
+        if "room" in m:
+            entry["room"] = m["room"]           # fetched with that room, not before the first view
         if "blend" in m:
             bl = m["blend"]
             entry["blend"] = dict(map=f"textures/{bl['tex']}.ktx2", tile=bl["tile"], color=list(bl["tint"]),
@@ -242,9 +260,13 @@ def write_manifest(fog, sizes, sky_paths):
     for atlas in C.ATLASES:
         full, small = C.ASSETS / "lightmaps" / f"{atlas}.ktx2", C.ASSETS / "lightmaps" / f"{atlas}_lo.ktx2"
         if full.exists():
-            lightmaps[atlas] = dict(file=f"lightmaps/{atlas}.ktx2", small=f"lightmaps/{atlas}_lo.ktx2")
+            lightmaps[atlas] = dict(file=f"lightmaps/{atlas}.ktx2")
             sizes[f"lightmap {atlas}"] = full.stat().st_size
-            sizes[f"lightmap {atlas} (small)"] = small.stat().st_size
+            if C.ATLASES[atlas].get("room"):
+                lightmaps[atlas]["room"] = C.ATLASES[atlas]["room"]     # no small copy; fetched with the room
+            else:
+                lightmaps[atlas]["small"] = f"lightmaps/{atlas}_lo.ktx2"
+                sizes[f"lightmap {atlas} (small)"] = small.stat().st_size
 
     scene = bpy.context.scene
     manifest = dict(
@@ -255,6 +277,7 @@ def write_manifest(fog, sizes, sky_paths):
         fog=dict(color=fog),
         sky=sky_paths,
         model="villa.glb",
+        rooms=rooms,
         lightmaps=lightmaps,
         materials=materials,
         cameras={k: dict(pos=list(v["pos"]), target=list(v["target"]), fov=v["fov"]) for k, v in PREVIEW_CAMERAS.items()},
@@ -277,8 +300,20 @@ def main():
     fog, sky_sizes, sky_paths = export_sky(model)          # before the GLB export, which strips UVs
     sizes.update({f"sky {k}": v for k, v in sky_sizes.items()})
     sizes.update({f"texture {k}": v for k, v in export_textures().items()})
-    sizes["model"] = export_glb(model).stat().st_size
-    manifest = write_manifest(fog, sizes, sky_paths)
+    house = [ob for ob in model.objects if not ob.get("room")]
+    sizes["model"] = export_glb(house, C.ASSETS / "villa.glb").stat().st_size
+    # Each furnished room in a file of its own, in the order they are loaded
+    rooms = {}
+    for room in sorted({ob["room"] for ob in model.objects if ob.get("room")}):
+        objects = [ob for ob in model.objects if ob.get("room") == room]
+        rel = f"rooms/{room}.glb"
+        sizes[f"room {room}"] = export_glb(objects, C.ASSETS / rel).stat().st_size
+        rooms[room] = dict(model=rel)
+    for old in (C.ASSETS / "rooms").glob("*.glb"):
+        if old.stem not in rooms:
+            old.unlink()
+            print(f"[export] removed unused {old.name}")
+    manifest = write_manifest(fog, sizes, sky_paths, rooms)
 
     total = sum(manifest["bytes"].values())
     for k, v in sorted(manifest["bytes"].items(), key=lambda kv: -kv[1]):

@@ -11,8 +11,13 @@ Faces are grouped into "parts". A part becomes one Blender object, named
 "<group>__<what>": the group is which bit of the house it shows and hides with
 on the website (ground, upper, roof, out), and the second half says how it is
 lit (a lightmap atlas name, "vtx" for per-vertex light, or "raw" for none).
+
+Furniture is built inside `with b.room("dining"):`. Its parts are kept apart
+from the house's ("dining__ground__vtx" and so on) because each furnished room
+is exported as its own file, which the website loads after the first view.
 """
 from collections import defaultdict
+from contextlib import contextmanager
 from math import ceil
 
 import bpy
@@ -43,8 +48,8 @@ def _dist(a, b):
 
 
 class Part:
-    def __init__(self, name, group, mode, atlas):
-        self.name, self.group, self.mode, self.atlas = name, group, mode, atlas
+    def __init__(self, name, group, mode, atlas, room=None):
+        self.name, self.group, self.mode, self.atlas, self.room = name, group, mode, atlas, room
         self.verts, self.faces, self.mats = [], [], []
         self.uv0, self.uv1, self.smooth = [], [], []
         self.dead = set()
@@ -58,6 +63,16 @@ class Builder:
         self._maybe_hidden = []          # (part, face, four corners)
         self.densities = {}
         self.atlas_rects = {}            # atlas -> [(x, y, w, h)] in texels, for the bake's hole filling
+        self.current_room = None
+
+    @contextmanager
+    def room(self, name):
+        """Everything added inside this block belongs to that room's furniture."""
+        old, self.current_room = self.current_room, name
+        try:
+            yield self
+        finally:
+            self.current_room = old
 
     # ---- adding geometry ---------------------------------------------------
     def part(self, group, mat, atlas=None):
@@ -70,12 +85,21 @@ class Builder:
             key, mode, atlas = f"{group}__vtx", "vertex", None
         else:
             key, mode, atlas = f"{group}__raw", "raw", None
+        room = self.current_room
+        if room:
+            key = f"{room}__{key}"
+            if atlas and C.ATLASES[atlas].get("room") != room:
+                raise ValueError(f"{room} furniture should use its own lightmap, not '{atlas}'")
+        elif atlas and C.ATLASES[atlas].get("room"):
+            raise ValueError(f"lightmap '{atlas}' belongs to a room; build inside `with b.room(...)`")
         if key not in self.parts:
-            self.parts[key] = Part(key, group, mode, atlas)
+            self.parts[key] = Part(key, group, mode, atlas, room)
         return self.parts[key]
 
-    def quad(self, group, mat, pts, atlas=None, density=1.0, rot=False, cull=False):
-        """One rectangle. `pts` are its four corners, anticlockwise seen from the front."""
+    def quad(self, group, mat, pts, atlas=None, density=1.0, rot=False, cull=False, uv=None):
+        """One rectangle. `pts` are its four corners, anticlockwise seen from the front.
+        `uv` gives the texture coordinates of the corners instead of tiling in metres
+        (for pictures and rugs, where one image covers the whole face)."""
         part = self.part(group, mat, atlas)
         i = len(part.verts)
         part.verts.extend(pts)
@@ -83,7 +107,7 @@ class Builder:
         part.faces.append((i, i + 1, i + 2, i + 3))
         part.mats.append(mat)
         part.smooth.append(False)
-        part.uv0.append(self._texture_uv(pts, mat, rot))
+        part.uv0.append(list(uv) if uv else self._texture_uv(pts, mat, rot))
         part.uv1.append(None)
         if part.mode == "lightmap":
             self.rects[part.atlas].append((part, f, _dist(pts[0], pts[1]), _dist(pts[0], pts[3]), density))
@@ -125,12 +149,12 @@ class Builder:
         for name in FACES:
             if name in skip:
                 continue
-            o = dict(mat=mat, atlas=atlas, density=density, rot=rot)
+            o = dict(mat=mat, atlas=atlas, density=density, rot=rot, uv=None)
             o.update(over.get(name, {}))
             # "cut" faces are the wall tops you see when the roof lifts off, so
             # they must survive even though a slab normally sits on them.
             self.quad(group, o["mat"], corners[name], o["atlas"], o["density"], o["rot"],
-                      cull=cull and o["mat"] != "cut")
+                      cull=cull and o["mat"] != "cut", uv=o["uv"])
         if solid:
             self.solids.append((x0, x1, y0, y1, z0, z1))
 
@@ -144,18 +168,20 @@ class Builder:
         (x0, x1), (z0, z1) = sorted(x), sorted(z)
         return self.quad(group, mat, [(x0, y, z0), (x1, y, z0), (x1, y, z1), (x0, y, z1)], atlas, density, rot)
 
-    def mesh(self, group, mat, verts, faces, smooth=True):
-        """Any other shape (plants, rocks). Only for materials lit per vertex."""
+    def mesh(self, group, mat, verts, faces, smooth=True, uvs=None):
+        """Any other shape (plants, rocks, furniture). Only for materials lit per
+        vertex. `uvs`, if given, has one list of (u, v) per face, one pair per corner,
+        for materials with a picture on them."""
         part = self.part(group, mat)
         if part.mode == "lightmap":
             raise ValueError("free-form meshes cannot use a lightmap material")
         i = len(part.verts)
         part.verts.extend(verts)
-        for f in faces:
+        for n, f in enumerate(faces):
             part.faces.append(tuple(i + k for k in f))
             part.mats.append(mat)
             part.smooth.append(smooth)
-            part.uv0.append([(0.0, 0.0)] * len(f))
+            part.uv0.append(list(uvs[n]) if uvs is not None else [(0.0, 0.0)] * len(f))
             part.uv1.append(None)
 
     # ---- finishing ---------------------------------------------------------
@@ -257,6 +283,8 @@ class Builder:
             ob["lit"] = part.mode
             if part.atlas:
                 ob["lightmap"] = part.atlas
+            if part.room:
+                ob["room"] = part.room
             collection.objects.link(ob)
             objects[part.name] = ob
         print(f"[geo] {len(objects)} objects, {dropped} hidden faces dropped, lightmap texels per metre: "

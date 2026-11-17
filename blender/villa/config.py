@@ -14,6 +14,7 @@ BUILD = ROOT / "build"                      # scratch output, not committed
 BLEND_FILE = BUILD / "villa.blend"
 BAKE_DIR = BUILD / "bake"                   # raw lightmaps before compression
 SRC_TEX = ROOT / "assets_src" / "textures"  # downloaded source textures
+SRC_MODELS = ROOT / "assets_src" / "models" # downloaded source models (glTF)
 ASSETS = ROOT / "web" / "assets"            # what the website loads
 PREVIEWS = ROOT / "previews"
 
@@ -76,7 +77,18 @@ ATLASES = {
     "gnd": dict(size=2048, density=56.0),      # ground floor interior
     "upr": dict(size=2048, density=52.0),      # upstairs interior
     "terrain": dict(size=2048, density=None),  # the sand (laid out separately)
+    # Furnished rooms each get their own lightmap for the big furniture surfaces,
+    # loaded together with the room after the first view is up.
+    "din": dict(size=1024, density=140.0, room="dining"),
 }
+
+# The game on the dining table, in standard chess notation (FEN). Ruy Lopez,
+# Chigorin variation, after 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7 6.Re1 b5
+# 7.Bb3 d6 8.c3 O-O 9.h3 Na5 10.Bc2 c5 11.d4 Qc7 12.Nbd2 cxd4 13.cxd4 Nc6 14.Nb3 a5
+# 15.Be3 a4 16.Nbd2 Bd7, with White to move. Only the piece placement is used.
+CHESS_FEN = "r4rk1/2qbbppp/2np1n2/1p2p3/p2PP3/4BN1P/PPBN1PP1/R2QR1K1 w - - 0 17"
+# Pieces that have left the board, set down beside it: the c- and d-pawns.
+CHESS_CAPTURED = "pP"
 ATLAS_PADDING = 8        # empty texels between islands
 LOW_RES = 512            # size of the quick-loading preview copy of each lightmap
 

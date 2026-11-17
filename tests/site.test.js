@@ -18,20 +18,39 @@ function allFiles(dir) {
   return readdirSync(dir, {withFileTypes: true}).flatMap(e => e.isDirectory() ? allFiles(join(dir, e.name)) : [join(dir, e.name)]);
 }
 
-// Every file needed before the landing view can show.
+// Every file needed before the landing view can show. Furniture (anything
+// marked with a room) is fetched afterwards, so it doesn't count here.
 function firstViewFiles() {
   const files = [manifest.model, ...Object.values(manifest.sky)];
-  for (const lm of Object.values(manifest.lightmaps)) files.push(lm.small);
+  for (const lm of Object.values(manifest.lightmaps)) if (!lm.room) files.push(lm.small);
   for (const m of Object.values(manifest.materials)) {
+    if (m.room) continue;
     if (m.map) files.push(m.map);
     if (m.blend) files.push(m.blend.map, m.blend.mask);
   }
   return [...new Set(files)];
 }
 
+// Everything the furnished rooms fetch once the first view is up.
+function roomFiles() {
+  const files = Object.values(manifest.rooms || {}).map(r => r.model);
+  for (const lm of Object.values(manifest.lightmaps)) if (lm.room) files.push(lm.file);
+  for (const m of Object.values(manifest.materials)) if (m.room && m.map) files.push(m.map);
+  return [...new Set(files)];
+}
+
 test("every file the manifest names exists", () => {
-  const files = [...firstViewFiles(), ...Object.values(manifest.lightmaps).map(lm => lm.file)];
+  const files = [...firstViewFiles(), ...roomFiles(), ...Object.values(manifest.lightmaps).map(lm => lm.file)];
   for (const f of files) assert.ok(size(f) > 0, `${f} is empty or missing`);
+});
+
+test("furnished rooms only name lightmaps and pictures that belong to them", () => {
+  for (const [name, lm] of Object.entries(manifest.lightmaps)) {
+    if (lm.room) assert.ok(manifest.rooms[lm.room], `lightmap ${name} belongs to "${lm.room}", which isn't in the manifest's rooms`);
+  }
+  for (const [name, m] of Object.entries(manifest.materials)) {
+    if (m.room) assert.ok(manifest.rooms[m.room], `material ${name} belongs to "${m.room}", which isn't in the manifest's rooms`);
+  }
 });
 
 test("downloads stay inside the brief's budget", () => {
@@ -68,21 +87,32 @@ test("sky files are run-length .hdr panoramas", () => {
   }
 });
 
-test("the model only uses extensions and materials the site understands", () => {
-  const b = readFileSync(join(ASSETS, manifest.model));
-  assert.equal(b.toString("latin1", 0, 4), "glTF");
-  assert.equal(b.readUInt32LE(4), 2);
-  const json = JSON.parse(b.toString("utf8", 20, 20 + b.readUInt32LE(12)));
-  const supported = new Set(["EXT_meshopt_compression", "KHR_materials_emissive_strength", "KHR_texture_basisu"]);
-  for (const ext of json.extensionsUsed || []) assert.ok(supported.has(ext), `the model uses ${ext}, which the loader isn't set up for`);
-  for (const mat of json.materials || []) assert.ok(manifest.materials[mat.name], `material "${mat.name}" has no entry in the manifest`);
-  const groups = new Set(["ground", "upper", "roof", "out"]);
-  for (const node of json.nodes.filter(n => n.mesh !== undefined)) {
-    const extras = node.extras || {};
-    assert.ok(groups.has(extras.group), `${node.name}: unknown group "${extras.group}"`);
-    if (extras.lightmap) {
-      assert.ok(manifest.lightmaps[extras.lightmap], `${node.name}: no lightmap called ${extras.lightmap}`);
-      for (const p of json.meshes[node.mesh].primitives) assert.ok("TEXCOORD_1" in p.attributes, `${node.name}: lightmapped but has no second UV set`);
+test("the models only use extensions and materials the site understands", () => {
+  const models = [[manifest.model, null], ...Object.entries(manifest.rooms || {}).map(([name, r]) => [r.model, name])];
+  for (const [file, room] of models) {
+    const b = readFileSync(join(ASSETS, file));
+    assert.equal(b.toString("latin1", 0, 4), "glTF", `${file} is not a binary glTF`);
+    assert.equal(b.readUInt32LE(4), 2);
+    const json = JSON.parse(b.toString("utf8", 20, 20 + b.readUInt32LE(12)));
+    const supported = new Set(["EXT_meshopt_compression", "KHR_materials_emissive_strength", "KHR_texture_basisu"]);
+    for (const ext of json.extensionsUsed || []) assert.ok(supported.has(ext), `${file} uses ${ext}, which the loader isn't set up for`);
+    for (const mat of json.materials || []) {
+      const m = manifest.materials[mat.name];
+      assert.ok(m, `${file}: material "${mat.name}" has no entry in the manifest`);
+      // the first view can't wait for a room's pictures, so the house must not use them
+      if (!room) assert.ok(!m.room, `${file}: material "${mat.name}" belongs to the ${m.room} room`);
+    }
+    const groups = new Set(["ground", "upper", "roof", "out"]);
+    for (const node of json.nodes.filter(n => n.mesh !== undefined)) {
+      const extras = node.extras || {};
+      assert.ok(groups.has(extras.group), `${file} ${node.name}: unknown group "${extras.group}"`);
+      assert.equal(extras.room ?? null, room, `${file} ${node.name}: furniture should be in its room's file`);
+      if (extras.lightmap) {
+        assert.ok(manifest.lightmaps[extras.lightmap], `${file} ${node.name}: no lightmap called ${extras.lightmap}`);
+        for (const p of json.meshes[node.mesh].primitives) assert.ok("TEXCOORD_1" in p.attributes, `${file} ${node.name}: lightmapped but has no second UV set`);
+      }
+      const pictured = json.meshes[node.mesh].primitives.some(p => p.material !== undefined && manifest.materials[json.materials[p.material].name].map);
+      if (pictured) for (const p of json.meshes[node.mesh].primitives) assert.ok("TEXCOORD_0" in p.attributes, `${file} ${node.name}: has a picture but no UVs`);
     }
   }
 });
@@ -99,6 +129,7 @@ test("rooms data is complete and its links go somewhere", async () => {
     assert.ok(isPoint(r.at), `${r.id}: "at" should be [x, y, z]`);
     assert.ok(Array.isArray(r.view) && r.view.length === 2 && r.view.every(isPoint), `${r.id}: "view" should be [camera, target]`);
     assert.ok(r.title && r.area && Array.isArray(r.body) && r.body.length, `${r.id}: needs a title, area and body text`);
+    if (r.near !== undefined) assert.ok(Number.isFinite(r.near) && r.near > 0, `${r.id}: "near" should be a distance in metres`);
   }
   for (const r of ROOMS) {
     for (const [label, url, internal] of r.links || []) {

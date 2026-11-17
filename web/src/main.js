@@ -30,9 +30,10 @@ let view = "out";
 function setView(v, fly = true) {
   view = v;
   if (world) {
-    world.groups.roof.forEach(o => { o.visible = v === "out"; });      // the roof lifts off for the floor views
-    world.groups.upper.forEach(o => { o.visible = v !== "g"; });       // and the upstairs too, to see the ground floor
+    world.setVisible("roof", v === "out");      // the roof lifts off for the floor views
+    world.setVisible("upper", v !== "g");       // and the upstairs too, to see the ground floor
   }
+  controls.minDistance = 4;
   $("vOut").setAttribute("aria-pressed", v === "out"); $("vG").setAttribute("aria-pressed", v === "g"); $("vU").setAttribute("aria-pressed", v === "u");
   if (fly) {
     if (v === "out") flyTo(HOME.pos, HOME.target);
@@ -42,16 +43,25 @@ function setView(v, fly = true) {
 }
 let tween = null;
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-function flyTo(pos, target, ms = 1300) {
+// `via`, if given, bends the camera's path through that point's neighbourhood
+// (used to come down into a room from above instead of through a wall).
+function flyTo(pos, target, ms = 1300, via = null) {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  tween = {p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...pos), t1: new THREE.Vector3(...target), start: performance.now(), ms: reduce ? 1 : ms};
+  tween = {p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...pos), t1: new THREE.Vector3(...target),
+    via: via && new THREE.Vector3(...via), start: performance.now(), ms: reduce ? 1 : ms};
 }
 let current = null;
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
   current = r;
   if (r.floor !== view) setView(r.floor, false);
-  if (fly) flyTo(r.view[0], r.view[1]);
+  // Rooms with a close-up (the chessboard) let the camera come in near and drop
+  // in from above; the rest keep the normal fly-to.
+  controls.minDistance = r.near ?? 4;
+  if (fly) {
+    const [p, t] = r.view;
+    flyTo(p, t, r.near ? 1700 : 1300, r.near ? [t[0], 9, t[2] + 3] : null);
+  }
   renderPanel(r); $("rooms").hidden = true; $("roomsBtn").setAttribute("aria-expanded", "false");
   $("hint").hidden = true;
   try { history.replaceState(null, "", "#" + r.id); } catch (e) {}
@@ -109,7 +119,12 @@ window.addEventListener("resize", resize); resize();
 renderer.setAnimationLoop(t => {
   if (tween) {
     const k = Math.min(1, (t - tween.start) / tween.ms), e = ease(k);
-    camera.position.lerpVectors(tween.p0, tween.p1, e); controls.target.lerpVectors(tween.t0, tween.t1, e); if (k >= 1) tween = null;
+    if (tween.via) {
+      // quadratic curve: start, bend point, end
+      const a = (1 - e) * (1 - e), b = 2 * e * (1 - e), c = e * e;
+      camera.position.set(0, 0, 0).addScaledVector(tween.p0, a).addScaledVector(tween.via, b).addScaledVector(tween.p1, c);
+    } else camera.position.lerpVectors(tween.p0, tween.p1, e);
+    controls.target.lerpVectors(tween.t0, tween.t1, e); if (k >= 1) tween = null;
   }
   if (world) world.update(t / 1000);
   controls.update(); renderer.render(scene, camera); updatePins();
@@ -137,20 +152,22 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
   setView(view, false);
   if (location.hash) fromHash(); else setView("out", false);
 
-  // For review pictures: ?shot=landing (or pool, entrance) puts the camera exactly
-  // where Blender's preview camera is, and ?ui=0 hides the interface.
+  // For review pictures: ?shot=landing (or pool, entrance, dining, chess) puts the
+  // camera exactly where Blender's preview camera is, ?view=g picks which floors
+  // show, and ?ui=0 hides the interface.
   const shot = w.manifest.cameras[params.get("shot")];
+  if (params.get("view")) setView(params.get("view"), !shot);
   if (shot) {
     // the review cameras can sit below what they look at, which normal navigation forbids
     controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
     camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
   }
   if (params.get("ui") === "0") document.body.classList.add("bare");
-  if (params.get("view")) setView(params.get("view"), !shot);
 
   if (params.has("debug")) window.villa = {THREE, scene, camera, controls, renderer, world: w};   // for poking around in the console
   $("loading").hidden = true;
-  w.sharp.then(() => { document.body.dataset.ready = "sharp"; if (params.get("save")) setTimeout(() => savePicture(params.get("save")), 2500); });
+  w.sharp.then(() => { document.body.dataset.ready = "sharp"; });
+  w.rooms.then(() => { document.body.dataset.ready = "rooms"; if (params.get("save")) setTimeout(() => savePicture(params.get("save")), 2500); });
   document.body.dataset.ready = "yes";
 }).catch(err => {
   console.error(err);

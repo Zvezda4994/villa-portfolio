@@ -20,6 +20,22 @@ labels, side panel, rooms menu, Skip to resume, `#room` links).
 - Palm trunks are ringed.
 - Sheer curtains hang inside the upstairs glass.
 
+**Step 3: the dining room, fully furnished.** It is the template for the other
+rooms' level of detail. In it:
+- a walnut table for eight on dark stone legs, with leather chairs on a wool rug;
+- two low bronze pendants over the table;
+- a walnut sideboard with a bronze horse's head and two vases on it;
+- an original painting on the solid wall;
+- a fig tree and a philodendron by the pool glass;
+- a real game in progress.
+
+Opening the room drops the camera into the visitor's seat over the board. The
+furniture loads in the background after the landing view. Previews:
+`previews/dining.jpg`, `chess.jpg` and their `browser_*` pairs.
+
+**Step 2, the car, is on hold** at your request. The researched options for the
+model and the engine sound are in the conversation history; nothing was bought.
+
 **Repo and hosting.** The code is on GitHub at Zvezda4994/villa-portfolio, and the
 site is live at https://zvezda4994.github.io/villa-portfolio/. Every push to `main`
 runs `npm test` and then publishes `web/` to GitHub Pages, the same setup as the
@@ -56,6 +72,37 @@ change later.
 - Space for the later "vault" is a lower level off the foyer, beside the stairs.
   Nothing blocks it.
 - The car will park on the setts court, angled to face the landing camera.
+
+**Furnishing a room** (the pattern the dining room sets)
+
+- Build everything in `blender/villa/<room>.py` inside `with b.room("<room>"):`.
+  Those parts are exported to `web/assets/rooms/<room>.glb`, not `villa.glb`, and
+  the site fetches them after the first view, one room at a time.
+- Big flat furniture (tables, rugs, pictures) uses the room's own lightmap, an
+  entry in `config.ATLASES` with `room=`. Curved things and downloaded models are
+  lit per vertex.
+- Downloaded models keep their colour map ("img" + "src" in `materials.py`); the
+  build thins dense meshes (`props.load(..., thin=...)`) and drops parts it
+  replaces (pots, soil).
+- Every material only the room uses gets `room="<room>"`, so its picture isn't
+  part of the first-view download. The tests check this.
+- A furnished room turns its general ceiling light down (`CEILING_LIGHT`) and
+  adds its own lamps (`LAMPS`), which `lighting.py` picks up.
+- Add its review cameras to `PREVIEW_CAMERAS`; they also work as `?shot=` in the site.
+
+**The dining room**
+
+- The game: Ruy Lopez, Chigorin variation, after 16...Bd7, White to move
+  (`config.CHESS_FEN`). The two pawns taken so far stand beside the board.
+  Change the FEN to set up any other position.
+- The visitor plays White, from the seat facing the pool glass. The room's
+  camera is that seat looking down over the board (`dining.CHESS_CAM`).
+- No Meruem figure. Meruem is Yoshihiro Togashi's character, and a fan-made model
+  doesn't license the character, even with credit. The brief's "original designs
+  only" rule says the same. The opponent's chair is pushed back and empty for now.
+  An original figure in his place is an option (see Next).
+- The fish tank in the living room isn't built yet; nothing in the dining room
+  blocks the living room's walls.
 
 **Pipeline**
 
@@ -138,11 +185,32 @@ The traps hit so far, so they don't get rediscovered.
     saved credentials. Blender is the Steam copy at
     `C:\Program Files (x86)\Steam\steamapps\common\Blender\blender.exe`, which
     `tools/blender.mjs` finds by itself.
+15. **The preview server's port.** Another session can hold port 5173. The
+    `villa` entry in `.claude/launch.json` no longer passes a port, and
+    `tools/serve.py` takes `$PORT` from the preview tool when it moves to another.
+16. **Furniture pictures are big in UASTC.** A 1024 px picture is about 1 MB as
+    KTX2, a 512 px one about 0.3 MB. The dining room uses 512 px or less except
+    the chessboard (1024, it fills the close-up). At about 6 MB per furnished room
+    the 60 MB total gets tight by the last rooms. Keep later rooms lighter, or
+    switch furniture pictures to ETC1S (far smaller, softer) in the performance pass.
+17. **Draft bakes look worst from inside a room.** At eye level the quarter-size,
+    48-sample draft makes walls, ceilings and the rug look blocky and mottled in
+    the browser. The Blender previews show the intended look; the full bake fixes the site.
+18. **Importing a glTF leaves things behind.** `props.load` removes the imported
+    objects, meshes and unused materials and images straight away, so the saved
+    scene only holds what `place` added.
+19. **`?view=` has to come before `?shot=`.** Switching views resets the camera's
+    minimum distance, which pushed close-up review cameras back. `main.js` now
+    applies the view first.
 
 ## Next
 
 **Waiting on you**
 
+- The dining room's empty chair: leave it empty, or add an original seated
+  figure as a tribute (not Meruem).
+- The car (step 2): pick a model and an engine sound from the options shown,
+  whenever you want to pick it back up.
 - Panel copy: VAREK and Turo numbers, the trophy list, the library list, the stack
   list, contact details.
 - For later steps:
@@ -152,10 +220,11 @@ The traps hit so far, so they don't get rediscovered.
 
 **Build order from here**
 
-2. **The car.** A licensed model of the latest Vanquish in black or dark grey,
-   parked on the setts court facing the landing camera. Headlights come on and
-   a licensed engine start plays on click (sound only after a click).
-3. **Dining room, fully finished.** It sets the level of detail for the other rooms.
+2. **The car (on hold).** A licensed model of the latest Vanquish in black or
+   dark grey, parked on the setts court facing the landing camera. Headlights come
+   on and a licensed engine start plays on click (sound only after a click). The
+   model has to be shipped encrypted or in a non-standard format: CGTrader's
+   royalty-free license allows web use only if visitors can't pull the model out.
 4. **Pool scene with the character.** The camera drops to lounger height; built
    with MPFB/MakeHuman from reference photos.
 5. **The remaining rooms,** one at a time as each room's story arrives. When a

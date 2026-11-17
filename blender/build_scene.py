@@ -15,14 +15,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bpy  # noqa: E402
 
 from villa import config as C  # noqa: E402
+from villa.dining import build_dining  # noqa: E402
 from villa.exterior import build_exterior  # noqa: E402
 from villa.geo import Builder  # noqa: E402
 from villa.house import build_house  # noqa: E402
 from villa.lighting import setup_cameras, setup_lamps, setup_render, setup_world  # noqa: E402
-from villa.materials import TEXTURE_IDS, build_materials  # noqa: E402
+from villa.materials import MATS, TEXTURE_IDS, build_materials  # noqa: E402
 from villa.plants import build_plants  # noqa: E402
 from villa.terrain import build_hills, build_mask, build_sand  # noqa: E402
-from villa.textures import prepare_all  # noqa: E402
+from villa.textures import prepare_all, prepare_pictures  # noqa: E402
 
 
 def main():
@@ -30,7 +31,10 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = setup_render()
     prepare_all(TEXTURE_IDS)
+    prepare_pictures(MATS)            # the downloaded models' colour maps
     build_mask()                      # where the sand turns to gravel; the sand material needs it
+    b = Builder()
+    build_dining(b)                   # paints the rug, painting and chessboard before materials load them
     materials = build_materials()
 
     model = bpy.data.collections.new("villa")      # everything that gets exported
@@ -38,11 +42,15 @@ def main():
     scene.collection.children.link(model)
     scene.collection.children.link(extras)
 
-    b = Builder()
     build_house(b)
     build_exterior(b)
     build_plants(b)
-    b.finalize(model, materials)
+    objects = b.finalize(model, materials)
+    # Glowing lampshade diffusers are drawn bright, but the light itself comes from
+    # the lamps in lighting.py; letting the bake count them too only adds noise.
+    for ob in objects.values():
+        if ob.get("room") and ob.get("lit") == "raw":
+            ob.visible_diffuse = ob.visible_shadow = False
     build_sand(model, materials)
     build_hills(model, materials)
 

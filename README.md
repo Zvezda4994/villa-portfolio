@@ -4,11 +4,10 @@ My portfolio as a modernist villa in the desert. Visitors look around the house,
 and each room holds one part of my work. `BUILD_BRIEF.md` is the plan this
 follows; `blockout.html` is the first prototype, kept for reference.
 
-**Where it stands:** build step 1 of 6 is done (the house shell, grounds, sky and
-golden-hour lighting, baked and running in the browser with the prototype's
-navigation), plus a round of fixes to the forecourt, edges, driveway, palms and
-upstairs glass. The rooms are empty. The car comes next. See `PROGRESS.md` for
-the decisions made so far and what to watch out for.
+**Where it stands:** build step 1 (the house shell, grounds, sky and golden-hour
+lighting) and step 3 (the dining room, fully furnished, with a game in progress
+on the table) are done. The car (step 2) is on hold. The other rooms are still
+empty. See `PROGRESS.md` for the decisions made so far and what to watch out for.
 
 **The lighting is currently a quick draft bake**, so walls and rooms look a little
 blotchy in the browser. The full-quality bake (`npm run bake`) will be run once
@@ -34,14 +33,17 @@ GitHub Pages (`.github/workflows/pages.yml`).
 | `web/` | The site. `index.html`, `styles.css`, and the code in `src/`. |
 | `web/src/rooms.js` | **All the text** visitors read: one entry per room, plus the resume. Edit this to change copy. |
 | `web/src/main.js` | Camera, the three views, labels, side panel, rooms menu, links. Carried over from the prototype. |
-| `web/src/world.js` | Loads the model and decides how each material is drawn. |
+| `web/src/world.js` | Loads the model and decides how each material is drawn. Fetches furnished rooms after the first view. |
 | `web/assets/` | What Blender exported: the model, textures, lightmaps, sky. Rebuilt by the scripts, not edited by hand. |
+| `web/assets/rooms/` | One file per furnished room (so far `dining.glb`), loaded in the background. |
 | `blender/` | Python scripts that build the whole scene in Blender from nothing. |
-| `blender/villa/` | The scene itself, split by subject: `house.py`, `exterior.py`, `terrain.py`, `plants.py`, `lighting.py`, `materials.py`. Sizes and the sun position are in `config.py`. |
+| `blender/villa/` | The scene itself, split by subject: `house.py`, `exterior.py`, `terrain.py`, `plants.py`, `lighting.py`, `materials.py`. Sizes, the sun position and the chess position are in `config.py`. |
+| `blender/villa/dining.py` | The dining room's furniture, lamps and cameras. The template for furnishing the other rooms. |
+| `blender/villa/props.py` | Brings in the downloaded Poly Haven models and places copies of them. |
 | `previews/` | Review pictures for each build step. |
 | `tools/` | Small helpers: a runner for the Blender scripts and the local preview server. |
 | `tests/` | Checks run before every deploy: the exported files load, the downloads fit the budget, the rooms data is complete. |
-| `build/`, `assets_src/` | Scratch output and downloaded textures. Not committed. |
+| `build/`, `assets_src/` | Scratch output, and the downloaded textures and models. Not committed. |
 
 ## Rebuilding the 3D scene
 
@@ -52,7 +54,7 @@ Needs: Blender (written and tested against 5.3), Python 3, and Node for the
 environment variable to the full path of `blender.exe`.
 
 ```
-npm run assets     # once: download the source textures (about 10 MB, all CC0)
+npm run assets     # once: download the source textures and models (about 35 MB, all CC0)
 npm run scene      # build the scene            -> build/villa.blend           (seconds)
 npm run bake       # work out the lighting      -> web/assets/lightmaps        (minutes, uses the GPU)
 npm run export     # write the model, textures, sky -> web/assets              (about a minute)
@@ -80,6 +82,13 @@ light lands on every surface once, at golden hour, and saves the answer:
 In the browser each surface is its tiling colour texture multiplied by its baked
 light, plus a reflection of the sky. That is why it runs on a laptop or phone.
 
+Furnished rooms work the same way, with two additions:
+
+- Each furnished room has its own lightmap for its big flat furniture (the
+  dining room's is `din`: table, rug, painting, chessboard, planters).
+- Downloaded models (chess pieces, sideboard, plants...) keep their own colour
+  picture, multiplied by light baked into their vertices.
+
 The sun position is fixed in `blender/villa/config.py`. Moving it means running
 the bake again.
 
@@ -97,19 +106,23 @@ the way out and made the browser's sky look washed out.
 
 About 10.8 MB loads before the landing view appears (model, colour textures, the
 small lightmaps, sky and water reflections). The sharp lightmaps follow in the
-background. With the full-quality bake everything together comes to about 25 MB.
+background, then each furnished room: the dining room is about 5 MB more
+(furniture, its pictures, its lightmap). With the full-quality bake everything
+together comes to about 31 MB.
 The brief's limits are 15 MB and 60 MB, and the tests fail if either is broken.
 `web/assets/manifest.json` lists every file's size after each export.
 
 ## Review pictures
 
-`previews/landing.jpg`, `pool.jpg` and `entrance.jpg` are rendered by Blender.
-The `browser_*.jpg` files next to them are the real site from the same camera
-positions, so the two can be compared.
+`previews/landing.jpg`, `pool.jpg`, `entrance.jpg`, `dining.jpg` (the dining
+room) and `chess.jpg` (the board, from the visitor's seat) are rendered by
+Blender. The `browser_*.jpg` files next to them are the real site from the same
+camera positions, so the two can be compared.
 
 To see those camera positions in the site, add `?shot=landing&ui=0` to the
-address (or `pool`, or `entrance`). Adding `&save=landing` as well, while
-`tools/serve.py` is running, saves the browser picture into `previews/`.
+address (or `pool`, `entrance`, `dining`, `chess`). Adding `&save=landing` as
+well, while `tools/serve.py` is running, saves the browser picture into
+`previews/` once the furnished rooms have loaded.
 
 Where the two still differ, on purpose or for now:
 
@@ -135,6 +148,20 @@ The room positions follow the prototype. Three things were decided along the way
 
 Space for the later "vault" room: a lower level reached from the foyer, beside
 the stairs. Nothing is built there yet and nothing blocks it.
+
+The dining room (all in `blender/villa/dining.py`):
+
+- A 3 m walnut table on two dark stone legs, with eight leather and walnut
+  chairs on a wool rug. The table, sideboard and painting share one centre line.
+- A pair of wide bronze pendants hang 80 cm over the table.
+- A long walnut sideboard against the foyer wall holds a bronze horse's head and
+  two white vases. An original abstract painting of the desert at dusk hangs above it.
+- A fig tree and a philodendron stand in dark stone planters by the pool glass.
+- A game is in progress at the living-room end of the table. The visitor's seat
+  faces the glass. The chair across is pushed back and turned, as if the
+  opponent has just stood up. Opening the dining room drops the camera into that
+  seat, looking down over the board.
+- The living room stays open to it and is still empty.
 
 The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
 

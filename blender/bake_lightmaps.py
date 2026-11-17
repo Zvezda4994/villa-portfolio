@@ -166,7 +166,13 @@ def main():
                 continue
             np.save(C.BAKE_DIR / f"{atlas}.npy", light.astype(np.float16))
         big = encode(light, out / f"{atlas}.ktx2", max_levels=4)
-        small = encode(shrink(light, min(size, C.LOW_RES)), out / f"{atlas}_lo.ktx2", max_levels=3)
+        # The house's lightmaps also get a small copy that loads first. A furnished
+        # room's arrives after the first view anyway, so it only needs the full one.
+        if spec.get("room"):
+            (out / f"{atlas}_lo.ktx2").unlink(missing_ok=True)
+            small = 0
+        else:
+            small = encode(shrink(light, min(size, C.LOW_RES)), out / f"{atlas}_lo.ktx2", max_levels=3)
         report[atlas] = dict(size=size, bytes=big, bytes_lo=small,
                              p50=float(np.percentile(light, 50)), p99=float(np.percentile(light, 99)),
                              p999=float(np.percentile(light, 99.9)), max=float(light.max()))

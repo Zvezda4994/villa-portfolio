@@ -11,7 +11,7 @@
   "color": [
    0.5111722946166992,
    0.6016301214694977,
-   0.6404514312744141
+   0.6404514610767365
   ]
  },
  "sky": {
@@ -21,6 +21,11 @@
   "front": "sky/front_env.hdr"
  },
  "model": "villa.glb",
+ "rooms": {
+  "dining": {
+   "model": "rooms/dining.glb"
+  }
+ },
  "lightmaps": {
   "ext": {
    "file": "lightmaps/ext.ktx2",
@@ -37,6 +42,10 @@
   "terrain": {
    "file": "lightmaps/terrain.ktx2",
    "small": "lightmaps/terrain_lo.ktx2"
+  },
+  "din": {
+   "file": "lightmaps/din.ktx2",
+   "room": "dining"
   }
  },
  "materials": {
@@ -342,6 +351,179 @@
     0.08898152563840141,
     0.04696420068912289
    ]
+  },
+  "walnut": {
+   "kind": "baked",
+   "map": "textures/walnut_veneer.ktx2",
+   "tile": 1.6,
+   "color": [
+    0.5,
+    0.42,
+    0.37
+   ],
+   "room": "dining",
+   "rough": 0.4
+  },
+  "rug": {
+   "kind": "baked",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/rug.ktx2",
+   "room": "dining",
+   "rough": 1.0
+  },
+  "painting": {
+   "kind": "baked",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/painting.ktx2",
+   "room": "dining",
+   "rough": 0.9
+  },
+  "chessboard": {
+   "kind": "baked",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/chessboard.ktx2",
+   "room": "dining",
+   "rough": 0.25
+  },
+  "leather": {
+   "kind": "vertex",
+   "color": [
+    0.08898152563840141,
+    0.033104766570885055,
+    0.01532520332062848
+   ],
+   "room": "dining"
+  },
+  "walnut_dark": {
+   "kind": "vertex",
+   "color": [
+    0.033104766570885055,
+    0.01532520332062848,
+    0.008540382112116999
+   ],
+   "room": "dining"
+  },
+  "bronze": {
+   "kind": "vertex",
+   "color": [
+    0.05925352111727415,
+    0.033104766570885055,
+    0.017389102368488736
+   ],
+   "room": "dining"
+  },
+  "canvas_edge": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.44798841244188325
+   ],
+   "room": "dining"
+  },
+  "chess_white": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/chess_white.ktx2",
+   "room": "dining"
+  },
+  "chess_black": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/chess_black.ktx2",
+   "room": "dining"
+  },
+  "cabinet": {
+   "kind": "vertex",
+   "color": [
+    0.692071056865372,
+    0.6038273388553378,
+    0.5704815954749093
+   ],
+   "map": "textures/cabinet.ktx2",
+   "room": "dining"
+  },
+  "vase_round": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/vase_round.ktx2",
+   "room": "dining"
+  },
+  "vase_tall": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/vase_tall.ktx2",
+   "room": "dining"
+  },
+  "horse_head": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/horse_head.ktx2",
+   "room": "dining"
+  },
+  "fig_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_leaves.ktx2",
+   "room": "dining",
+   "doubleSided": true
+  },
+  "fig_stems": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_stems.ktx2",
+   "room": "dining"
+  },
+  "philo_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/philo_leaves.ktx2",
+   "room": "dining",
+   "doubleSided": true
   }
  },
  "cameras": {
@@ -383,13 +565,39 @@
     8.0
    ],
    "fov": 50.0
+  },
+  "dining": {
+   "pos": [
+    3.4,
+    1.62,
+    -5.6
+   ],
+   "target": [
+    -2.6,
+    0.95,
+    -2.6
+   ],
+   "fov": 52.0
+  },
+  "chess": {
+   "pos": [
+    -1.2299999999999998,
+    1.3,
+    -3.52
+   ],
+   "target": [
+    -1.2499999999999998,
+    0.77,
+    -4.35
+   ],
+   "fov": 46.0
   }
  },
  "bytes": {
   "sky background": 521262,
   "sky environment": 303996,
-  "sky pool": 333953,
-  "sky front": 382456,
+  "sky pool": 334261,
+  "sky front": 382246,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -399,15 +607,30 @@
   "texture oak_veneer_01": 309404,
   "texture rounded_square_tiled_wall": 318215,
   "texture sandy_gravel_02": 1240623,
+  "texture walnut_veneer": 292320,
   "texture terrain_mask": 67211,
+  "texture cabinet": 308474,
+  "texture chess_black": 316435,
+  "texture chess_white": 322607,
+  "texture chessboard": 939978,
+  "texture fig_leaves": 66354,
+  "texture fig_stems": 84183,
+  "texture horse_head": 83148,
+  "texture painting": 317639,
+  "texture philo_leaves": 67382,
+  "texture rug": 198338,
+  "texture vase_round": 68338,
+  "texture vase_tall": 78787,
   "model": 2395048,
-  "lightmap ext": 318106,
-  "lightmap ext (small)": 314074,
-  "lightmap gnd": 301830,
-  "lightmap gnd (small)": 297918,
-  "lightmap upr": 296627,
-  "lightmap upr (small)": 292755,
-  "lightmap terrain": 289995,
-  "lightmap terrain (small)": 286099
+  "room dining": 1846412,
+  "lightmap ext": 317695,
+  "lightmap ext (small)": 313679,
+  "lightmap gnd": 299367,
+  "lightmap gnd (small)": 295455,
+  "lightmap upr": 296742,
+  "lightmap upr (small)": 292854,
+  "lightmap terrain": 289858,
+  "lightmap terrain (small)": 285954,
+  "lightmap din": 78047
  }
 }

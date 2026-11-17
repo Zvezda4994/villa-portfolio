@@ -8,6 +8,8 @@
 //   view   where the camera flies to: [camera position, point it looks at]
 //   links  [label, url, opens another room or the resume?, quieter button style?]
 //   todo   a note to self, shown in the panel until the real copy is in
+//   near   (optional) lets the camera come closer than usual, for close-ups like
+//          the chessboard; the camera then drops in from above instead of flying straight
 //
 // The copy is still draft. Rooms marked todo are waiting on real numbers and lists.
 
@@ -17,9 +19,12 @@ export const ROOMS = [
       "I build software, run two small businesses and coach boxing. Every room in this house is something I've built or something I do. Use the labels, or the Rooms menu."],
     links: [["Start the tour", "#dining", 1]]},
 
-  {id: "dining", floor: "g", area: "Dining room", title: "Meruem Chess Coach", at: [-2, 1.7, -4], view: [[-2, 8.5, 3.5], [-2, 0.8, -4]],
+  {id: "dining", floor: "g", area: "Dining room", title: "Meruem Chess Coach", at: [-2.3, 1.9, -4.3],
+    // the visitor's seat at the table, looking down over the board (blender/villa/dining.py, CHESS_CAM)
+    view: [[-1.23, 1.30, -3.52], [-1.25, 0.77, -4.35]], near: 0.4,
     body: ["A chess trainer that explains every move. Stockfish runs the analysis, Maia (a neural net trained on human games) plays like a real opponent at my rating, and Claude writes the explanations using the engine's lines.",
-      "Static site, no backend. Everything runs in the browser in Web Workers."],
+      "Static site, no backend. Everything runs in the browser in Web Workers.",
+      "On the table: a Ruy Lopez, Chigorin variation, after 16...Bd7. White to move, and it's your seat."],
     links: [["Live site", "https://zvezda4994.github.io/Meruem-Chess-Coach/"], ["Code", "https://github.com/Zvezda4994/Meruem-Chess-Coach", 0, 1]]},
 
   {id: "study", floor: "g", area: "The study", title: "VAREK Systems", at: [3.75, 1.7, 4], view: [[3.75, 8.5, 11.5], [3.75, 0.8, 4]],

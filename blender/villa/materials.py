@@ -11,6 +11,14 @@ kind:
            reflects a panorama taken from where it sits ("probe").
 
 Colours are sRGB values from 0 to 1. Tints are plain multipliers.
+
+Furniture adds two things:
+  img      a picture laid over the object's own UVs instead of a tiling texture:
+           either made by the build (the rug, the painting, the chessboard) or
+           taken from a downloaded model ("src", relative to assets_src/models).
+           Saved as build/textures/<img>.png and exported as textures/<img>.ktx2.
+  room     the furnished room the material belongs to. The website fetches its
+           picture with that room, after the first view is up, not before.
 """
 
 MATS = {
@@ -49,6 +57,37 @@ MATS = {
     "agave":       dict(kind="vertex", color=(0.40, 0.50, 0.45), double_sided=True),
     "rock":        dict(kind="vertex", color=(0.58, 0.47, 0.38)),
     "hill":        dict(kind="vertex", color=(0.50, 0.33, 0.24)),
+
+    # --- dining room (dining.py) ---
+    # big flat pieces, lit by the room's own lightmap
+    "walnut":      dict(kind="baked", room="dining", tex="walnut_veneer", tile=1.6, tint=(0.50, 0.42, 0.37), rough=0.4),
+    "rug":         dict(kind="baked", room="dining", img="rug", color=(1, 1, 1), rough=1.0),
+    "painting":    dict(kind="baked", room="dining", img="painting", color=(1, 1, 1), rough=0.9),
+    "chessboard":  dict(kind="baked", room="dining", img="chessboard", color=(1, 1, 1), rough=0.25),
+    # curved pieces, lit per vertex
+    "leather":     dict(kind="vertex", room="dining", color=(0.33, 0.20, 0.13)),
+    "walnut_dark": dict(kind="vertex", room="dining", color=(0.20, 0.13, 0.09)),
+    "bronze":      dict(kind="vertex", room="dining", color=(0.27, 0.20, 0.14)),
+    "canvas_edge": dict(kind="vertex", room="dining", color=(0.80, 0.76, 0.70)),
+    # Poly Haven models, keeping their own colour pictures
+    "chess_white": dict(kind="vertex", room="dining", img="chess_white", size=512,
+                        src="chess_set/textures/chess_set_pieces_white_diff_1k.jpg", color=(1, 1, 1)),
+    "chess_black": dict(kind="vertex", room="dining", img="chess_black", size=512,
+                        src="chess_set/textures/chess_set_pieces_black_diff_1k.jpg", color=(1, 1, 1)),
+    "cabinet":     dict(kind="vertex", room="dining", img="cabinet", size=512,
+                        src="modern_wooden_cabinet/textures/modern_wooden_cabinet_diff_1k.jpg", color=(0.85, 0.80, 0.78)),
+    "vase_round":  dict(kind="vertex", room="dining", img="vase_round", size=256,
+                        src="ceramic_vase_02/textures/ceramic_vase_02_diff_1k.jpg", color=(1, 1, 1)),
+    "vase_tall":   dict(kind="vertex", room="dining", img="vase_tall", size=256,
+                        src="ceramic_vase_03/textures/ceramic_vase_03_diff_1k.jpg", color=(1, 1, 1)),
+    "horse_head":  dict(kind="vertex", room="dining", img="horse_head", size=256,
+                        src="horse_head/textures/horse_head_diff_1k.jpg", color=(1, 1, 1)),
+    "fig_leaves":  dict(kind="vertex", room="dining", img="fig_leaves", size=256, double_sided=True,
+                        src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "fig_stems":   dict(kind="vertex", room="dining", img="fig_stems", size=256,
+                        src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
+    "philo_leaves": dict(kind="vertex", room="dining", img="philo_leaves", size=256, double_sided=True,
+                         src="potted_plant_02/textures/potted_plant_02_leaves_diff_1k.jpg", color=(1, 1, 1)),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.
@@ -63,7 +102,7 @@ def srgb_to_linear(c):
 def build_materials():
     """Make a Blender material for every entry above. Returns {name: material}."""
     import bpy
-    from .textures import mask_path, prepared
+    from .textures import mask_path, picture_path, prepared
 
     def image(path, data=False):
         img = bpy.data.images.load(str(path), check_existing=True)
@@ -123,6 +162,18 @@ def build_materials():
                     link(other, socket["B_Color"])
                     colour = socket["Result_Color"]
                 link(colour, bsdf.inputs["Base Color"])
+            elif "img" in m:
+                # One picture over the object's own UVs, times a plain colour.
+                node = new("ShaderNodeTexImage")
+                node.image = image(picture_path(m["img"]))
+                coords = new("ShaderNodeUVMap")
+                coords.uv_map = "UVMap"
+                link(coords.outputs["UV"], node.inputs["Vector"])
+                mul = new("ShaderNodeVectorMath")
+                mul.operation = "MULTIPLY"
+                mul.inputs[1].default_value = srgb_to_linear(m.get("color", (1, 1, 1)))
+                link(node.outputs["Color"], mul.inputs[0])
+                link(mul.outputs[0], bsdf.inputs["Base Color"])
             else:
                 bsdf.inputs["Base Color"].default_value = (*srgb_to_linear(m["color"]), 1.0)
             link(bsdf.outputs[0], output.inputs["Surface"])

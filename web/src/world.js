@@ -16,8 +16,10 @@ const ASSETS = "assets/";
 const TRANSCODER = "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/";
 
 // How strongly each lightmap's surfaces reflect the sky. Indoors the sky is
-// mostly hidden by ceilings, so reflections there are turned well down.
+// mostly hidden by ceilings, so reflections there are turned well down
+// (furnished rooms' own lightmaps count as indoors too).
 const REFLECT = {ext: 1.0, terrain: 1.0, gnd: 0.3, upr: 0.3};
+const INDOOR_REFLECT = 0.3;
 
 // Distance haze, in metres: none closer than `near`, strongest at `far`.
 const HAZE = {near: 120, far: 1100, max: 0.45};
@@ -135,14 +137,19 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const track = promise => { total++; return promise.then(v => { onProgress(++done, total); return v; }); };
 
   // ---- start every download needed for the first view at once ----
+  // (furniture is left for later: materials and lightmaps marked with a room
+  // are fetched together with that room, once the first view is up)
   const colourMaps = {};
   const want = file => { if (file && !colourMaps[file]) colourMaps[file] = track(ktx2.loadAsync(ASSETS + file)); };
   for (const m of Object.values(manifest.materials)) {
+    if (m.room) continue;
     want(m.map);
     if (m.blend) { want(m.blend.map); want(m.blend.mask); }
   }
   const smallLight = {};
-  for (const [name, lm] of Object.entries(manifest.lightmaps)) smallLight[name] = track(ktx2.loadAsync(ASSETS + lm.small));
+  for (const [name, lm] of Object.entries(manifest.lightmaps)) {
+    if (!lm.room) smallLight[name] = track(ktx2.loadAsync(ASSETS + lm.small));
+  }
   // Panoramas taken from above each body of water, so it reflects what is really around it.
   const probeNames = Object.keys(manifest.sky).filter(k => k !== "background" && k !== "environment");
   const [gltf, skyTex, envTex, ...probeTex] = await Promise.all([
@@ -173,12 +180,12 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     lightmaps[name].channel = 1;               // lightmaps use the second set of UVs
   }
   const maps = {};
-  for (const [file, p] of Object.entries(colourMaps)) {
-    const t = await p;
+  const useMap = (file, t) => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.anisotropy = Math.min(8, maxAniso);
     maps[file] = t;
-  }
+  };
+  for (const [file, p] of Object.entries(colourMaps)) useMap(file, await p);
   for (const m of Object.values(manifest.materials)) {
     if (!m.blend) continue;
     const mask = maps[m.blend.mask];
@@ -201,7 +208,7 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         color: new THREE.Color().setRGB(...m.color), map: m.map ? maps[m.map] : null,
         roughness: m.rough ?? 0.85, metalness: m.metal ?? 0,
         lightMap: lightmaps[atlas], lightMapIntensity: lightScale * Math.PI,
-        envMap: reflections, envMapIntensity: REFLECT[atlas] ?? 1,
+        envMap: reflections, envMapIntensity: REFLECT[atlas] ?? (manifest.lightmaps[atlas]?.room ? INDOOR_REFLECT : 1),
       });
       if (m.blend) {
         mat.onBeforeCompile = gravelShader({
@@ -215,8 +222,11 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
       }
       (bakedByAtlas[atlas] ||= []).push(mat);
     } else if (m.kind === "vertex") {
+      // Light baked into the vertices, times a plain colour, times the model's
+      // own picture if it has one (the furniture from Poly Haven does).
       mat = new THREE.MeshBasicMaterial({
         color: new THREE.Color().setRGB(...m.color).multiplyScalar(lightScale), vertexColors: true,
+        map: m.map ? maps[m.map] : null,
         side: m.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
       });
     } else if (m.kind === "sheer") {
@@ -257,17 +267,23 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   // ---- sort the model's pieces into the groups the views switch on and off ----
   const groups = {ground: [], upper: [], roof: [], out: []};
   const info = o => { for (let p = o; p; p = p.parent) if (p.userData && p.userData.group) return p.userData; return {}; };
-  gltf.scene.traverse(o => {
-    if (!o.isMesh) return;
-    const {group, lightmap} = info(o);
-    o.material = materialFor(o.material.name, lightmap);
-    // The export leaves normals out to save space. Anything that reflects needs them back.
-    if (!o.geometry.attributes.normal && !o.material.isMeshBasicMaterial) o.geometry.computeVertexNormals();
-    // see-through things draw last, curtains before the glass in front of them
-    if (o.material.transparent) o.renderOrder = o.material.name === "sheer" ? 1 : 2;
-    (groups[group] || groups.out).push(o);
-  });
-  scene.add(gltf.scene);
+  const visibleNow = {};                       // filled in by the page, so late arrivals match the current view
+  function addModel(root) {
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      const {group, lightmap} = info(o);
+      o.material = materialFor(o.material.name, lightmap);
+      // The export leaves normals out to save space. Anything that reflects needs them back.
+      if (!o.geometry.attributes.normal && !o.material.isMeshBasicMaterial) o.geometry.computeVertexNormals();
+      // see-through things draw last, curtains before the glass in front of them
+      if (o.material.transparent) o.renderOrder = o.material.name === "sheer" ? 1 : 2;
+      const g = groups[group] ? group : "out";
+      groups[g].push(o);
+      if (g in visibleNow) o.visible = visibleNow[g];
+    });
+    scene.add(root);
+  }
+  addModel(gltf.scene);
 
   // ---- then fetch the sharp lightmaps in the background, outdoors first ----
   const sharp = (async () => {
@@ -283,11 +299,34 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         old.dispose();
       } catch (e) { console.warn("Could not load the sharp lightmap for", name, e); }
     }
+  })();
+
+  // ---- then the furnished rooms, one at a time: pictures, lightmap, furniture ----
+  async function loadRoom(name) {
+    const room = manifest.rooms[name];
+    const files = new Set(Object.values(manifest.materials).filter(m => m.room === name && m.map).map(m => m.map));
+    const atlases = Object.entries(manifest.lightmaps).filter(([, lm]) => lm.room === name);
+    const [roomGltf, pictures, light] = await Promise.all([
+      gltfLoader.loadAsync(ASSETS + room.model),
+      Promise.all([...files].map(f => ktx2.loadAsync(ASSETS + f).then(t => [f, t]))),
+      Promise.all(atlases.map(([a, lm]) => ktx2.loadAsync(ASSETS + lm.file).then(t => [a, t]))),
+    ]);
+    for (const [f, t] of pictures) useMap(f, t);
+    for (const [a, t] of light) { t.channel = 1; lightmaps[a] = t; }
+    addModel(roomGltf.scene);
+  }
+  const rooms = (async () => {
+    await sharp;
+    for (const name of Object.keys(manifest.rooms || {})) {
+      try { await loadRoom(name); } catch (e) { console.warn("Could not load the", name, "furniture", e); }
+    }
     ktx2.dispose();
   })();
 
   return {
-    manifest, groups, sharp,
+    manifest, groups, sharp, rooms,
+    // The page says which groups are showing, so furniture that arrives later matches.
+    setVisible(group, on) { visibleNow[group] = on; groups[group].forEach(o => { o.visible = on; }); },
     update(seconds) { water.ripples.offset.set(seconds * 0.012, seconds * 0.02); },
   };
 }

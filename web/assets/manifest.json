@@ -1,0 +1,335 @@
+{
+ "note": "Written by blender/export_web.py. Do not edit by hand.",
+ "lightRange": 4.0,
+ "exposure": 1.0,
+ "sun": [
+  -0.8191515580127671,
+  0.25881904510252074,
+  0.5118627031709536
+ ],
+ "fog": {
+  "color": [
+   0.5111722946166992,
+   0.6016301214694977,
+   0.6404514610767365
+  ]
+ },
+ "sky": {
+  "background": "sky/sky_bg.hdr",
+  "environment": "sky/sky_env.hdr",
+  "pool": "sky/pool_env.hdr"
+ },
+ "model": "villa.glb",
+ "lightmaps": {
+  "ext": {
+   "file": "lightmaps/ext.ktx2",
+   "small": "lightmaps/ext_lo.ktx2"
+  },
+  "gnd": {
+   "file": "lightmaps/gnd.ktx2",
+   "small": "lightmaps/gnd_lo.ktx2"
+  },
+  "upr": {
+   "file": "lightmaps/upr.ktx2",
+   "small": "lightmaps/upr_lo.ktx2"
+  },
+  "terrain": {
+   "file": "lightmaps/terrain.ktx2",
+   "small": "lightmaps/terrain_lo.ktx2"
+  }
+ },
+ "materials": {
+  "stone": {
+   "kind": "baked",
+   "map": "textures/marble_01.ktx2",
+   "color": [
+    1.0,
+    0.97,
+    0.92
+   ],
+   "rough": 0.7
+  },
+  "concrete": {
+   "kind": "baked",
+   "map": "textures/concrete_wall_007.ktx2",
+   "color": [
+    1.35,
+    1.33,
+    1.3
+   ],
+   "rough": 0.8
+  },
+  "plaster": {
+   "kind": "baked",
+   "color": [
+    0.8275708303626798,
+    0.8073459089125289,
+    0.748414103499371
+   ],
+   "rough": 0.9
+  },
+  "oak": {
+   "kind": "baked",
+   "map": "textures/oak_veneer_01.ktx2",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "rough": 0.55
+  },
+  "dark_stone": {
+   "kind": "baked",
+   "map": "textures/granite_tile.ktx2",
+   "color": [
+    0.3,
+    0.29,
+    0.3
+   ],
+   "rough": 0.6
+  },
+  "floor_wood": {
+   "kind": "baked",
+   "map": "textures/laminate_floor_02.ktx2",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "rough": 0.5
+  },
+  "floor_stone": {
+   "kind": "baked",
+   "map": "textures/marble_01.ktx2",
+   "color": [
+    1.0,
+    0.98,
+    0.95
+   ],
+   "rough": 0.55
+  },
+  "floor_dark": {
+   "kind": "baked",
+   "map": "textures/granite_tile.ktx2",
+   "color": [
+    0.6,
+    0.6,
+    0.62
+   ],
+   "rough": 0.45
+  },
+  "paving": {
+   "kind": "baked",
+   "map": "textures/marble_01.ktx2",
+   "color": [
+    0.9,
+    0.88,
+    0.86
+   ],
+   "rough": 0.75
+  },
+  "drive": {
+   "kind": "baked",
+   "map": "textures/asphalt_02.ktx2",
+   "color": [
+    0.75,
+    0.72,
+    0.7
+   ],
+   "rough": 0.9
+  },
+  "pool_tile": {
+   "kind": "baked",
+   "map": "textures/rounded_square_tiled_wall.ktx2",
+   "color": [
+    0.45,
+    0.85,
+    0.9
+   ],
+   "rough": 0.3
+  },
+  "sand": {
+   "kind": "baked",
+   "map": "textures/sandy_gravel_02.ktx2",
+   "color": [
+    1.25,
+    1.17,
+    1.06
+   ],
+   "rough": 1.0
+  },
+  "glass": {
+   "kind": "glass",
+   "color": [
+    0.5225215539683921,
+    0.692071056865372,
+    0.748414103499371
+   ],
+   "opacity": 0.18
+  },
+  "glass_smoke": {
+   "kind": "glass",
+   "color": [
+    0.05087608817155679,
+    0.05925352111727415,
+    0.07323895587840543
+   ],
+   "opacity": 0.5
+  },
+  "water": {
+   "kind": "water",
+   "color": [
+    0.01960664851623822,
+    0.26327340845612224,
+    0.31854677812509186
+   ]
+  },
+  "light_warm": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.47699978456654196,
+    0.147318999244498
+   ],
+   "strength": 12.0
+  },
+  "light_pool": {
+   "kind": "emissive",
+   "color": [
+    0.44798841244188325,
+    0.8900054069935289,
+    1.0
+   ],
+   "strength": 10.0
+  },
+  "cut": {
+   "kind": "flat",
+   "color": [
+    0.00598105957261676,
+    0.005422868676138171,
+    0.004896310081623859
+   ]
+  },
+  "frame": {
+   "kind": "vertex",
+   "color": [
+    0.004896310081623859,
+    0.00440084974745434,
+    0.003935939504088967
+   ]
+  },
+  "brass": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.31854677812509186,
+    0.07323895587840543
+   ]
+  },
+  "bark": {
+   "kind": "vertex",
+   "color": [
+    0.0835351274258047,
+    0.04696420068912289,
+    0.024515013703524748
+   ]
+  },
+  "palm_leaf": {
+   "kind": "vertex",
+   "color": [
+    0.05087608817155679,
+    0.08898152563840141,
+    0.021980947079887205
+   ],
+   "doubleSided": true
+  },
+  "shrub": {
+   "kind": "vertex",
+   "color": [
+    0.147318999244498,
+    0.147318999244498,
+    0.04696420068912289
+   ],
+   "doubleSided": true
+  },
+  "rock": {
+   "kind": "vertex",
+   "color": [
+    0.17064493581555268,
+    0.07323895587840543,
+    0.033104766570885055
+   ]
+  },
+  "hill": {
+   "kind": "vertex",
+   "color": [
+    0.21404114048223255,
+    0.08898152563840141,
+    0.04696420068912289
+   ]
+  }
+ },
+ "cameras": {
+  "landing": {
+   "pos": [
+    -19.0,
+    5.5,
+    30.0
+   ],
+   "target": [
+    -2.0,
+    1.8,
+    8.0
+   ],
+   "fov": 45.0
+  },
+  "pool": {
+   "pos": [
+    18.0,
+    7.0,
+    -24.0
+   ],
+   "target": [
+    4.0,
+    0.5,
+    -12.0
+   ],
+   "fov": 45.0
+  },
+  "entrance": {
+   "pos": [
+    -9.5,
+    1.7,
+    20.5
+   ],
+   "target": [
+    -1.0,
+    2.6,
+    8.0
+   ],
+   "fov": 50.0
+  }
+ },
+ "bytes": {
+  "sky background": 521262,
+  "sky environment": 302266,
+  "sky pool": 333807,
+  "texture asphalt_02": 309402,
+  "texture concrete_wall_007": 299032,
+  "texture granite_tile": 289871,
+  "texture laminate_floor_02": 301387,
+  "texture marble_01": 1170487,
+  "texture oak_veneer_01": 309404,
+  "texture rounded_square_tiled_wall": 318215,
+  "texture sandy_gravel_02": 1240623,
+  "model": 1896508,
+  "lightmap ext": 3974806,
+  "lightmap ext (small)": 262646,
+  "lightmap gnd": 4237170,
+  "lightmap gnd (small)": 288021,
+  "lightmap upr": 4042514,
+  "lightmap upr (small)": 273250,
+  "lightmap terrain": 3385730,
+  "lightmap terrain (small)": 253572
+ }
+}

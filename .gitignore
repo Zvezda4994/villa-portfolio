@@ -1,0 +1,15 @@
+# Scratch output from the Blender scripts (the .blend, raw bakes, draft renders)
+build/
+
+# Downloaded source textures. Run `python blender/fetch_assets.py` to get them back.
+assets_src/
+
+# Python and Blender leftovers
+__pycache__/
+*.pyc
+*.blend1
+
+# Local editor and tool settings
+.claude/
+.vscode/
+node_modules/

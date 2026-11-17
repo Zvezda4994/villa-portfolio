@@ -1,0 +1,17 @@
+{
+  "name": "villa-portfolio",
+  "private": true,
+  "description": "Portfolio site: a desert villa built in Blender and shown with three.js",
+  "type": "module",
+  "scripts": {
+    "assets": "python blender/fetch_assets.py",
+    "scene": "node tools/blender.mjs build_scene",
+    "bake": "node tools/blender.mjs bake_lightmaps",
+    "bake:draft": "node tools/blender.mjs bake_lightmaps --draft",
+    "export": "node tools/blender.mjs export_web",
+    "previews": "node tools/blender.mjs render_previews",
+    "previews:draft": "node tools/blender.mjs render_previews --draft",
+    "build": "npm run scene && npm run bake && npm run export",
+    "serve": "python tools/serve.py"
+  }
+}

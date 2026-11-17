@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aditya · Memory palace</title>
+<meta name="description" content="Aditya's portfolio as a desert villa you can explore. Each room holds one part of his work.">
+<meta name="theme-color" content="#17130f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<canvas id="scene" aria-label="3D model of a desert villa. Each room holds part of the portfolio; use the Rooms menu for a list."></canvas>
+<div class="loading" id="loading"><div>Building the villa…<small id="loadingNote"></small></div></div>
+
+<div class="bar">
+  <div class="brand"><b>Aditya</b><span>Memory palace</span></div>
+  <div class="ctrls">
+    <div class="seg" role="group" aria-label="View">
+      <button id="vOut" aria-pressed="true">Outside</button>
+      <button id="vG" aria-pressed="false">Ground</button>
+      <button id="vU" aria-pressed="false">Upstairs</button>
+    </div>
+    <button class="pill" id="roomsBtn" aria-expanded="false">Rooms</button>
+    <button class="pill brass" id="resumeBtn">Skip to resume</button>
+  </div>
+</div>
+
+<div class="pins" id="pins"></div>
+<nav class="rooms" id="rooms" hidden aria-label="Rooms"></nav>
+<aside class="panel" id="panel" hidden aria-live="polite">
+  <button class="x" id="panelX" aria-label="Close">×</button>
+  <div class="panel-in" id="panelBody"></div>
+  <div class="panel-nav"><button id="prevRoom">← Previous</button><button id="nextRoom">Next →</button></div>
+</aside>
+<div class="tag">Work in progress: the house and grounds are built. The rooms get furnished next.</div>
+<div class="hint" id="hint">Drag to look around · scroll to zoom · click a label</div>
+
+<div class="resume" id="resume" hidden>
+  <div class="resume-in" id="resumeBody"></div>
+</div>
+
+<!-- three.js comes from a CDN at a fixed version. No build step: the files in this folder are the site. -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+</script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

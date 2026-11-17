@@ -89,6 +89,14 @@ change later.
 - A furnished room turns its general ceiling light down (`CEILING_LIGHT`) and
   adds its own lamps (`LAMPS`), which `lighting.py` picks up.
 - Add its review cameras to `PREVIEW_CAMERAS`; they also work as `?shot=` in the site.
+- **Budget: around 4 MB per room.** That means the room's own file, the pictures
+  only it uses, and its lightmap (a seated figure is counted separately, since it
+  can come and go). Prefer materials other rooms already load, keep pictures at
+  512 px or less, and thin dense models. `npm test` checks it: new rooms fail
+  above 4.5 MB.
+- **The dining room is over, at 5.1 MB** (about 5.9 MB once its lightmap gets the
+  full bake): `dining.glb` 1.85 MB, the chessboard picture 0.94 MB, the rest small.
+  The test lets it through at up to 6.5 MB until step 6 brings it down.
 
 **The dining room**
 
@@ -228,9 +236,10 @@ The traps hit so far, so they don't get rediscovered.
     `tools/serve.py` takes `$PORT` from the preview tool when it moves to another.
 16. **Furniture pictures are big in UASTC.** A 1024 px picture is about 1 MB as
     KTX2, a 512 px one about 0.3 MB. The dining room uses 512 px or less except
-    the chessboard (1024, it fills the close-up). At about 6 MB per furnished room
-    the 60 MB total gets tight by the last rooms. Keep later rooms lighter, or
-    switch furniture pictures to ETC1S (far smaller, softer) in the performance pass.
+    the chessboard (1024, it fills the close-up). That is most of why the dining
+    room is over its 4 MB budget. Options for step 6: ETC1S for furniture pictures
+    (far smaller, a little softer), a 512 px chessboard for phones, and fewer
+    one-off pictures.
 17. **Draft bakes look worst from inside a room.** At eye level the quarter-size,
     48-sample draft makes walls, ceilings and the rug look blocky and mottled in
     the browser. The Blender previews show the intended look; the full bake fixes the site.
@@ -268,16 +277,41 @@ The traps hit so far, so they don't get rediscovered.
    with MPFB/MakeHuman from reference photos.
 5. **The remaining rooms,** one at a time as each room's story arrives. When a
    room is furnished, its curtains can go.
-6. **Polish:**
-   - loading screen with a still-image fallback. This matters: on a slow
-     connection (about 150 KB/s in testing) the live site took about 90 seconds
-     to show the landing view, because about 11 MB loads first. Showing a still
-     straight away, and loading 512 px colour textures before the 1024 px ones,
-     would fix most of it;
-   - phone layout;
-   - link previews;
-   - performance pass;
-   - then the full-quality bake.
+6. **Polish.** The brief's performance section now has targets and no hard
+   total size limit. Step 6 builds them:
+   - **A still of the landing shot within about 1 second.** It's a full-quality
+     render from the exact landing camera; the live 3D fades in over it from the
+     same camera. On a slow connection (about 150 KB/s in testing) the live site
+     took about 90 seconds to show anything, so this matters most.
+   - **The landing view interactive in about 10 MB or less** (10.8 MB now). Load
+     512 px colour textures before the 1024 px ones, and look again at the
+     cobblestone, sand and marble textures, the three largest.
+   - **Each room's own download around 4 MB.**
+     - Materials shared between rooms load once and are reused. Today a room
+       material's picture is tied to one room; walnut veneer, for one, should
+       become shared.
+     - Repeated objects are instanced (the eight chairs, later the books and
+       bottles). Their light is baked per vertex and differs per copy, so
+       instancing needs that light kept per instance (or a shared average).
+       Decide which in step 6.
+     - Bring the dining room under budget (see "Furnishing a room").
+   - **A still for every room**, rendered from its camera (`PREVIEW_CAMERAS`
+     already has the dining one), shown while that room loads.
+   - **Prefetching.** Start loading a room when the visitor hovers over its label,
+     and the neighbouring rooms while they're in one. This needs a room-to-room
+     neighbour list.
+   - **Phones get lower-resolution textures** (a second, smaller set of pictures
+     and lightmaps); desktops get the full set.
+   - **While the still is showing and the 3D isn't ready:**
+     - Labels sit on the still at their exact 3D positions, projected with the
+       still's own camera.
+     - Clicking a label opens its panel and swaps in that room's still. The 3D
+       appears at that room's camera when it's ready.
+     - The Rooms menu and Skip to resume work at once; they need no 3D.
+     - Dragging pans the still slightly and shows the loading percentage. The
+       drag isn't replayed when the 3D arrives.
+   - Phone layout and link previews.
+   - Then the full-quality bake.
 
 **Smaller things noted along the way**
 

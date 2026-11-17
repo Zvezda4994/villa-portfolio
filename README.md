@@ -110,7 +110,11 @@ small lightmaps, sky and water reflections). The sharp lightmaps follow in the
 background, then each furnished room: the dining room is about 5 MB more
 (furniture, its pictures, its lightmap). With the full-quality bake everything
 together comes to about 31 MB.
-The brief's limits are 15 MB and 60 MB, and the tests fail if either is broken.
+
+The brief sets targets rather than a total limit: the landing view interactive
+in about 10 MB, and each room's own download around 4 MB. The tests fail if the
+landing view needs more than 11 MB, or a new room more than 4.5 MB (the dining
+room is allowed 6.5 MB until the step 6 performance work).
 `web/assets/manifest.json` lists every file's size after each export.
 
 ## Review pictures

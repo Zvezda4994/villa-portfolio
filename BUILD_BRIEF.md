@@ -24,10 +24,21 @@ Recruiters and engineers looking at my resume. Many of them will spend under a m
 - Exported as glTF (`.glb`), compressed with Meshopt or Draco, textures as KTX2.
 - Shown in the browser with three.js, reusing the prototype's navigation and panel code rather than starting over.
 
-**Performance budget.**
-- Under 15 MB before the landing view is interactive, with the rest loaded room by room in the background. Under 60 MB in total.
-- A smooth frame rate on a mid-range laptop and usable on a recent phone.
-- If the landing shot isn't up within about 4 seconds on a normal connection, show a still image of it while the rest loads.
+**Performance.** There is no hard limit on the total size. These are the targets instead:
+
+- A full-quality still of the landing shot appears within about 1 second, then the live 3D fades in from the identical camera.
+- The landing view is interactive in about 10 MB or less.
+- Each room's own download stays around 4 MB. Materials shared between rooms are loaded once and reused, and repeated objects are instanced.
+- Each room has a still render from its camera, shown while the room loads.
+- Rooms prefetch when the visitor hovers over a room's label, and while the visitor is in the neighbouring room.
+- Phones get lower-resolution textures; desktops get the full set.
+- A smooth frame rate on a mid-range laptop, and usable on a recent phone.
+- While the still is showing and the 3D isn't ready:
+  - Room labels sit on the still at their exact 3D positions. Clicking one opens its panel and shows that room's still, and the 3D appears at that room's camera when it's ready.
+  - The Rooms menu and Skip to resume work instantly.
+  - Dragging pans the still slightly and shows a loading percentage, but the drag isn't replayed when the 3D arrives.
+
+Most of this is built in step 6 (polish). Until then, every new room is built to stay within the per-room budget.
 
 ## Layout
 
@@ -104,7 +115,7 @@ Work in this order and stop after each step with rendered previews (landing shot
 3. **Dining room, fully finished.** This is the template for the other rooms' level of detail.
 4. **Pool scene with my character.**
 5. **The remaining rooms**, one at a time, as I send each room's story.
-6. **Polish.** Loading screen and still-image fallback, phone layout, link previews (an image for when the link is shared), performance pass.
+6. **Polish.** The loading and performance targets above (stills for the landing shot and each room, prefetching, phone textures, shared materials and instancing), phone layout, link previews (an image for when the link is shared).
 
 ## Repo and hosting
 

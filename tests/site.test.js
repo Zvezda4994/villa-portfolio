@@ -62,11 +62,30 @@ test("furnished rooms only name lightmaps and pictures that belong to them", () 
   }
 });
 
-test("downloads stay inside the brief's budget", () => {
+// The brief sets targets, not a total limit: the landing view interactive in about
+// 10 MB, and each room's own download around 4 MB. These checks leave a little
+// room over each target so a small change doesn't block a deploy.
+const LANDING_LIMIT = 11 * MB;
+const ROOM_LIMIT = 4.5 * MB;
+// Rooms known to be over, and what they may use until the step 6 performance work.
+const ROOM_ALLOWANCE = {dining: 6.5 * MB};
+
+test("the landing view stays near its 10 MB target", () => {
   const first = firstViewFiles().reduce((n, f) => n + size(f), 0);
-  const total = allFiles(ASSETS).reduce((n, f) => n + statSync(f).size, 0);
-  assert.ok(first < 15 * MB, `landing view needs ${(first / MB).toFixed(1)} MB, the limit is 15 MB`);
-  assert.ok(total < 60 * MB, `all assets come to ${(total / MB).toFixed(1)} MB, the limit is 60 MB`);
+  assert.ok(first < LANDING_LIMIT, `landing view needs ${(first / MB).toFixed(1)} MB; the target is about 10 MB`);
+});
+
+test("each room's own download stays near its 4 MB target", () => {
+  // the room's file, its lightmap and the pictures only it uses (a seated figure
+  // can come and go, so it's counted on its own, not here)
+  for (const [name, room] of Object.entries(manifest.rooms || {})) {
+    const files = new Set([room.model]);
+    for (const lm of Object.values(manifest.lightmaps)) if (lm.room === name) files.add(lm.file);
+    for (const m of Object.values(manifest.materials)) if (m.room === name && m.map && !m.map.includes("/figure_")) files.add(m.map);
+    const bytes = [...files].reduce((n, f) => n + size(f), 0);
+    const limit = ROOM_ALLOWANCE[name] ?? ROOM_LIMIT;
+    assert.ok(bytes < limit, `the ${name} room downloads ${(bytes / MB).toFixed(1)} MB; the target is about 4 MB`);
+  }
 });
 
 test("KTX2 textures are well formed", () => {

@@ -4,6 +4,7 @@
   "description": "Portfolio site: a desert villa built in Blender and shown with three.js",
   "type": "module",
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "assets": "python blender/fetch_assets.py",
     "scene": "node tools/blender.mjs build_scene",
     "bake": "node tools/blender.mjs bake_lightmaps",

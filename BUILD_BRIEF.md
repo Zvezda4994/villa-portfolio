@@ -77,6 +77,14 @@ A stylised-realistic figure that looks like me, built in Blender with open-sourc
 
 No characters or designs owned by someone else. The sculpture in the foyer is an original figure (it's a nod to Meruem from Hunter x Hunter, but it must not be him). The mech in the aquarium is an original design. The drink bottle gets a made-up label. Real products like the car are fine as long as the model's license allows use on a public website.
 
+**One exception, decided later: a tribute figure at the dining table.** The project is named after Meruem, so I'm using a credited fan-made 3D model of him, seated across the chessboard from the visitor. My decision, on these terms:
+
+- I choose and download the model myself. Its source file stays in `assets_src/`, out of the repo.
+- The artist is credited by name with a link, in `CREDITS.md` and in the dining room panel ("Meruem model by …, fan art; Hunter x Hunter © Yoshihiro Togashi").
+- If there is any takedown request (DMCA or otherwise, from the artist or the rights holder), it comes down at once. The build has one setting and one quick command for that, with no re-bake (see `PROGRESS.md`).
+
+Everything else in the house stays original.
+
 ## Assets
 
 - Free first: Poly Haven (CC0 models, textures, HDRIs), ambientCG (CC0 materials), Quaternius (CC0 props).

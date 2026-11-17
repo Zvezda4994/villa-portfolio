@@ -306,14 +306,18 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     const room = manifest.rooms[name];
     const files = new Set(Object.values(manifest.materials).filter(m => m.room === name && m.map).map(m => m.map));
     const atlases = Object.entries(manifest.lightmaps).filter(([, lm]) => lm.room === name);
-    const [roomGltf, pictures, light] = await Promise.all([
+    // a figure seated in the room (see blender/villa/figure.py), if the manifest lists one
+    const figures = Object.values(manifest.figures || {}).filter(f => f.room === name);
+    const [roomGltf, pictures, light, figureGltfs] = await Promise.all([
       gltfLoader.loadAsync(ASSETS + room.model),
       Promise.all([...files].map(f => ktx2.loadAsync(ASSETS + f).then(t => [f, t]))),
       Promise.all(atlases.map(([a, lm]) => ktx2.loadAsync(ASSETS + lm.file).then(t => [a, t]))),
+      Promise.all(figures.map(f => gltfLoader.loadAsync(ASSETS + f.model))),
     ]);
     for (const [f, t] of pictures) useMap(f, t);
     for (const [a, t] of light) { t.channel = 1; lightmaps[a] = t; }
     addModel(roomGltf.scene);
+    for (const g of figureGltfs) addModel(g.scene);
   }
   const rooms = (async () => {
     await sharp;

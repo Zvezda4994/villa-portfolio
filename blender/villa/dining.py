@@ -70,6 +70,10 @@ LAMPS = [dict(name=f"pendant_{i}", pos=(x, PENDANT_LOW + 0.015, BOARD[1]), size=
 LAMPS.append(dict(name="painting_wash", pos=(AXIS_X, H1 - 0.2, WALL_Z - 0.7), size=(1.9, 0.15), watts=30.0,
                   aim=(0.0, -0.72, 0.69)))
 
+# The chair across the board: pushed back a little and turned, so it looks right
+# empty or with the figure from config.FIGURE sitting in it (figure.py places it here).
+OPPONENT_CHAIR = dict(pos=(SEATS_X[-1] + 0.03, RUG_T, TABLE_Z[0] - 0.05 - 0.16), yaw=math.radians(8))
+
 # The visitor's seat and the view over the board (the room's camera on the website).
 CHESS_CAM = dict(pos=(BOARD[0] + 0.02, 1.30, -3.52), target=(BOARD[0], 0.77, BOARD[1] - 0.05), fov=46.0)
 ROOM_CAM = dict(pos=(3.4, 1.62, -5.6), target=(-2.6, 0.95, -2.6), fov=52.0)
@@ -304,9 +308,9 @@ def chairs(b):
         # foyer side, facing the glass (and the pool); the last one is the visitor's
         out = 0.18 if i == 3 else rng.uniform(0.0, 0.03)
         chair(b, (x + rng.uniform(-0.01, 0.01), y, near + out), math.pi + rng.uniform(-0.02, 0.02))
-        # glass side; across the board the chair is pushed back and turned, the player away
+        # glass side; across the board, the opponent's chair
         if i == 3:
-            chair(b, (x + 0.06, y, far - 0.32), math.radians(14))
+            chair(b, OPPONENT_CHAIR["pos"], OPPONENT_CHAIR["yaw"])
         else:
             chair(b, (x + rng.uniform(-0.01, 0.01), y, far - rng.uniform(0.0, 0.03)), rng.uniform(-0.02, 0.02))
 

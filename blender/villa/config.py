@@ -89,6 +89,27 @@ ATLASES = {
 CHESS_FEN = "r4rk1/2qbbppp/2np1n2/1p2p3/p2PP3/4BN1P/PPBN1PP1/R2QR1K1 w - - 0 17"
 # Pieces that have left the board, set down beside it: the c- and d-pawns.
 CHESS_CAPTURED = "pP"
+
+# ---- The figure at the dining table --------------------------------------------
+# A model you supply, seated in the chair across the board from the visitor (see
+# "Original designs only" in BUILD_BRIEF.md). The build never downloads one.
+# None means no figure. To add one, put the file under assets_src/ (never
+# committed) and fill this in, then run `npm run figure`:
+#
+# FIGURE = dict(
+#     file="figures/opponent.glb",      # glTF or GLB under assets_src/, already in a seated pose
+#     credit="… model by …, fan art; …", # shown word for word in the dining room panel
+#     link="https://…",                  # the model's own page; the credit links to it
+#     height=1.30,                       # seated: top of the head above the floor, in metres
+#     turn=0,                            # extra turn in degrees, if it doesn't face the board
+#     offset=(0.0, 0.0, 0.0),            # fine nudge in metres: sideways, up, toward the board
+#     action=None, frame=1,              # or pose it with one of the file's own animations
+#     max_triangles=60000,               # thinned to this if it's denser
+# )
+#
+# To take it down: set FIGURE = None, run `npm run figure` (seconds, no re-bake),
+# then commit and push. PROGRESS.md has the full checklist.
+FIGURE = None
 ATLAS_PADDING = 8        # empty texels between islands
 LOW_RES = 512            # size of the quick-loading preview copy of each lightmap
 

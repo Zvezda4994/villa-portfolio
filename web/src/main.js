@@ -9,6 +9,7 @@ import {ROOMS, FLOOR_NAME, RESUME} from "./rooms.js";
 import {loadWorld, TONE_MAPPING} from "./world.js";
 
 const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[c]);
 const params = new URLSearchParams(location.search);
 
 /* ---------- Renderer, camera, controls ---------- */
@@ -71,6 +72,10 @@ function renderPanel(r) {
   let h = `<div class="eyebrow">${r.area} · ${FLOOR_NAME[r.floor]}</div><h2>${r.title}</h2>`;
   h += r.body.map(p => `<p>${p}</p>`).join("");
   if (r.links) h += `<div class="links">${r.links.map(([t, u, internal, ghost]) => `<a href="${u}" ${internal ? `data-go="${u.slice(1)}"` : `target="_blank" rel="noopener"`} class="${ghost ? "ghost" : ""}">${t}</a>`).join("")}</div>`;
+  // Credits for any figure seated in this room; they come and go with the figure itself.
+  for (const f of Object.values(world?.manifest.figures || {})) {
+    if (f.room === r.id) h += `<p class="credit">${esc(f.credit)} <a href="${encodeURI(f.link)}" target="_blank" rel="noopener">Model page</a></p>`;
+  }
   if (r.todo) h += `<p class="todo">To do: ${r.todo}</p>`;
   $("panelBody").innerHTML = h; $("panel").hidden = false;
   $("panelBody").querySelectorAll("[data-go]").forEach(a => a.onclick = e => { e.preventDefault(); const t = a.dataset.go; if (t === "resume") showResume(true); else openRoom(t); });
@@ -167,7 +172,11 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
   if (params.has("debug")) window.villa = {THREE, scene, camera, controls, renderer, world: w};   // for poking around in the console
   $("loading").hidden = true;
   w.sharp.then(() => { document.body.dataset.ready = "sharp"; });
-  w.rooms.then(() => { document.body.dataset.ready = "rooms"; if (params.get("save")) setTimeout(() => savePicture(params.get("save")), 2500); });
+  w.rooms.then(() => {
+    document.body.dataset.ready = "rooms";
+    if (current && !$("panel").hidden) renderPanel(current);      // picks up a figure's credit
+    if (params.get("save")) setTimeout(() => savePicture(params.get("save")), 2500);
+  });
   document.body.dataset.ready = "yes";
 }).catch(err => {
   console.error(err);

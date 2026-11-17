@@ -595,9 +595,9 @@
  },
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303996,
-  "sky pool": 334261,
-  "sky front": 382246,
+  "sky environment": 303997,
+  "sky pool": 334259,
+  "sky front": 382241,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -622,15 +622,15 @@
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "model": 2395048,
-  "room dining": 1846412,
-  "lightmap ext": 317695,
-  "lightmap ext (small)": 313679,
-  "lightmap gnd": 299367,
-  "lightmap gnd (small)": 295455,
+  "room dining": 1846360,
+  "lightmap ext": 317679,
+  "lightmap ext (small)": 313655,
+  "lightmap gnd": 299384,
+  "lightmap gnd (small)": 295464,
   "lightmap upr": 296742,
   "lightmap upr (small)": 292854,
   "lightmap terrain": 289858,
   "lightmap terrain (small)": 285954,
-  "lightmap din": 78047
+  "lightmap din": 78061
  }
 }

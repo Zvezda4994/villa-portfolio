@@ -10,6 +10,7 @@
     "bake": "node tools/blender.mjs bake_lightmaps",
     "bake:draft": "node tools/blender.mjs bake_lightmaps --draft",
     "export": "node tools/blender.mjs export_web",
+    "figure": "node tools/blender.mjs export_figure",
     "previews": "node tools/blender.mjs render_previews",
     "previews:draft": "node tools/blender.mjs render_previews --draft",
     "build": "npm run scene && npm run bake && npm run export",

@@ -49,6 +49,18 @@ is an original abstract made by `dining.paint_painting`, not a copy of any work.
 The game on the board is a standard opening line (Ruy Lopez, Chigorin
 variation), which nobody owns.
 
+## Figures
+
+The dining room has a slot for one figure, seated across the board from the
+visitor (`FIGURE` in `blender/villa/config.py`; see `BUILD_BRIEF.md` for the
+terms). **No figure is in use right now.**
+
+When one is, add a row here with the same details as the panel credit, and
+delete the row if it is ever taken down:
+
+| Used for | Name | Author | License | Link |
+|---|---|---|---|---|
+
 ## Sky and lighting
 
 Blender's built-in sky model. No HDRI files.

@@ -34,6 +34,7 @@ function firstViewFiles() {
 // Everything the furnished rooms fetch once the first view is up.
 function roomFiles() {
   const files = Object.values(manifest.rooms || {}).map(r => r.model);
+  for (const f of Object.values(manifest.figures || {})) files.push(f.model);
   for (const lm of Object.values(manifest.lightmaps)) if (lm.room) files.push(lm.file);
   for (const m of Object.values(manifest.materials)) if (m.room && m.map) files.push(m.map);
   return [...new Set(files)];
@@ -42,6 +43,14 @@ function roomFiles() {
 test("every file the manifest names exists", () => {
   const files = [...firstViewFiles(), ...roomFiles(), ...Object.values(manifest.lightmaps).map(lm => lm.file)];
   for (const f of files) assert.ok(size(f) > 0, `${f} is empty or missing`);
+});
+
+test("a figure is never shown without its credit", () => {
+  for (const [name, f] of Object.entries(manifest.figures || {})) {
+    assert.ok(manifest.rooms[f.room], `figure ${name} sits in "${f.room}", which isn't a furnished room`);
+    assert.ok(typeof f.credit === "string" && f.credit.trim().length > 10, `figure ${name} needs a credit line`);
+    assert.match(f.link || "", /^https:\/\//, `figure ${name} needs an https link to the model's page`);
+  }
 });
 
 test("furnished rooms only name lightmaps and pictures that belong to them", () => {
@@ -88,7 +97,8 @@ test("sky files are run-length .hdr panoramas", () => {
 });
 
 test("the models only use extensions and materials the site understands", () => {
-  const models = [[manifest.model, null], ...Object.entries(manifest.rooms || {}).map(([name, r]) => [r.model, name])];
+  const models = [[manifest.model, null], ...Object.entries(manifest.rooms || {}).map(([name, r]) => [r.model, name]),
+    ...Object.values(manifest.figures || {}).map(f => [f.model, f.room])];
   for (const [file, room] of models) {
     const b = readFileSync(join(ASSETS, file));
     assert.equal(b.toString("latin1", 0, 4), "glTF", `${file} is not a binary glTF`);

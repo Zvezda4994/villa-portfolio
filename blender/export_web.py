@@ -30,6 +30,7 @@ from villa.ktx2 import write_ktx2  # noqa: E402
 from villa.lighting import PREVIEW_CAMERAS, setup_render  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, srgb_to_linear  # noqa: E402
 from villa.exterior import RPOOL_X, RPOOL_Z  # noqa: E402
+from villa.figure import export_figure  # noqa: E402
 from villa.textures import load_pixels, mask_path, picture_path, prepared  # noqa: E402
 
 BAKED_BLEND = C.BUILD / "villa_baked.blend"
@@ -314,6 +315,8 @@ def main():
             old.unlink()
             print(f"[export] removed unused {old.name}")
     manifest = write_manifest(fog, sizes, sky_paths, rooms)
+    # The figure at the dining table, if one is set (config.FIGURE); otherwise any old one is removed.
+    manifest = export_figure(C.ASSETS / "manifest.json")
 
     total = sum(manifest["bytes"].values())
     for k, v in sorted(manifest["bytes"].items(), key=lambda kv: -kv[1]):

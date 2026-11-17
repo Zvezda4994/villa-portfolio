@@ -59,6 +59,7 @@ npm run scene      # build the scene            -> build/villa.blend           (
 npm run bake       # work out the lighting      -> web/assets/lightmaps        (minutes, uses the GPU)
 npm run export     # write the model, textures, sky -> web/assets              (about a minute)
 npm run previews   # render the review pictures -> previews/
+npm run figure     # add, update or remove the dining room figure only     (seconds)
 ```
 
 `npm run build` does scene, bake and export in one go. While experimenting,
@@ -162,6 +163,9 @@ The dining room (all in `blender/villa/dining.py`):
   opponent has just stood up. Opening the dining room drops the camera into that
   seat, looking down over the board.
 - The living room stays open to it and is still empty.
+- The chair across the board can hold a figure you supply (`FIGURE` in
+  `config.py`). It goes in and comes out with `npm run figure`, without a
+  re-bake. See `PROGRESS.md` for the steps.
 
 The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
 

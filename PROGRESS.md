@@ -97,12 +97,50 @@ change later.
   Change the FEN to set up any other position.
 - The visitor plays White, from the seat facing the pool glass. The room's
   camera is that seat looking down over the board (`dining.CHESS_CAM`).
-- No Meruem figure. Meruem is Yoshihiro Togashi's character, and a fan-made model
-  doesn't license the character, even with credit. The brief's "original designs
-  only" rule says the same. The opponent's chair is pushed back and empty for now.
-  An original figure in his place is an option (see Next).
+- The figure across the board (your decision, recorded in `BUILD_BRIEF.md`): a
+  credited fan-made model, supplied by you, in a slot built for quick removal.
+  No figure is in the repo or on the site yet. The chair is set slightly back
+  and turned so it looks right empty or occupied. How to add one and how to take
+  it down are below, under "The figure at the table".
 - The fish tank in the living room isn't built yet; nothing in the dining room
   blocks the living room's walls.
+
+**The figure at the table**
+
+Where it goes and what the build does with it (`blender/villa/figure.py`):
+
+- **The file** goes in `assets_src/figures/` (git ignores `assets_src/`). It must be
+  glTF or GLB, already in a seated pose. If it's rigged and comes with a sitting
+  animation, name it in `action` instead. Most model sites offer a glTF download.
+- **The setting** is `FIGURE` in `blender/villa/config.py`. The commented example
+  there lists every field. `credit` and `link` are required; the build refuses
+  to export a figure without them, and the tests fail too.
+- **`npm run figure`** fits it into the opponent's chair: it scales it to `height`
+  and sets its back against the cushion, facing the board. It thins anything over
+  `max_triangles`, bakes its light, and writes `web/assets/figures/opponent.glb`,
+  its pictures (`textures/figure_*.ktx2`) and its credit into the manifest. Use
+  `turn` and `offset` to adjust the fit. Check it with `?shot=chess`.
+- **The credit** shows in the dining room panel exactly as written, with a link
+  to the model's page. Add the matching row to `CREDITS.md`.
+- **The figure stays out of the room's lightmaps.** It casts no baked shadow, so
+  taking it out leaves nothing behind and needs no re-bake. Its own lighting is
+  baked into its vertices, so very low-poly models with long, thin faces light
+  poorly; most character models are dense enough.
+
+**Taking it down** (about two minutes in all):
+
+1. In `blender/villa/config.py`, set `FIGURE = None`.
+2. Run `npm run figure`. It deletes the figure's files and its credit from the
+   manifest in a couple of seconds, and needs no Blender scene.
+3. Delete its row from `CREDITS.md`, and its source file from `assets_src/figures/`.
+4. `npm test`, commit, push. Pages redeploys in a minute or two.
+
+The exported file stays in Git history after that. If a request covers the repo
+itself, not just the site, the history has to be rewritten (for example with
+`git filter-repo`) and force-pushed.
+
+Tested with a plain stand-in mannequin: it sat in the chair, the credit
+appeared, and taking it down took 1.7 s. The stand-in was deleted afterwards.
 
 **Pipeline**
 
@@ -207,8 +245,9 @@ The traps hit so far, so they don't get rediscovered.
 
 **Waiting on you**
 
-- The dining room's empty chair: leave it empty, or add an original seated
-  figure as a tribute (not Meruem).
+- The figure for the dining table: put the model you choose in
+  `assets_src/figures/`, fill in `FIGURE` with its credit and link, and run
+  `npm run figure` (steps above).
 - The car (step 2): pick a model and an engine sound from the options shown,
   whenever you want to pick it back up.
 - Panel copy: VAREK and Turo numbers, the trophy list, the library list, the stack

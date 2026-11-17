@@ -13,6 +13,9 @@ Plan, looking down, front of the house (driveway) at the bottom:
 The dark stone "blade" wall runs between the foyer and the study, out through
 the front of the house and up past the roof.
 """
+import math
+import random
+
 from . import config as C
 
 W, D, T, P = C.HALF_W, C.HALF_D, C.WALL, C.PART
@@ -264,13 +267,21 @@ def upper_floor(b):
     wall_run(b, g, "z", -D + T, D - T, W - T, W, F2, RY, [], inside="upr", outside="+x")
 
     zf, zb = D - T / 2, -D + T / 2
-    glazing(b, g, "x", -11.2, -5.8, zf, F2, RY, every=1.8)      # lounge
-    glazing(b, g, "x", -4.3, BX0, zf, F2, RY, every=1.75)       # landing
-    glazing(b, g, "x", 2.2, 11.4, zf, F2, RY, every=1.85)       # library
-    glazing(b, g, "x", -10.5, -6.5, zb, F2, RY, every=2.0)      # bedroom
-    glazing(b, g, "x", -1.5, 1.5, zb, F2, RY, every=1.5)        # games
-    glazing(b, g, "x", 5.0, 11.0, zb, F2, RY, every=2.0)        # trophy room, onto the terrace
-    glazing(b, g, "z", -6.0, -2.0, -W + T / 2, F2, RY, every=2.0)
+    # (direction, start, end, glass line, which way is indoors, mullion spacing)
+    runs = [
+        ("x", -11.2, -5.8, zf, -1, 1.8),        # lounge
+        ("x", -4.3, BX0, zf, -1, 1.75),         # landing
+        ("x", 2.2, 11.4, zf, -1, 1.85),         # library
+        ("x", -10.5, -6.5, zb, 1, 2.0),         # bedroom
+        ("x", -1.5, 1.5, zb, 1, 1.5),           # games
+        ("x", 5.0, 11.0, zb, 1, 2.0),           # trophy room, onto the terrace
+        ("z", -6.0, -2.0, -W + T / 2, 1, 2.0),  # bedroom side window
+    ]
+    rng = random.Random(3)
+    for along, a0, a1, t, indoors, every in runs:
+        glazing(b, g, along, a0, a1, t, F2, RY, every=every)
+        # Sheer curtains just inside, until the rooms are furnished.
+        sheers(b, rng, along, a0, a1, t + indoors * (T / 2 + 0.16), indoors)
 
     h = P / 2
     top = F2 + DOOR
@@ -278,6 +289,37 @@ def upper_floor(b):
     wall_run(b, g, "x", -W + T, -5, 2 - h, 2 + h, F2, RY, [(-9.5, -7.5, F2, top)], inside="upr")       # bedroom | lounge
     wall_run(b, g, "z", -D + T, D - T, -5 - h, -5 + h, F2, RY, [(5.0, 6.2, F2, top)], inside="upr")    # left bay | middle
     wall_run(b, g, "z", -D + T, -h, 4 - h, 4 + h, F2, RY, [(-4.6, -3.4, F2, top)], inside="upr")       # games | trophy
+
+
+def sheers(b, rng, along, a0, a1, t, indoors):
+    """Two sheer curtains along one run of glass, drawn in from the ends with a gap
+    of varying width between them, softly gathered into folds."""
+    y0, y1 = F2 + 0.03, RY - 0.05
+    span = a1 - a0
+    left, right = rng.uniform(0.3, 0.55), rng.uniform(0.3, 0.55)
+    if left + right > 0.9:
+        left = right = 0.5                       # drawn all the way across
+    rows = 4
+    for p0, p1 in ((a0 + 0.02, a0 + left * span), (a1 - right * span, a1 - 0.02)):
+        n = int((p1 - p0) / 0.05) + 2
+        verts, faces = [], []
+        phase = rng.uniform(0, 2 * math.pi)
+        for i in range(n):
+            s = p0 + (p1 - p0) * i / (n - 1)
+            # deeper folds near the outer end, where the fabric is stacked
+            stack = 1.0 - min(abs(s - a0), abs(a1 - s)) / max(span * 0.5, 0.01)
+            off = (0.03 + 0.03 * stack) * math.sin(2 * math.pi * (s - p0) / 0.24 + phase)
+            for r in range(rows):
+                y = y0 + (y1 - y0) * r / (rows - 1)
+                d = t - indoors * off
+                verts.append((s, y, d) if along == "x" else (d, y, s))
+        # faces point at the glass, so they are lit from outside in the bake
+        flip = (along == "x") == (indoors > 0)
+        for i in range(n - 1):
+            for r in range(rows - 1):
+                a, c = i * rows + r, (i + 1) * rows + r
+                faces.append((a, a + 1, c + 1, c) if flip else (a, c, c + 1, a + 1))
+        b.mesh("upper", "sheer", verts, faces, smooth=True)
 
 
 def roof(b):

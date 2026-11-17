@@ -6,7 +6,13 @@ follows; `blockout.html` is the first prototype, kept for reference.
 
 **Where it stands:** build step 1 of 6 is done (the house shell, grounds, sky and
 golden-hour lighting, baked and running in the browser with the prototype's
-navigation). The rooms are empty. The car comes next.
+navigation), plus a round of fixes to the forecourt, edges, driveway, palms and
+upstairs glass. The rooms are empty. The car comes next. See `PROGRESS.md` for
+the decisions made so far and what to watch out for.
+
+**The lighting is currently a quick draft bake**, so walls and rooms look a little
+blotchy in the browser. The full-quality bake (`npm run bake`) will be run once
+all the rooms are built.
 
 ## Look at it
 
@@ -16,6 +22,10 @@ python tools/serve.py
 
 Then open http://localhost:5173. There is no build step for the site: the files
 in `web/` are exactly what gets served.
+
+The live site is https://zvezda4994.github.io/villa-portfolio/. Every push to
+`main` runs the tests (`npm test`) and, if they pass, publishes `web/` to
+GitHub Pages (`.github/workflows/pages.yml`).
 
 ## What is where
 
@@ -30,6 +40,7 @@ in `web/` are exactly what gets served.
 | `blender/villa/` | The scene itself, split by subject: `house.py`, `exterior.py`, `terrain.py`, `plants.py`, `lighting.py`, `materials.py`. Sizes and the sun position are in `config.py`. |
 | `previews/` | Review pictures for each build step. |
 | `tools/` | Small helpers: a runner for the Blender scripts and the local preview server. |
+| `tests/` | Checks run before every deploy: the exported files load, the downloads fit the budget, the rooms data is complete. |
 | `build/`, `assets_src/` | Scratch output and downloaded textures. Not committed. |
 
 ## Rebuilding the 3D scene
@@ -84,10 +95,11 @@ the way out and made the browser's sky look washed out.
 
 ## Download size
 
-About 8.4 MB loads before the landing view appears (model, colour textures, the
-small lightmaps, sky). The sharp lightmaps follow in the background. Everything
-together is 24 MB. The brief's limits are 15 MB and 60 MB. `web/assets/manifest.json`
-lists every file's size after each export.
+About 10.8 MB loads before the landing view appears (model, colour textures, the
+small lightmaps, sky and water reflections). The sharp lightmaps follow in the
+background. With the full-quality bake everything together comes to about 25 MB.
+The brief's limits are 15 MB and 60 MB, and the tests fail if either is broken.
+`web/assets/manifest.json` lists every file's size after each export.
 
 ## Review pictures
 
@@ -124,12 +136,27 @@ The room positions follow the prototype. Three things were decided along the way
 Space for the later "vault" room: a lower level reached from the foyer, beside
 the stairs. Nothing is built there yet and nothing blocks it.
 
+The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
+
+- A smaller court of warm granite setts in front of the garage, framed by bands
+  of the same dark granite as the stone wall, and large pale slabs leading to the
+  front door. The car will be parked on the setts.
+- A low stone wall continues the line of the house's west wall out to the drive.
+  A long planter of agaves and grasses closes the front of the entrance.
+- A shallow reflecting pool runs in front of the study and gym, with the dark
+  stone wall rising out of its end.
+- Uplights in the paving wash the stone piers and the dark wall; step lights sit
+  in the low wall; the drive keeps its bollards.
+- Every paved edge ends in a kerb, wall, planter or coping, with a gravel border
+  (`terrain.build_mask`) and rocks, shrubs and agaves along it.
+- The drive is pale granite setts with raised kerbs.
+- Sheer curtains hang inside the upstairs glass until those rooms are furnished.
+
 ## Still to do (from the brief)
 
 - Steps 2 to 6: the car, the dining room, the pool scene and character, the
   remaining rooms, and the polish pass (loading screen with a still image,
   phone layout, link previews, performance).
-- GitHub repo and the Pages deploy workflow.
 - Final copy for the panels (see the `todo` notes in `web/src/rooms.js`).
 
 Assets and their licenses are listed in `CREDITS.md`.

@@ -28,7 +28,8 @@ from villa.hdr import check_round_trip, write_hdr  # noqa: E402
 from villa.ktx2 import write_ktx2  # noqa: E402
 from villa.lighting import PREVIEW_CAMERAS, setup_render  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, srgb_to_linear  # noqa: E402
-from villa.textures import load_pixels, prepared  # noqa: E402
+from villa.exterior import RPOOL_X, RPOOL_Z  # noqa: E402
+from villa.textures import load_pixels, mask_path, prepared  # noqa: E402
 
 BAKED_BLEND = C.BUILD / "villa_baked.blend"
 ENV_CLAMP = 40.0      # the sun is far brighter than this; unclamped it makes reflections sparkle
@@ -36,7 +37,7 @@ ENV_CLAMP = 40.0      # the sun is far brighter than this; unclamped it makes re
 
 def export_glb(model):
     for ob in model.objects:
-        has_water = any(m is not None and m.name == "water" for m in ob.data.materials)
+        has_water = any(m is not None and MATS.get(m.name, {}).get("kind") == "water" for m in ob.data.materials)
         if ob.get("lit") != "lightmap" and not has_water:
             # no textures on these, so their UVs would only be dead weight
             # (the water keeps its UVs for the ripple pattern)
@@ -58,10 +59,20 @@ def export_glb(model):
 
 
 def export_textures():
+    out = C.ASSETS / "textures"
     sizes = {}
     for tex_id in TEXTURE_IDS:
         rgb = load_pixels(prepared(tex_id))[..., :3]
-        sizes[tex_id] = write_ktx2(C.ASSETS / "textures" / f"{tex_id}.ktx2", rgb, srgb=True)
+        sizes[tex_id] = write_ktx2(out / f"{tex_id}.ktx2", rgb, srgb=True)
+    # Masks are data, not colour, so they are stored without the sRGB curve.
+    for mask in sorted({m["blend"]["mask"] for m in MATS.values() if "blend" in m}):
+        rgb = load_pixels(mask_path(mask))[..., :3]
+        sizes[mask] = write_ktx2(out / f"{mask}.ktx2", rgb, srgb=False)
+    # Drop textures nothing uses any more, so they don't get deployed.
+    for old in out.glob("*.ktx2"):
+        if old.stem not in sizes:
+            old.unlink()
+            print(f"[export] removed unused {old.name}")
     return sizes
 
 
@@ -178,14 +189,15 @@ def export_sky(model):
     _check_sun(env, "sky_env")
     env = np.clip(env, 0.0, ENV_CLAMP)
 
-    # A reflection probe for the pool: everything as seen from just above the
-    # water. Reflecting open sky would be wrong there, because from the pool the
-    # house hides the sun and the bright sky around it.
-    (px0, px1), (pz0, pz1) = C.POOL_X, C.POOL_Z
-    probe = ((px0 + px1) / 2, 0.5, (pz0 + pz1) / 2)
+    # Reflection probes for the two bodies of water: everything as seen from just
+    # above each one. Reflecting open sky would be wrong there: from the back pool
+    # the house hides the sun, and the reflecting pool mostly mirrors the house.
     lamps = [o for o in bpy.data.objects if o.type == "LIGHT"]
-    pool = _to_three(_pano("pool", world, list(model.objects) + lamps, 512, 128, probe, denoise=True), _layout(probe, 512))
-    pool = np.clip(pool, 0.0, ENV_CLAMP)
+    probes = {}
+    for name, (x0, x1), (z0, z1), height in (("pool", C.POOL_X, C.POOL_Z, 0.5), ("front", RPOOL_X, RPOOL_Z, 0.3)):
+        spot = ((x0 + x1) / 2, height, (z0 + z1) / 2)
+        px = _to_three(_pano(name, world, list(model.objects) + lamps, 512, 128, spot, denoise=True), _layout(spot, 512))
+        probes[name] = np.clip(px, 0.0, ENV_CLAMP)
 
     h = background.shape[0]
     horizon = background[int(h * 0.505):int(h * 0.53)]
@@ -193,24 +205,33 @@ def export_sky(model):
     fog = np.median(horizon.reshape(-1, 3), axis=0)
     background = np.clip(background, 0.0, 2000.0)
     sizes = {}
-    for name, px in (("sky_bg", background), ("sky_env", env), ("pool_env", pool)):
-        path = out / f"{name}.hdr"
-        sizes[name] = write_hdr(path, px)
+    files = {"background": ("sky_bg", background), "environment": ("sky_env", env)}
+    files.update({name: (f"{name}_env", px) for name, px in probes.items()})
+    sizes, paths = {}, {}
+    for key, (stem, px) in files.items():
+        path = out / f"{stem}.hdr"
+        sizes[key] = write_hdr(path, px)
         check_round_trip(path, px)
-    return fog.tolist(), dict(background=sizes["sky_bg"], environment=sizes["sky_env"], pool=sizes["pool_env"])
+        paths[key] = f"sky/{stem}.hdr"
+    return fog.tolist(), sizes, paths
 
 
 # ---- manifest ----------------------------------------------------------------
-def write_manifest(fog, sizes):
+def write_manifest(fog, sizes, sky_paths):
     materials = {}
     for name, m in MATS.items():
         entry = dict(kind=m["kind"])
         if "tex" in m:
             entry["map"] = f"textures/{m['tex']}.ktx2"
+            entry["tile"] = m["tile"]
             entry["color"] = list(m.get("tint", (1, 1, 1)))
         else:
             entry["color"] = list(srgb_to_linear(m["color"]))
-        for key in ("rough", "metal", "opacity", "strength"):
+        if "blend" in m:
+            bl = m["blend"]
+            entry["blend"] = dict(map=f"textures/{bl['tex']}.ktx2", tile=bl["tile"], color=list(bl["tint"]),
+                                  mask=f"textures/{bl['mask']}.ktx2")
+        for key in ("rough", "metal", "opacity", "strength", "probe", "ripple"):
             if key in m:
                 entry[key] = m[key]
         if m.get("double_sided"):
@@ -232,7 +253,7 @@ def write_manifest(fog, sizes):
         exposure=2.0 ** scene.view_settings.exposure,
         sun=list(C.sun_direction()),
         fog=dict(color=fog),
-        sky=dict(background="sky/sky_bg.hdr", environment="sky/sky_env.hdr", pool="sky/pool_env.hdr"),
+        sky=sky_paths,
         model="villa.glb",
         lightmaps=lightmaps,
         materials=materials,
@@ -253,11 +274,11 @@ def main():
     C.ASSETS.mkdir(parents=True, exist_ok=True)
 
     sizes = {}
-    fog, sky_sizes = export_sky(model)          # before the GLB export, which strips UVs
+    fog, sky_sizes, sky_paths = export_sky(model)          # before the GLB export, which strips UVs
     sizes.update({f"sky {k}": v for k, v in sky_sizes.items()})
     sizes.update({f"texture {k}": v for k, v in export_textures().items()})
     sizes["model"] = export_glb(model).stat().st_size
-    manifest = write_manifest(fog, sizes)
+    manifest = write_manifest(fog, sizes, sky_paths)
 
     total = sum(manifest["bytes"].values())
     for k, v in sorted(manifest["bytes"].items(), key=lambda kv: -kv[1]):

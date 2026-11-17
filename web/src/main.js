@@ -140,7 +140,11 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
   // For review pictures: ?shot=landing (or pool, entrance) puts the camera exactly
   // where Blender's preview camera is, and ?ui=0 hides the interface.
   const shot = w.manifest.cameras[params.get("shot")];
-  if (shot) { camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false; }
+  if (shot) {
+    // the review cameras can sit below what they look at, which normal navigation forbids
+    controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
+    camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
+  }
   if (params.get("ui") === "0") document.body.classList.add("bare");
   if (params.get("view")) setView(params.get("view"), !shot);
 

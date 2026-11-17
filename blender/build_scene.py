@@ -21,7 +21,7 @@ from villa.house import build_house  # noqa: E402
 from villa.lighting import setup_cameras, setup_lamps, setup_render, setup_world  # noqa: E402
 from villa.materials import TEXTURE_IDS, build_materials  # noqa: E402
 from villa.plants import build_plants  # noqa: E402
-from villa.terrain import build_hills, build_sand  # noqa: E402
+from villa.terrain import build_hills, build_mask, build_sand  # noqa: E402
 from villa.textures import prepare_all  # noqa: E402
 
 
@@ -30,6 +30,7 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = setup_render()
     prepare_all(TEXTURE_IDS)
+    build_mask()                      # where the sand turns to gravel; the sand material needs it
     materials = build_materials()
 
     model = bpy.data.collections.new("villa")      # everything that gets exported

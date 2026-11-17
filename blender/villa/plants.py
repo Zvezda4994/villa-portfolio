@@ -1,4 +1,4 @@
-"""Date palms, desert shrubs and rocks, all generated so nothing needs a license.
+"""Date palms, agaves, desert shrubs and rocks, all generated so nothing needs a license.
 
 These are small, bumpy shapes, so instead of a lightmap their light is baked
 into their vertices.
@@ -17,10 +17,14 @@ PALMS = [
 
 
 def build_plants(b):
+    from .exterior import PLANTERS
     rng = random.Random(7)
     for x, z, h in PALMS:
         palm(b, rng, x, z, h)
     scatter(b, rng)
+    edges(b, random.Random(11))
+    for p in PLANTERS:
+        plant_planter(b, random.Random(5), p)
 
 
 # ---- palms -----------------------------------------------------------------
@@ -40,21 +44,7 @@ def _add(a, c, k=1.0):
 def palm(b, rng, x, z, height):
     lean_dir = rng.uniform(0, 2 * math.pi)
     lean = rng.uniform(0.02, 0.09) * height
-    sides, rings = 9, 14
-    verts, faces = [], []
-    for k in range(rings + 1):
-        t = k / rings
-        cx = x + math.cos(lean_dir) * lean * t * t
-        cz = z + math.sin(lean_dir) * lean * t * t
-        radius = (0.30 - 0.11 * t) * (1.0 + 0.07 * (k % 2)) + (0.10 * (1 - t) ** 6)   # ringed, flared at the foot
-        for s in range(sides):
-            a = 2 * math.pi * s / sides
-            verts.append((cx + math.cos(a) * radius, G - 0.2 + t * (height + 0.2), cz + math.sin(a) * radius))
-    for k in range(rings):
-        for s in range(sides):
-            a, c = k * sides + s, k * sides + (s + 1) % sides
-            faces.append((a, a + sides, c + sides, c))
-    b.mesh("out", "bark", verts, faces, smooth=True)
+    trunk(b, rng, x, z, height, lean_dir, lean)
 
     top = (x + math.cos(lean_dir) * lean, height, z + math.sin(lean_dir) * lean)
     count = 24
@@ -65,6 +55,53 @@ def palm(b, rng, x, z, height):
               start=math.radians(78 - 95 * age ** 0.85),
               droop=math.radians(55 + 45 * age),
               length=rng.uniform(2.9, 3.7) * (0.75 + 0.25 * math.sin(math.pi * min(1.0, age + 0.25))))
+
+
+def trunk(b, rng, x, z, height, lean_dir, lean):
+    """A date palm trunk: a stack of short rings, each swelling out to a ledge where
+    an old leaf was cut off. Every other ring is turned half a step, so the stubs
+    form the diamond pattern real trunks have. Low sun picks the ledges out."""
+    sides = 12
+    rings = max(8, int((height + 0.2) / rng.uniform(0.26, 0.32)))
+
+    def centre(t):
+        return x + math.cos(lean_dir) * lean * t * t, z + math.sin(lean_dir) * lean * t * t
+
+    rows = []                                   # (height fraction, radius factor, half-step turn)
+    for k in range(rings):
+        for frac, swell in ((0.0, 0.92), (0.55, 1.0), (0.9, 1.11)):
+            rows.append(((k + frac) / rings, swell, 0.5 * (k % 2)))
+    rows.append((1.0, 0.95, 0.0))
+    verts, faces = [], []
+    for t, swell, turn in rows:
+        cx, cz = centre(t)
+        radius = (0.27 - 0.08 * t + 0.12 * (1 - t) ** 8) * swell     # tapers upward, flares at the foot
+        for s in range(sides):
+            a = 2 * math.pi * (s + turn) / sides
+            verts.append((cx + math.cos(a) * radius, G - 0.2 + t * (height + 0.2), cz + math.sin(a) * radius))
+    for r in range(len(rows) - 1):
+        for s in range(sides):
+            a, c = r * sides + s, r * sides + (s + 1) % sides
+            faces.append((a, a + sides, c + sides, c))
+    b.mesh("out", "bark", verts, faces, smooth=True)
+
+    # A collar of stubby old leaf bases just under the crown.
+    cx, cz = centre(1.0)
+    stubs, sfaces = [], []
+    for row in range(2):
+        for i in range(14):
+            az = 2 * math.pi * (i + 0.5 * row) / 14 + rng.uniform(-0.1, 0.1)
+            out = (math.cos(az), 0.0, math.sin(az))
+            side = (-math.sin(az), 0.0, math.cos(az))
+            up_angle = math.radians(rng.uniform(30, 55))
+            d = _norm((out[0] * math.cos(up_angle), math.sin(up_angle), out[2] * math.cos(up_angle)))
+            root = (cx + out[0] * 0.2, height - 0.15 - 0.22 * row, cz + out[2] * 0.2)
+            tip = _add(root, d, rng.uniform(0.25, 0.4))
+            w = 0.06
+            j = len(stubs)
+            stubs += [_add(root, side, -w), _add(root, side, w), _add(tip, side, w * 0.4), _add(tip, side, -w * 0.4)]
+            sfaces.append((j, j + 1, j + 2, j + 3))
+    b.mesh("out", "bark", stubs, sfaces, smooth=False)
 
 
 def frond(b, rng, base, azimuth, start, droop, length):
@@ -130,6 +167,29 @@ def shrub(b, rng, x, z, y, size):
     b.mesh("out", "shrub", verts, faces, smooth=False)
 
 
+def agave(b, rng, x, z, y, size):
+    """A blue-green rosette of thick, pointed, slightly folded leaves."""
+    verts, faces = [], []
+    n = rng.randint(16, 22)
+    for i in range(n):
+        layer = i / (n - 1)                                  # 0 = inner leaves, standing up
+        az = i * 2.39996 + rng.uniform(-0.15, 0.15)
+        elev = math.radians(80 - 52 * layer + rng.uniform(-6, 6))
+        long = size * (0.55 + 0.45 * layer) * rng.uniform(0.85, 1.05)
+        w = size * 0.11 * (0.8 + 0.4 * layer)
+        d = (math.cos(elev) * math.cos(az), math.sin(elev), math.cos(elev) * math.sin(az))
+        side = (-math.sin(az), 0.0, math.cos(az))
+        fold = _norm(_cross(side, d))                       # the midrib stands proud of the edges
+        root = (x, y + 0.02, z)
+        mid = _add(root, d, long * 0.45)
+        tip = _add(_add(root, d, long), (0.0, -1.0, 0.0), long * 0.15 * layer)
+        j = len(verts)
+        verts += [_add(root, side, -w * 0.6), _add(root, fold, w * 0.15), _add(root, side, w * 0.6),
+                  _add(mid, side, -w), _add(mid, fold, w * 0.3), _add(mid, side, w), tip]
+        faces += [(j, j + 1, j + 4, j + 3), (j + 1, j + 2, j + 5, j + 4), (j + 3, j + 4, j + 6), (j + 4, j + 5, j + 6)]
+    b.mesh("out", "agave", verts, faces, smooth=False)
+
+
 _ICO = None
 
 
@@ -162,34 +222,44 @@ def _icosphere():
 
 
 def rock(b, rng, x, z, y, size):
+    """A weathered boulder: a lumpy ball chopped by a few random planes, which
+    gives it the flat fractured faces real rock has, then half buried."""
     base, faces = _icosphere()
     waves = [(_norm((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))), rng.uniform(1.5, 4.0),
-              rng.uniform(0, 6.28), rng.uniform(0.05, 0.16)) for _ in range(6)]
-    sx, sy, sz = size * rng.uniform(0.8, 1.5), size * rng.uniform(0.45, 0.8), size * rng.uniform(0.7, 1.2)
+              rng.uniform(0, 6.28), rng.uniform(0.04, 0.1)) for _ in range(5)]
+    cuts = [(_norm((rng.uniform(-1, 1), rng.uniform(-0.3, 1), rng.uniform(-1, 1))), rng.uniform(0.5, 0.8)) for _ in range(rng.randint(4, 7))]
+    sx, sy, sz = size * rng.uniform(0.8, 1.5), size * rng.uniform(0.5, 0.85), size * rng.uniform(0.7, 1.2)
     turn = rng.uniform(0, 6.28)
     ct, st = math.cos(turn), math.sin(turn)
     verts = []
     for p in base:
         k = 1.0 + sum(a * math.sin((p[0] * d[0] + p[1] * d[1] + p[2] * d[2]) * fr + ph) for d, fr, ph, a in waves)
-        px, py, pz = p[0] * k * sx, p[1] * k * sy, p[2] * k * sz
-        verts.append((x + px * ct - pz * st, y + py + sy * 0.25, z + px * st + pz * ct))
-    b.mesh("out", "rock", verts, faces, smooth=True)
+        q = (p[0] * k, p[1] * k, p[2] * k)
+        for n, depth in cuts:                     # push anything beyond a cut back onto its plane
+            over = q[0] * n[0] + q[1] * n[1] + q[2] * n[2] - depth
+            if over > 0:
+                q = (q[0] - n[0] * over, q[1] - n[1] * over, q[2] - n[2] * over)
+        px, py, pz = q[0] * sx, q[1] * sy, q[2] * sz
+        verts.append((x + px * ct - pz * st, y + py - sy * 0.15, z + px * st + pz * ct))
+    b.mesh("out", "rock", verts, faces, smooth=False)
+
+
+def _ground(x, z):
+    from .terrain import height
+    import numpy as np
+    return float(height(np.array([x]), np.array([z]))[0])
+
+
+def _clear_of_paving(x, z, margin):
+    from .terrain import edge_distance
+    import numpy as np
+    return float(edge_distance(np.array([x]), np.array([z]))[0]) > margin
 
 
 def scatter(b, rng):
-    """Sprinkle shrubs and rocks over the sand, keeping clear of the house, paving and drive."""
-    from .terrain import height
-    import numpy as np
-
+    """Sprinkle shrubs and rocks over the open sand further out."""
     def free(x, z):
-        if abs(x) < 15.0 and -21.5 < z < 20.5:
-            return False                              # house, forecourt, pool deck
-        if -13.5 < x < -4.5 and z > 0:
-            return False                              # the drive
-        return True
-
-    def ground(x, z):
-        return float(height(np.array([x]), np.array([z]))[0])
+        return _clear_of_paving(x, z, 3.0) and not (-13.5 < x < -3.9 and z > 0)
 
     placed = 0
     while placed < 55:
@@ -198,12 +268,11 @@ def scatter(b, rng):
         x, z = r * math.cos(a), r * math.sin(a)
         if not free(x, z):
             continue
-        y = ground(x, z)
         # shrubs come in little clumps
         for _ in range(rng.randint(1, 3)):
             ox, oz = x + rng.uniform(-0.8, 0.8), z + rng.uniform(-0.8, 0.8)
             if free(ox, oz):
-                shrub(b, rng, ox, oz, ground(ox, oz), rng.uniform(0.45, 1.0))
+                shrub(b, rng, ox, oz, _ground(ox, oz), rng.uniform(0.45, 1.0))
         placed += 1
 
     placed = 0
@@ -213,11 +282,69 @@ def scatter(b, rng):
         x, z = r * math.cos(a), r * math.sin(a)
         if not free(x, z):
             continue
-        rock(b, rng, x, z, ground(x, z), rng.uniform(0.25, 1.1) * (1.6 if rng.random() < 0.15 else 1.0))
+        rock(b, rng, x, z, _ground(x, z), rng.uniform(0.25, 1.1) * (1.6 if rng.random() < 0.15 else 1.0))
         placed += 1
     # a few shrubs at the foot of each palm
     for px, pz, _h in PALMS:
         for _ in range(2):
             ox, oz = px + rng.uniform(-1.6, 1.6), pz + rng.uniform(-1.6, 1.6)
-            if free(ox, oz):
-                shrub(b, rng, ox, oz, ground(ox, oz), rng.uniform(0.4, 0.8))
+            if _clear_of_paving(ox, oz, 0.4):
+                shrub(b, rng, ox, oz, _ground(ox, oz), rng.uniform(0.4, 0.8))
+
+
+def edges(b, rng):
+    """Rocks, shrubs and the odd agave along the gravel where paving meets sand,
+    so no edge runs dead straight into open desert."""
+    from .exterior import hard_surfaces
+
+    # Every edge near the house, and the first stretch of the drive.
+    spans = []
+    for x0, x1, z0, z1 in hard_surfaces():
+        z1 = min(z1, 60.0)
+        spans += [((x0, z0), (x1, z0)), ((x1, z0), (x1, z1)), ((x1, z1), (x0, z1)), ((x0, z1), (x0, z0))]
+    lengths = [math.dist(a, c) for a, c in spans]
+    total = sum(lengths)
+
+    placed = tries = 0
+    while placed < 95 and tries < 4000:
+        tries += 1
+        pick = rng.random() * total
+        for (a, c), length in zip(spans, lengths):
+            if pick <= length:
+                break
+            pick -= length
+        t = rng.random()
+        px, pz = a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t
+        # push it outward, mostly within the gravel band
+        nx, nz = (c[1] - a[1]) / max(length, 1e-6), -(c[0] - a[0]) / max(length, 1e-6)
+        off = 0.35 + 2.2 * rng.random() ** 1.5
+        x, z = px + nx * off, pz + nz * off
+        if not _clear_of_paving(x, z, 0.3) or any(math.dist((x, z), (qx, qz)) < 1.2 for qx, qz, _ in PALMS):
+            continue
+        y = _ground(x, z)
+        kind = rng.random()
+        if kind < 0.38:
+            for _ in range(rng.randint(1, 3)):
+                rock(b, rng, x + rng.uniform(-0.5, 0.5), z + rng.uniform(-0.5, 0.5), y, rng.uniform(0.12, 0.42))
+        elif kind < 0.82:
+            for _ in range(rng.randint(1, 3)):
+                ox, oz = x + rng.uniform(-0.6, 0.6), z + rng.uniform(-0.6, 0.6)
+                if _clear_of_paving(ox, oz, 0.25):
+                    shrub(b, rng, ox, oz, _ground(ox, oz), rng.uniform(0.35, 0.8))
+        else:
+            agave(b, rng, x, z, y, rng.uniform(0.6, 0.95))
+        placed += 1
+
+
+def plant_planter(b, rng, p):
+    """Agaves spaced along the planter, with grasses between them."""
+    (x0, x1), (z0, z1), soil = p["x"], p["z"], p["soil"]
+    zc = (z0 + z1) / 2
+    n = max(2, round((x1 - x0) / 1.7))
+    for i in range(n):
+        x = x0 + (x1 - x0) * (i + 0.5) / n + rng.uniform(-0.15, 0.15)
+        agave(b, rng, x, zc + rng.uniform(-0.08, 0.08), soil, rng.uniform(0.75, 0.95))
+        for _ in range(3):
+            gx = x + (x1 - x0) / n * rng.uniform(0.3, 0.55) * rng.choice((-1, 1))
+            if x0 + 0.3 < gx < x1 - 0.3:
+                shrub(b, rng, gx, zc + rng.uniform(-0.3, 0.3), soil, rng.uniform(0.35, 0.55))

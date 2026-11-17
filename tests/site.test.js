@@ -22,7 +22,10 @@ function allFiles(dir) {
 function firstViewFiles() {
   const files = [manifest.model, ...Object.values(manifest.sky)];
   for (const lm of Object.values(manifest.lightmaps)) files.push(lm.small);
-  for (const m of Object.values(manifest.materials)) if (m.map) files.push(m.map);
+  for (const m of Object.values(manifest.materials)) {
+    if (m.map) files.push(m.map);
+    if (m.blend) files.push(m.blend.map, m.blend.mask);
+  }
   return [...new Set(files)];
 }
 

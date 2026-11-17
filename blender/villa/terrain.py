@@ -8,6 +8,7 @@ import bpy
 import numpy as np
 
 from . import config as C
+from .exterior import TERRAIN_HOLES, hard_surfaces
 from .materials import MATS
 
 CORE = 55.0       # the grid is evenly spaced out to this distance from the centre...
@@ -117,14 +118,59 @@ def build_sand(collection, materials):
     # leave a hole where the pool goes, or sand would show inside it
     x0, x1 = gx[:-1, :-1], gx[1:, 1:]
     z0, z1 = gz[:-1, :-1], gz[1:, 1:]
-    (px0, px1), (pz0, pz1) = C.POOL_X, C.POOL_Z
-    keep = ~((x1 > px0) & (x0 < px1) & (z1 > pz0) & (z0 < pz1))
+    keep = np.ones(x0.shape, dtype=bool)
+    for (px0, px1), (pz0, pz1) in TERRAIN_HOLES:
+        keep &= ~((x1 > px0) & (x0 < px1) & (z1 > pz0) & (z0 < pz1))
 
     ob = _grid_mesh("out__terrain", gx, gy, gz, uv, lm, keep=keep)
     ob.data.materials.append(materials["sand"])
     ob["group"], ob["lit"], ob["lightmap"] = "out", "lightmap", "terrain"
     collection.objects.link(ob)
     return ob
+
+
+# ---- gravel borders -----------------------------------------------------------
+MASK_SIZE = 2048
+
+
+def build_mask(size=MASK_SIZE):
+    """Where the sand turns to gravel: a band along every paved edge, uneven in
+    width, with a few stray patches beyond it so it doesn't make a new straight line.
+
+    The mask is laid out like the sand's lightmap (its second UV set), so the
+    website can look it up with the same coordinates. Saved for Blender as a PNG;
+    export_web.py turns it into KTX2 for the site. Returns the mask, bottom row first.
+    """
+    from .textures import mask_path, save_png
+
+    atlas = C.ATLASES["terrain"]["size"]
+    t = (np.arange(size) + 0.5) / size                       # lightmap coordinate of each texel
+    xs = warp(((t - 0.5 / atlas) / (1 - 1 / atlas)) * 2 - 1)   # back to metres (see build_sand)
+    X, Z = np.meshgrid(xs, xs, indexing="xy")                # columns follow x, rows follow z
+
+    d = edge_distance(X, Z)
+    width = border_width(X, Z)
+    band = 1.0 - smoothstep(width - 0.12, width + 0.12, d)
+    patches = smoothstep(0.60, 0.70, fbm(X / 1.3, Z / 1.3, 3, seed=12)) * (1.0 - smoothstep(width, width + 1.8, d)) * 0.85
+    mask = np.clip(np.maximum(band, patches), 0.0, 1.0)
+
+    save_png(mask_path("terrain_mask"), np.repeat(mask[..., None], 3, axis=2).astype(np.float32))
+    return mask
+
+
+def edge_distance(X, Z):
+    """Distance in metres to the nearest paved or built surface (0 on top of one)."""
+    d = np.full(np.shape(X), np.inf)
+    for x0, x1, z0, z1 in hard_surfaces():
+        dx = np.maximum(np.maximum(x0 - X, X - x1), 0.0)
+        dz = np.maximum(np.maximum(z0 - Z, Z - z1), 0.0)
+        d = np.minimum(d, np.hypot(dx, dz))
+    return d
+
+
+def border_width(X, Z):
+    """How far the gravel reaches from an edge: 0.7 to 1.9 m, fading out along the far drive."""
+    return (0.7 + 1.2 * fbm(X / 4.0, Z / 4.0, 3, seed=11)) * (1.0 - smoothstep(40.0, 80.0, Z))
 
 
 # ---- hills -----------------------------------------------------------------

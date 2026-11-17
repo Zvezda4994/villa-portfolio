@@ -128,6 +128,21 @@ def _lamp(collection, name, pos, size, watts, aim=(0.0, -1.0, 0.0), colour=LAMP_
     return ob
 
 
+def _spot(collection, name, pos, aim, watts, cone):
+    """A small spotlight, for the uplights and step lights outside."""
+    light = bpy.data.lights.new(name, "SPOT")
+    light.energy = watts
+    light.color = LAMP_COLOUR
+    light.spot_size = math.radians(cone)
+    light.spot_blend = 0.6
+    light.shadow_soft_size = 0.03
+    ob = bpy.data.objects.new(name, light)
+    ob.location = to_blender(pos)
+    ob.rotation_euler = Vector(to_blender(aim)).normalized().to_track_quat("-Z", "Y").to_euler()
+    collection.objects.link(ob)
+    return ob
+
+
 def setup_lamps(collection):
     """Lights are on in every room, plus a row of small ones under the overhangs."""
     for name, (group, (x0, x1), (z0, z1), _mat) in ROOMS.items():
@@ -141,6 +156,10 @@ def setup_lamps(collection):
         _lamp(collection, f"soffit_low_{i}", (-10.8 + i * 2.4, H1 - 0.03, 8.7), (0.14, 0.14), SOFFIT_LAMP_WATTS)
         _lamp(collection, f"soffit_high_{i}", (-11.7 + i * 2.6, RY - 0.03, 9.4), (0.14, 0.14), SOFFIT_LAMP_WATTS)
     # underwater lights along the house side of the pool, so it glows in the evening shade
+    # uplights and step lights placed by exterior.py
+    from .exterior import GROUND_LIGHTS
+    for i, gl in enumerate(GROUND_LIGHTS):
+        _spot(collection, f"ground_{i}", gl["pos"], gl["aim"], gl["watts"], gl["cone"])
     for i, x in enumerate(pool_light_positions()):
         _lamp(collection, f"pool_{i}", (x, -0.85, C.POOL_Z[1] - 0.06), (0.3, 0.3), POOL_LAMP_WATTS,
               aim=(0.0, -0.15, -1.0), colour=(0.75, 0.95, 1.0))

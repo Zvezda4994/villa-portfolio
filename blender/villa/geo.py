@@ -66,7 +66,7 @@ class Builder:
             if atlas is None:
                 raise ValueError(f"'{mat}' is lit by a lightmap, so it needs an atlas")
             key, mode = f"{group}__{atlas}", "lightmap"
-        elif kind == "vertex":
+        elif kind in ("vertex", "sheer"):
             key, mode, atlas = f"{group}__vtx", "vertex", None
         else:
             key, mode, atlas = f"{group}__raw", "raw", None

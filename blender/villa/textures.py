@@ -21,6 +21,8 @@ PREP = {
     "granite_tile":              dict(size=512, flatten=0),
     "laminate_floor_02":         dict(size=512, flatten=0),
     "asphalt_02":                dict(size=512, flatten=4),
+    "cobblestone_floor_08":      dict(size=1024, flatten=4),
+    "floor_pebbles_01":          dict(size=512, flatten=4),
     "rounded_square_tiled_wall": dict(size=512, flatten=0),
 }
 OUT = C.BUILD / "textures"
@@ -76,6 +78,11 @@ def flatten(lin, cut):
 
 def prepared(tex_id):
     return OUT / f"{tex_id}.png"
+
+
+def mask_path(name):
+    """Masks are made by the build (terrain.build_mask), not downloaded."""
+    return OUT / f"{name}.png"
 
 
 def prepare_all(ids):

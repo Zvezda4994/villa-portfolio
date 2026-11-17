@@ -81,6 +81,24 @@ function bakedShader(shader) {
   addHaze(shader);
 }
 
+// Sand with gravel borders: a second texture mixed in wherever a mask says so.
+// The mask is laid out like the sand's lightmap, so it uses the same coordinates.
+function gravelShader(blend) {
+  return shader => {
+    bakedShader(shader);
+    Object.assign(shader.uniforms, {
+      uGravelMap: {value: blend.map}, uGravelMask: {value: blend.mask},
+      uGravelScale: {value: blend.scale}, uGravelTint: {value: blend.tint},
+    });
+    shader.fragmentShader = "uniform sampler2D uGravelMap;\nuniform sampler2D uGravelMask;\nuniform float uGravelScale;\nuniform vec3 uGravelTint;\n" +
+      shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
+  {
+    vec3 gravel = texture2D(uGravelMap, vMapUv * uGravelScale).rgb * uGravelTint;
+    diffuseColor.rgb = mix(diffuseColor.rgb, gravel, texture2D(uGravelMask, vLightMapUv).r);
+  }`);
+  };
+}
+
 // A small repeating pattern of ripples for the pool, made here so no image file is needed.
 function rippleTexture(size = 128) {
   const h = (x, y) => {
@@ -118,14 +136,20 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
 
   // ---- start every download needed for the first view at once ----
   const colourMaps = {};
-  for (const m of Object.values(manifest.materials)) if (m.map && !colourMaps[m.map]) colourMaps[m.map] = track(ktx2.loadAsync(ASSETS + m.map));
+  const want = file => { if (file && !colourMaps[file]) colourMaps[file] = track(ktx2.loadAsync(ASSETS + file)); };
+  for (const m of Object.values(manifest.materials)) {
+    want(m.map);
+    if (m.blend) { want(m.blend.map); want(m.blend.mask); }
+  }
   const smallLight = {};
   for (const [name, lm] of Object.entries(manifest.lightmaps)) smallLight[name] = track(ktx2.loadAsync(ASSETS + lm.small));
-  const [gltf, skyTex, envTex, poolTex] = await Promise.all([
+  // Panoramas taken from above each body of water, so it reflects what is really around it.
+  const probeNames = Object.keys(manifest.sky).filter(k => k !== "background" && k !== "environment");
+  const [gltf, skyTex, envTex, ...probeTex] = await Promise.all([
     track(gltfLoader.loadAsync(ASSETS + manifest.model)),
     track(hdr.loadAsync(ASSETS + manifest.sky.background)),
     track(hdr.loadAsync(ASSETS + manifest.sky.environment)),
-    manifest.sky.pool ? track(hdr.loadAsync(ASSETS + manifest.sky.pool)) : null,
+    ...probeNames.map(k => track(hdr.loadAsync(ASSETS + manifest.sky[k]))),
   ]);
 
   // ---- sky, reflections, haze ----
@@ -134,9 +158,8 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const reflections = pmrem.fromEquirectangular(envTex).texture;
   envTex.dispose();
-  // The water reflects the scene as seen from the pool (house, palms), not open sky.
-  const poolReflections = poolTex ? pmrem.fromEquirectangular(poolTex).texture : reflections;
-  if (poolTex) poolTex.dispose();
+  const probes = {};
+  probeNames.forEach((k, i) => { probes[k] = pmrem.fromEquirectangular(probeTex[i]).texture; probeTex[i].dispose(); });
   pmrem.dispose();
   hazeColor.fromArray(manifest.fog.color);
   scene.fog = new THREE.Fog(0xffffff, HAZE.near, HAZE.far);   // only switches the distance maths on; the colour comes from hazeColor
@@ -156,6 +179,12 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     t.anisotropy = Math.min(8, maxAniso);
     maps[file] = t;
   }
+  for (const m of Object.values(manifest.materials)) {
+    if (!m.blend) continue;
+    const mask = maps[m.blend.mask];
+    mask.wrapS = mask.wrapT = THREE.ClampToEdgeWrapping;
+    mask.channel = 1;
+  }
 
   const water = {ripples: rippleTexture()};
   const made = new Map();
@@ -174,13 +203,27 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         lightMap: lightmaps[atlas], lightMapIntensity: lightScale * Math.PI,
         envMap: reflections, envMapIntensity: REFLECT[atlas] ?? 1,
       });
-      mat.onBeforeCompile = bakedShader;
-      mat.customProgramCacheKey = () => "baked";
+      if (m.blend) {
+        mat.onBeforeCompile = gravelShader({
+          map: maps[m.blend.map], mask: maps[m.blend.mask], scale: m.tile / m.blend.tile,
+          tint: new THREE.Vector3(...m.blend.color),
+        });
+        mat.customProgramCacheKey = () => "baked-gravel";
+      } else {
+        mat.onBeforeCompile = bakedShader;
+        mat.customProgramCacheKey = () => "baked";
+      }
       (bakedByAtlas[atlas] ||= []).push(mat);
     } else if (m.kind === "vertex") {
       mat = new THREE.MeshBasicMaterial({
         color: new THREE.Color().setRGB(...m.color).multiplyScalar(lightScale), vertexColors: true,
         side: m.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
+      });
+    } else if (m.kind === "sheer") {
+      // Thin curtain fabric: lit from outside, with the room's light showing through.
+      mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setRGB(...m.color).multiplyScalar(lightScale), vertexColors: true,
+        transparent: true, opacity: m.opacity, depthWrite: false, side: THREE.DoubleSide,
       });
     } else if (m.kind === "glass" || m.kind === "water") {
       // Reflections are added at full strength while what is behind shows through dimmed, like real glass.
@@ -190,9 +233,10 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         side: THREE.DoubleSide, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       });
       if (m.kind === "water") {
-        mat.envMap = poolReflections;
+        mat.envMap = probes[m.probe] ?? reflections;
         mat.normalMap = water.ripples;
-        mat.normalScale.set(0.15, 0.15);        // gentle: stronger ripples tip the reflection up into the bright sky and sparkle
+        const r = m.ripple ?? 0.15;              // keep it gentle: stronger ripples tip the reflection up into the bright sky and sparkle
+        mat.normalScale.set(r, r);
         mat.emissive.setRGB(...m.color).multiplyScalar(0.05);
         mat.opacity = 0.25;
       }
@@ -219,7 +263,8 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     o.material = materialFor(o.material.name, lightmap);
     // The export leaves normals out to save space. Anything that reflects needs them back.
     if (!o.geometry.attributes.normal && !o.material.isMeshBasicMaterial) o.geometry.computeVertexNormals();
-    if (o.material.transparent) o.renderOrder = 2;
+    // see-through things draw last, curtains before the glass in front of them
+    if (o.material.transparent) o.renderOrder = o.material.name === "sheer" ? 1 : 2;
     (groups[group] || groups.out).push(o);
   });
   scene.add(gltf.scene);

@@ -526,6 +526,11 @@ The traps hit so far, so they don't get rediscovered.
    - Phone layout and link previews. On a phone held upright the pool moment's
      martini sits outside the narrow frame; place it from the screen's shape there.
    - The pool room's lightmap (`pol`) gets the full bake with everything else.
+   - **Games room, two things to consider** (your notes, 19 Nov 2026):
+     - the room's label could open the desk view (`games_desk`) instead of the wide
+       view (`GAMES_CAM`); or keep the wide view and fill its empty right-hand wall
+       and floor;
+     - the PC could come off its plinth and go on the desk's left end, or on the floor.
    - Then the full-quality bake.
 7. **My character, at the end.** Redone from a proper base mesh (not generated
    from primitives), reclining on my lounger. Then the stepped-away setting

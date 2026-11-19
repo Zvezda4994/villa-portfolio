@@ -159,6 +159,17 @@ test("rooms data is complete and its links go somewhere", async () => {
     assert.ok(Array.isArray(r.view) && r.view.length === 2 && r.view.every(isPoint), `${r.id}: "view" should be [camera, target]`);
     assert.ok(r.title && r.area && Array.isArray(r.body) && r.body.length, `${r.id}: needs a title, area and body text`);
     if (r.near !== undefined) assert.ok(Number.isFinite(r.near) && r.near > 0, `${r.id}: "near" should be a distance in metres`);
+    for (const name of r.click || []) {
+      const m = manifest.materials[name];
+      assert.ok(m && m.room === r.id, `${r.id}: "click" names "${name}", which isn't a material of the ${r.id} room`);
+    }
+    if (r.moment) {
+      // things carried with the camera (the visitor's hand) were modelled for this exact camera
+      const cam = manifest.cameras[r.moment];
+      assert.ok(cam, `${r.id}: no camera called "${r.moment}" in the manifest`);
+      const off = Math.max(...[...cam.pos, ...cam.target].map((v, i) => Math.abs(v - r.view.flat()[i])));
+      assert.ok(off < 0.002, `${r.id}: "view" is ${off.toFixed(3)} m off the ${r.moment} camera; copy pos and target from the manifest`);
+    }
   }
   for (const r of ROOMS) {
     for (const [label, url, internal] of r.links || []) {

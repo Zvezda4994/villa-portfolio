@@ -125,10 +125,19 @@ def bake_vertices(model):
     select_only(objects)
     bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, target="VERTEX_COLORS")
     for ob in objects:
-        data = ob.data.color_attributes["Light"].data
+        attrs = ob.data.color_attributes
+        data = attrs["Light"].data
         col = np.empty(len(data) * 4, dtype=np.float32)
         data.foreach_get("color", col)
         col = col.reshape(-1, 4)
+        if "Albedo" in attrs:
+            # surfaces painted per vertex: the colour goes into the light, and the
+            # material on the website is plain white
+            albedo = np.empty(len(data) * 4, dtype=np.float32)
+            attrs["Albedo"].data.foreach_get("color", albedo)
+            col[:, :3] *= albedo.reshape(-1, 4)[:, :3]
+            attrs.remove(attrs["Albedo"])
+            attrs.active_color = attrs["Light"]
         col[:, :3] = np.clip(col[:, :3] / C.LIGHT_RANGE, 0.0, 1.0)     # same scaling as the lightmaps
         col[:, 3] = 1.0
         data.foreach_set("color", col.ravel())

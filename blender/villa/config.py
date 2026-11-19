@@ -47,7 +47,7 @@ STAIR_X1 = STAIR_X0 + STAIR_TREAD * (STAIR_RISERS - 1)   # where it meets the up
 POOL_X = (-1.5, 9.5)
 POOL_Z = (-15.6, -11.0)
 DECK_X = (-7.0, 14.0)
-DECK_Z = (-19.5, -8.0)
+DECK_Z = (-21.6, -8.0)     # widened 2 m south for the fire-pit lounge
 
 # ---- Sun -------------------------------------------------------------------
 # Golden hour. The sun sits low and to the front left of the house, so the
@@ -80,6 +80,7 @@ ATLASES = {
     # Furnished rooms each get their own lightmap for the big furniture surfaces,
     # loaded together with the room after the first view is up.
     "din": dict(size=1024, density=140.0, room="dining"),
+    "pol": dict(size=1024, density=90.0, room="pool"),
 }
 
 # The game on the dining table, in standard chess notation (FEN). Ruy Lopez,
@@ -110,6 +111,15 @@ CHESS_CAPTURED = "pP"
 # To take it down: set FIGURE = None, run `npm run figure` (seconds, no re-bake),
 # then commit and push. PROGRESS.md has the full checklist.
 FIGURE = None
+
+# ---- The contact card on the pool deck's side table --------------------------------
+# Placeholders until the real details are in. Change these and rebuild the scene
+# (npm run scene, then bake and export) to reprint the card.
+CONTACT_CARD = dict(
+    name="Name",
+    lines=["email", "LinkedIn", "GitHub"],
+)
+
 ATLAS_PADDING = 8        # empty texels between islands
 LOW_RES = 512            # size of the quick-loading preview copy of each lightmap
 

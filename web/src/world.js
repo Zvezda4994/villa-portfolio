@@ -194,6 +194,7 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   }
 
   const water = {ripples: rippleTexture()};
+  const flames = [];                           // the fire pit on the pool deck flickers a little
   const made = new Map();
   const bakedByAtlas = {};                     // atlas name -> materials, so the sharp lightmap can be swapped in later
   function materialFor(name, atlas) {
@@ -252,6 +253,7 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
       }
     } else if (m.kind === "emissive") {
       mat = new THREE.MeshBasicMaterial({color: new THREE.Color().setRGB(...m.color).multiplyScalar(m.strength * 0.4)});
+      if (name === "flame") flames.push({mat, base: mat.color.clone()});
     } else {
       mat = new THREE.MeshBasicMaterial({color: new THREE.Color().setRGB(...m.color)});
     }
@@ -268,20 +270,49 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const groups = {ground: [], upper: [], roof: [], out: []};
   const info = o => { for (let p = o; p; p = p.parent) if (p.userData && p.userData.group) return p.userData; return {}; };
   const visibleNow = {};                       // filled in by the page, so late arrivals match the current view
+  const carried = [];                          // things that travel with the camera (the visitor's hand at the pool)
+  const byMaterial = new Map();                // material name -> meshes, for things you can click (the contact card)
   function addModel(root) {
     root.traverse(o => {
       if (!o.isMesh) return;
-      const {group, lightmap} = info(o);
+      const {group, lightmap, attach} = info(o);
       o.material = materialFor(o.material.name, lightmap);
+      if (!byMaterial.has(o.material.name)) byMaterial.set(o.material.name, []);
+      byMaterial.get(o.material.name).push(o);
       // The export leaves normals out to save space. Anything that reflects needs them back.
       if (!o.geometry.attributes.normal && !o.material.isMeshBasicMaterial) o.geometry.computeVertexNormals();
       // see-through things draw last, curtains before the glass in front of them
       if (o.material.transparent) o.renderOrder = o.material.name === "sheer" ? 1 : 2;
+      if (attach === "camera") { o.visible = false; carried.push(o); return; }
       const g = groups[group] ? group : "out";
       groups[g].push(o);
       if (g in visibleNow) o.visible = visibleNow[g];
     });
     scene.add(root);
+  }
+
+  // The visitor's hand and drink were modelled in place for the pool's camera
+  // moment. To carry them with the camera, each is re-hung on the camera with its
+  // position relative to that moment's camera, so it stays at the bottom of the
+  // frame wherever the visitor looks.
+  const moment = new THREE.PerspectiveCamera();
+  let carriedReady = false;
+  function carry(camera, on) {
+    if (on && !carriedReady && carried.length && manifest.cameras.pool_moment) {
+      const c = manifest.cameras.pool_moment;
+      moment.position.set(...c.pos);
+      moment.lookAt(...c.target);
+      moment.updateMatrixWorld(true);
+      const toCamera = moment.matrixWorld.clone().invert();
+      for (const o of carried) {
+        o.updateMatrixWorld(true);
+        const local = toCamera.clone().multiply(o.matrixWorld);
+        camera.add(o);
+        local.decompose(o.position, o.quaternion, o.scale);
+      }
+      carriedReady = true;
+    }
+    for (const o of carried) o.visible = on && carriedReady;
   }
   addModel(gltf.scene);
 
@@ -331,6 +362,14 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     manifest, groups, sharp, rooms,
     // The page says which groups are showing, so furniture that arrives later matches.
     setVisible(group, on) { visibleNow[group] = on; groups[group].forEach(o => { o.visible = on; }); },
-    update(seconds) { water.ripples.offset.set(seconds * 0.012, seconds * 0.02); },
+    carry,
+    hasCarried: () => carried.length > 0,
+    // every mesh drawn with any of these materials (empty until its room has loaded)
+    meshesWith: names => names.flatMap(n => byMaterial.get(n) || []),
+    update(seconds) {
+      water.ripples.offset.set(seconds * 0.012, seconds * 0.02);
+      const f = 0.86 + 0.08 * Math.sin(seconds * 9.1) + 0.06 * Math.sin(seconds * 23.7 + 1.3);
+      for (const {mat, base} of flames) mat.color.copy(base).multiplyScalar(f);
+    },
   };
 }

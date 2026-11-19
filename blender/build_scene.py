@@ -22,6 +22,7 @@ from villa.house import build_house  # noqa: E402
 from villa.lighting import setup_cameras, setup_lamps, setup_render, setup_world  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, build_materials  # noqa: E402
 from villa.plants import build_plants  # noqa: E402
+from villa.pool import build_pool, paint_pictures as paint_pool_pictures  # noqa: E402
 from villa.terrain import build_hills, build_mask, build_sand  # noqa: E402
 from villa.textures import prepare_all, prepare_pictures  # noqa: E402
 
@@ -35,6 +36,7 @@ def main():
     build_mask()                      # where the sand turns to gravel; the sand material needs it
     b = Builder()
     build_dining(b)                   # paints the rug, painting and chessboard before materials load them
+    paint_pool_pictures()             # the contact card and the sake label
     materials = build_materials()
 
     model = bpy.data.collections.new("villa")      # everything that gets exported
@@ -45,11 +47,16 @@ def main():
     build_house(b)
     build_exterior(b)
     build_plants(b)
+    build_pool(b)
     objects = b.finalize(model, materials)
     # Glowing lampshade diffusers are drawn bright, but the light itself comes from
     # the lamps in lighting.py; letting the bake count them too only adds noise.
     for ob in objects.values():
         if ob.get("room") and ob.get("lit") == "raw":
+            ob.visible_diffuse = ob.visible_shadow = False
+        # Things carried with the camera (the visitor's hand at the pool) leave no baked
+        # shadow behind when the camera moves on.
+        if ob.get("attach"):
             ob.visible_diffuse = ob.visible_shadow = False
     build_sand(model, materials)
     build_hills(model, materials)

@@ -171,6 +171,28 @@ def setup_lamps(collection):
     from .dining import LAMPS as DINING_LAMPS
     for lamp in DINING_LAMPS:
         _lamp(collection, lamp["name"], lamp["pos"], lamp["size"], lamp["watts"], aim=lamp["aim"])
+    # the pool deck's lanterns, uplights and fire (filled in by pool.build_pool)
+    from .pool import LAMPS as POOL_LAMPS
+    for lamp in POOL_LAMPS:
+        if lamp["kind"] == "spot":
+            _spot(collection, lamp["name"], lamp["pos"], lamp["aim"], lamp["watts"], lamp["cone"])
+        else:
+            _point(collection, lamp["name"], lamp["pos"], lamp["watts"], lamp.get("radius", 0.05),
+                   lamp.get("colour", LAMP_COLOUR))
+
+
+def _point(collection, name, pos, watts, radius, colour):
+    """A small round light: a lantern's candle, the fire."""
+    light = bpy.data.lights.new(name, "POINT")
+    light.energy = watts
+    light.color = colour
+    light.shadow_soft_size = radius
+    ob = bpy.data.objects.new(name, light)
+    ob.location = to_blender(pos)
+    ob.visible_camera = False
+    ob.visible_glossy = False
+    collection.objects.link(ob)
+    return ob
 
 
 def pool_light_positions():
@@ -194,6 +216,7 @@ def add_camera(collection, name, pos, target, fov=45.0):
 
 
 from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
+from .pool import MOMENT_CAM  # noqa: E402
 
 # The views rendered for review after each build step. The website can jump to
 # any of them with ?shot=name.
@@ -203,6 +226,8 @@ PREVIEW_CAMERAS = {
     "entrance": dict(pos=(-9.5, 1.7, 20.5), target=(-1.0, 2.6, 8.0), fov=50.0),
     "dining": ROOM_CAM,
     "chess": CHESS_CAM,
+    "deck": dict(pos=(-7.0, 4.2, -10.0), target=(2.0, 0.0, -17.8), fov=50.0),
+    "pool_moment": MOMENT_CAM,
 }
 
 

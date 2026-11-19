@@ -19,6 +19,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = TONE_MAPPING;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, 0.3, 4000);
+scene.add(camera);                       // so things carried by the camera (the visitor's hand) are drawn
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI / 2 - 0.04; controls.minDistance = 4; controls.maxDistance = 90;
 
@@ -107,6 +108,8 @@ $("resumeBtn").onclick = () => showResume(true);
 /* ---------- Pins (HTML labels that follow their 3D anchor) ---------- */
 const pinEls = ROOMS.map(r => { const b = document.createElement("button"); b.className = "pin"; b.dataset.id = r.id; b.innerHTML = `<i></i>${r.title}`; b.onclick = () => openRoom(r.id); $("pins").appendChild(b); return b; });
 const tmp = new THREE.Vector3();
+const tmpMoment = new THREE.Vector3();
+let shotMoment = null;                   // set when a review picture is taken from a staged moment's camera
 function updatePins() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   ROOMS.forEach((r, i) => {
@@ -117,6 +120,42 @@ function updatePins() {
     el.hidden = false; el.style.left = ((tmp.x + 1) / 2 * w) + "px"; el.style.top = ((1 - tmp.y) / 2 * h) + "px";
   });
 }
+
+/* ---------- Things in the scene that open a panel (the contact card at the pool) ---------- */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+// The stop whose panel the thing under the pointer opens, if any. It only counts if
+// nothing solid in the scene is in front of it.
+function stopUnder(e) {
+  if (!world) return null;
+  const rect = canvas.getBoundingClientRect();
+  pointer.set((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2);
+  raycaster.setFromCamera(pointer, camera);
+  for (const r of ROOMS) {
+    if (!r.click) continue;
+    const hit = raycaster.intersectObjects(world.meshesWith(r.click).filter(shown), false)[0];
+    if (!hit) continue;
+    const first = raycaster.intersectObjects(scene.children, true).find(h => shown(h.object) && !h.object.material.transparent);
+    if (first && first.distance < hit.distance - 0.01) continue;
+    return r;
+  }
+  return null;
+}
+let press = null, lastHover = 0;
+canvas.addEventListener("pointerdown", e => { press = {x: e.clientX, y: e.clientY, t: performance.now()}; });
+canvas.addEventListener("pointerup", e => {
+  const p = press; press = null;
+  // a drag to look around isn't a click
+  if (!p || Math.hypot(e.clientX - p.x, e.clientY - p.y) > 6 || performance.now() - p.t > 600) return;
+  const r = stopUnder(e);
+  if (r) { showResume(false); openRoom(r.id, camera.position.distanceTo(tmp.set(...r.view[0])) > 1.2); }
+});
+canvas.addEventListener("pointermove", e => {
+  if (e.buttons || e.pointerType !== "mouse" || performance.now() - lastHover < 100) return;
+  lastHover = performance.now();
+  canvas.style.cursor = stopUnder(e) ? "pointer" : "";
+});
 
 /* ---------- Loop ---------- */
 function resize() { const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
@@ -131,7 +170,14 @@ renderer.setAnimationLoop(t => {
     } else camera.position.lerpVectors(tween.p0, tween.p1, e);
     controls.target.lerpVectors(tween.t0, tween.t1, e); if (k >= 1) tween = null;
   }
-  if (world) world.update(t / 1000);
+  if (world) {
+    world.update(t / 1000);
+    // At the pool the visitor holds a martini at the bottom of the frame, once the
+    // camera has settled on their lounger and while they stay near it.
+    const stage = shotMoment || (current && current.moment && !$("panel").hidden ? current.moment : null);
+    const r = stage && world.manifest.cameras[stage];
+    world.carry(camera, Boolean(r && !tween && camera.position.distanceTo(tmpMoment.set(...r.pos)) < 1.2));
+  }
   controls.update(); renderer.render(scene, camera); updatePins();
 });
 
@@ -166,6 +212,7 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
     // the review cameras can sit below what they look at, which normal navigation forbids
     controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
     camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
+    if (params.get("shot").endsWith("_moment")) shotMoment = params.get("shot");
   }
   if (params.get("ui") === "0") document.body.classList.add("bare");
 

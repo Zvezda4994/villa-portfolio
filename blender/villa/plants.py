@@ -41,10 +41,12 @@ def _add(a, c, k=1.0):
     return (a[0] + c[0] * k, a[1] + c[1] * k, a[2] + c[2] * k)
 
 
-def palm(b, rng, x, z, height):
+def palm(b, rng, x, z, height, base=G):
+    """A date palm whose crown sits at `height`. `base` is the ground it grows
+    from (the sand, or the soil in a planter)."""
     lean_dir = rng.uniform(0, 2 * math.pi)
-    lean = rng.uniform(0.02, 0.09) * height
-    trunk(b, rng, x, z, height, lean_dir, lean)
+    lean = rng.uniform(0.02, 0.09) * (height - base)
+    trunk(b, rng, x, z, height, lean_dir, lean, base)
 
     top = (x + math.cos(lean_dir) * lean, height, z + math.sin(lean_dir) * lean)
     count = 24
@@ -57,12 +59,12 @@ def palm(b, rng, x, z, height):
               length=rng.uniform(2.9, 3.7) * (0.75 + 0.25 * math.sin(math.pi * min(1.0, age + 0.25))))
 
 
-def trunk(b, rng, x, z, height, lean_dir, lean):
+def trunk(b, rng, x, z, height, lean_dir, lean, base=G):
     """A date palm trunk: a stack of short rings, each swelling out to a ledge where
     an old leaf was cut off. Every other ring is turned half a step, so the stubs
     form the diamond pattern real trunks have. Low sun picks the ledges out."""
     sides = 12
-    rings = max(8, int((height + 0.2) / rng.uniform(0.26, 0.32)))
+    rings = max(8, int((height - base + 0.2) / rng.uniform(0.26, 0.32)))
 
     def centre(t):
         return x + math.cos(lean_dir) * lean * t * t, z + math.sin(lean_dir) * lean * t * t
@@ -78,7 +80,7 @@ def trunk(b, rng, x, z, height, lean_dir, lean):
         radius = (0.27 - 0.08 * t + 0.12 * (1 - t) ** 8) * swell     # tapers upward, flares at the foot
         for s in range(sides):
             a = 2 * math.pi * (s + turn) / sides
-            verts.append((cx + math.cos(a) * radius, G - 0.2 + t * (height + 0.2), cz + math.sin(a) * radius))
+            verts.append((cx + math.cos(a) * radius, base - 0.2 + t * (height - base + 0.2), cz + math.sin(a) * radius))
     for r in range(len(rows) - 1):
         for s in range(sides):
             a, c = r * sides + s, r * sides + (s + 1) % sides

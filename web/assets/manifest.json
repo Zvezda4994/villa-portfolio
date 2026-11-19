@@ -24,6 +24,9 @@
  "rooms": {
   "dining": {
    "model": "rooms/dining.glb"
+  },
+  "pool": {
+   "model": "rooms/pool.glb"
   }
  },
  "lightmaps": {
@@ -46,6 +49,10 @@
   "din": {
    "file": "lightmaps/din.ktx2",
    "room": "dining"
+  },
+  "pol": {
+   "file": "lightmaps/pol.ktx2",
+   "room": "pool"
   }
  },
  "materials": {
@@ -524,6 +531,339 @@
    "map": "textures/philo_leaves.ktx2",
    "room": "dining",
    "doubleSided": true
+  },
+  "teak": {
+   "kind": "baked",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.1,
+   "color": [
+    0.8,
+    0.6,
+    0.43
+   ],
+   "rough": 0.6
+  },
+  "travertine": {
+   "kind": "baked",
+   "map": "textures/marble_01.ktx2",
+   "tile": 0.9,
+   "color": [
+    1.0,
+    0.92,
+    0.8
+   ],
+   "rough": 0.7
+  },
+  "rug_outdoor": {
+   "kind": "baked",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.4200332886842154
+   ],
+   "room": "pool",
+   "rough": 1.0
+  },
+  "rug_border": {
+   "kind": "baked",
+   "color": [
+    0.17064493581555268,
+    0.12596738774090202,
+    0.0835351274258047
+   ],
+   "room": "pool",
+   "rough": 1.0
+  },
+  "card": {
+   "kind": "baked",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/contact_card.ktx2",
+   "room": "pool",
+   "rough": 0.8
+  },
+  "card_back": {
+   "kind": "baked",
+   "color": [
+    0.8900054069935289,
+    0.8584570348404981,
+    0.7775543396410448
+   ],
+   "room": "pool",
+   "rough": 0.8
+  },
+  "canvas": {
+   "kind": "vertex",
+   "color": [
+    0.748414103499371,
+    0.692071056865372,
+    0.5704815954749093
+   ],
+   "room": "pool"
+  },
+  "canvas_sand": {
+   "kind": "vertex",
+   "color": [
+    0.5382355236010181,
+    0.44798841244188325,
+    0.31854677812509186
+   ],
+   "room": "pool"
+  },
+  "canvas_seam": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5542217602988447,
+    0.43387952044860834
+   ],
+   "room": "pool"
+  },
+  "pillow_rust": {
+   "kind": "vertex",
+   "color": [
+    0.34239163959260344,
+    0.08898152563840141,
+    0.036306484118193906
+   ],
+   "room": "pool"
+  },
+  "pillow_olive": {
+   "kind": "vertex",
+   "color": [
+    0.1788675039555289,
+    0.1788675039555289,
+    0.0835351274258047
+   ],
+   "room": "pool"
+  },
+  "towel": {
+   "kind": "vertex",
+   "color": [
+    0.8900054069935289,
+    0.8688993866725532,
+    0.7874122893956174
+   ],
+   "room": "pool"
+  },
+  "towel_stripe": {
+   "kind": "vertex",
+   "color": [
+    0.47699978456654196,
+    0.31854677812509186,
+    0.16264719366814206
+   ],
+   "room": "pool"
+  },
+  "towel_navy": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.021980947079887205,
+    0.06838485415816624
+   ],
+   "room": "pool"
+  },
+  "bronze_dark": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.008540382112116999,
+    0.006571403616195705
+   ],
+   "room": "pool"
+  },
+  "quiver_tree": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/quiver_tree.ktx2",
+   "room": "pool",
+   "doubleSided": true
+  },
+  "fire_glass": {
+   "kind": "vertex",
+   "color": [
+    0.007194409291082934,
+    0.00598105957261676,
+    0.005422868676138171
+   ],
+   "room": "pool"
+  },
+  "flame": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.26327340845612224,
+    0.033104766570885055
+   ],
+   "room": "pool",
+   "strength": 14.0
+  },
+  "lantern_glow": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.44798841244188325,
+    0.147318999244498
+   ],
+   "room": "pool",
+   "strength": 2.4
+  },
+  "sake_bottle": {
+   "kind": "vertex",
+   "color": [
+    0.00598105957261676,
+    0.010022825574869039,
+    0.007194409291082934
+   ],
+   "room": "pool"
+  },
+  "sake_cap": {
+   "kind": "vertex",
+   "color": [
+    0.010022825574869039,
+    0.008540382112116999,
+    0.008540382112116999
+   ],
+   "room": "pool"
+  },
+  "bottle_gloss": {
+   "kind": "glass",
+   "color": [
+    0.07323895587840543,
+    0.10653922395082352,
+    0.0835351274258047
+   ],
+   "room": "pool",
+   "opacity": 0.1
+  },
+  "sake_label": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/sake_label.ktx2",
+   "room": "pool"
+  },
+  "stoneware": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5542217602988447,
+    0.44798841244188325
+   ],
+   "room": "pool"
+  },
+  "sake": {
+   "kind": "vertex",
+   "color": [
+    0.5704815954749093,
+    0.5070785101492276,
+    0.29569980462568246
+   ],
+   "room": "pool"
+  },
+  "shades": {
+   "kind": "vertex",
+   "color": [
+    0.0023219814241486067,
+    0.0021671826625387,
+    0.0020123839009287925
+   ],
+   "room": "pool"
+  },
+  "shades_lens": {
+   "kind": "glass",
+   "color": [
+    0.003935939504088967,
+    0.0030959752321981426,
+    0.002708978328173375
+   ],
+   "room": "pool",
+   "opacity": 0.85
+  },
+  "suede": {
+   "kind": "vertex",
+   "color": [
+    0.147318999244498,
+    0.06372379528489175,
+    0.027211780951381357
+   ],
+   "room": "pool"
+  },
+  "sole": {
+   "kind": "vertex",
+   "color": [
+    0.021980947079887205,
+    0.010022825574869039,
+    0.00598105957261676
+   ],
+   "room": "pool"
+  },
+  "skin": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "pool"
+  },
+  "visitor_cuff": {
+   "kind": "vertex",
+   "color": [
+    0.5704815954749093,
+    0.6382832153523972,
+    0.7293470915734015
+   ],
+   "room": "pool"
+  },
+  "martini_glass": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.7874122893956174,
+    0.7874122893956174
+   ],
+   "room": "pool",
+   "opacity": 0.16
+  },
+  "martini": {
+   "kind": "glass",
+   "color": [
+    0.692071056865372,
+    0.7105664902244221,
+    0.5382355236010181
+   ],
+   "room": "pool",
+   "opacity": 0.32
+  },
+  "olive_fruit": {
+   "kind": "vertex",
+   "color": [
+    0.09462962659456918,
+    0.13286832155381798,
+    0.017389102368488736
+   ],
+   "room": "pool"
+  },
+  "pick": {
+   "kind": "vertex",
+   "color": [
+    0.01341174889765847,
+    0.008540382112116999,
+    0.00598105957261676
+   ],
+   "room": "pool"
   }
  },
  "cameras": {
@@ -591,13 +931,39 @@
     -4.35
    ],
    "fov": 46.0
+  },
+  "deck": {
+   "pos": [
+    -7.0,
+    4.2,
+    -10.0
+   ],
+   "target": [
+    2.0,
+    0.0,
+    -17.8
+   ],
+   "fov": 50.0
+  },
+  "pool_moment": {
+   "pos": [
+    -1.351,
+    0.98,
+    -18.062
+   ],
+   "target": [
+    0.35,
+    0.56,
+    -15.63
+   ],
+   "fov": 48.0
   }
  },
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303997,
-  "sky pool": 334259,
-  "sky front": 382241,
+  "sky environment": 303998,
+  "sky pool": 339993,
+  "sky front": 382852,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -608,29 +974,34 @@
   "texture rounded_square_tiled_wall": 318215,
   "texture sandy_gravel_02": 1240623,
   "texture walnut_veneer": 292320,
-  "texture terrain_mask": 67211,
+  "texture terrain_mask": 68102,
   "texture cabinet": 308474,
   "texture chess_black": 316435,
   "texture chess_white": 322607,
   "texture chessboard": 939978,
+  "texture contact_card": 322942,
   "texture fig_leaves": 66354,
   "texture fig_stems": 84183,
   "texture horse_head": 83148,
   "texture painting": 317639,
   "texture philo_leaves": 67382,
+  "texture quiver_tree": 85986,
   "texture rug": 198338,
+  "texture sake_label": 187618,
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
-  "model": 2395048,
-  "room dining": 1846360,
-  "lightmap ext": 317679,
-  "lightmap ext (small)": 313655,
-  "lightmap gnd": 299384,
-  "lightmap gnd (small)": 295464,
-  "lightmap upr": 296742,
-  "lightmap upr (small)": 292854,
-  "lightmap terrain": 289858,
-  "lightmap terrain (small)": 285954,
-  "lightmap din": 78061
+  "model": 2382388,
+  "room dining": 2009996,
+  "room pool": 1214128,
+  "lightmap ext": 4064290,
+  "lightmap ext (small)": 270257,
+  "lightmap gnd": 299954,
+  "lightmap gnd (small)": 296018,
+  "lightmap upr": 297646,
+  "lightmap upr (small)": 293742,
+  "lightmap terrain": 289587,
+  "lightmap terrain (small)": 285691,
+  "lightmap din": 78053,
+  "lightmap pol": 807370
  }
 }

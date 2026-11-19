@@ -5,13 +5,16 @@ and each room holds one part of my work. `BUILD_BRIEF.md` is the plan this
 follows; `blockout.html` is the first prototype, kept for reference.
 
 **Where it stands:** build step 1 (the house shell, grounds, sky and golden-hour
-lighting) and step 3 (the dining room, fully furnished, with a game in progress
-on the table) are done. The car (step 2) is on hold. The other rooms are still
-empty. See `PROGRESS.md` for the decisions made so far and what to watch out for.
+lighting), step 3 (the dining room, fully furnished, with a game in progress
+on the table) and step 4 (the pool deck, furnished, with the "Get in touch"
+camera moment) are done. My character on the deck comes last. The car (step 2)
+is on hold. The other rooms are still empty. See `PROGRESS.md` for the decisions made so far and what
+to watch out for.
 
-**The lighting is currently a quick draft bake**, so walls and rooms look a little
-blotchy in the browser. The full-quality bake (`npm run bake`) will be run once
-all the rooms are built.
+**The lighting is currently mostly a quick draft bake**, so walls and rooms look a
+little blotchy in the browser. The house's outside and the pool deck already have
+the full-quality bake; the rest gets it (`npm run bake`) once all the rooms are
+built.
 
 ## Look at it
 
@@ -35,11 +38,14 @@ GitHub Pages (`.github/workflows/pages.yml`).
 | `web/src/main.js` | Camera, the three views, labels, side panel, rooms menu, links. Carried over from the prototype. |
 | `web/src/world.js` | Loads the model and decides how each material is drawn. Fetches furnished rooms after the first view. |
 | `web/assets/` | What Blender exported: the model, textures, lightmaps, sky. Rebuilt by the scripts, not edited by hand. |
-| `web/assets/rooms/` | One file per furnished room (so far `dining.glb`), loaded in the background. |
+| `web/assets/rooms/` | One file per furnished room (`dining.glb`, `pool.glb`), loaded in the background. |
 | `blender/` | Python scripts that build the whole scene in Blender from nothing. |
 | `blender/villa/` | The scene itself, split by subject: `house.py`, `exterior.py`, `terrain.py`, `plants.py`, `lighting.py`, `materials.py`. Sizes, the sun position and the chess position are in `config.py`. |
 | `blender/villa/dining.py` | The dining room's furniture, lamps and cameras. The template for furnishing the other rooms. |
 | `blender/villa/props.py` | Brings in the downloaded Poly Haven models and places copies of them. |
+| `blender/villa/pool.py` | The pool deck: loungers, towels, parasol, fire-pit lounge, planters and trees, lanterns, the table setting, and the camera moment. |
+| `blender/villa/frozen/` | The visitor's hand and a loafer, kept as plain meshes (see `PROGRESS.md`, "The pool deck"). |
+| `blender/villa/labels.py` | Prints the contact card and the sake label (text set with Blender's own copy of Inter). |
 | `previews/` | Review pictures for each build step. |
 | `tools/` | Small helpers: a runner for the Blender scripts and the local preview server. |
 | `tests/` | Checks run before every deploy: the exported files load, the downloads fit the budget, the rooms data is complete. |
@@ -120,12 +126,13 @@ room is allowed 6.5 MB until the step 6 performance work).
 ## Review pictures
 
 `previews/landing.jpg`, `pool.jpg`, `entrance.jpg`, `dining.jpg` (the dining
-room) and `chess.jpg` (the board, from the visitor's seat) are rendered by
-Blender. The `browser_*.jpg` files next to them are the real site from the same
-camera positions, so the two can be compared.
+room), `chess.jpg` (the board, from the visitor's seat), `deck.jpg` (the pool
+deck) and `pool_moment.jpg` (the visitor's view from their lounger) are
+rendered by Blender. The `browser_*.jpg` files next to them are the real site
+from the same camera positions, so the two can be compared.
 
 To see those camera positions in the site, add `?shot=landing&ui=0` to the
-address (or `pool`, `entrance`, `dining`, `chess`). Adding `&save=landing` as
+address (or `pool`, `entrance`, `dining`, `chess`, `deck`, `pool_moment`). Adding `&save=landing` as
 well, while `tools/serve.py` is running, saves the browser picture into
 `previews/` once the furnished rooms have loaded.
 
@@ -171,6 +178,32 @@ The dining room (all in `blender/villa/dining.py`):
   `config.py`). It goes in and comes out with `npm run figure`, without a
   re-bake. See `PROGRESS.md` for the steps.
 
+The pool deck (all in `blender/villa/pool.py`), widened 2 m to the south:
+
+- At the pool's sunny south-west corner, two long teak loungers side by side,
+  a step back from the water and facing it, each turned 12° in toward the
+  other, with a low travertine side table between them.
+- Behind them, a cream canvas cantilever parasol holds its canopy over their
+  head ends: eight panels tensioned over the ribs, with seams, a rolled hem and
+  a capped peak. The sun is so low that its shadow falls about 9 m behind, off the
+  deck, so the loungers and the table stay in the sun.
+- The visitor's has a folded towel at its foot. Mine is set as if I'd just
+  stepped away: a navy towel left spread over it, my sunglasses, an isshobin
+  (the tall 1.8 litre sake bottle) with an original label and a small stoneware
+  cup on the table, my loafers slipped off beside the head of my lounger.
+- My contact card stands on the table, folded, turned and tilted toward the
+  visitor (placeholder text for now, from `CONTACT_CARD` in `config.py`).
+  Clicking or tapping it opens the "Get in touch" panel.
+- On the south side, in the house's evening shade, low sofas round a dark
+  stone fire pit on an outdoor rug.
+- Four quiver trees (Poly Haven) and two palms in big pale stone planters,
+  each with an uplight; five lanterns; the pool keeps its own lights.
+- The walkway along the house is left open.
+- Opening the pool drops the camera onto the visitor's lounger at eye level,
+  looking out over the pool to the house, with my lounger and the table in the
+  left third. The visitor's own hand holds a martini at the bottom of the
+  frame; it travels with the camera while you stay near that seat.
+
 The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
 
 - A smaller court of warm granite setts in front of the garage, framed by bands
@@ -189,9 +222,9 @@ The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
 
 ## Still to do (from the brief)
 
-- Steps 2 to 6: the car, the dining room, the pool scene and character, the
-  remaining rooms, and the polish pass (loading screen with a still image,
-  phone layout, link previews, performance).
+- Steps 2, 5 and 6: the car, the remaining rooms, and the polish pass (loading
+  screen with a still image, phone layout, link previews, performance).
+- My character on the pool deck, last, from a proper base mesh.
 - Final copy for the panels (see the `todo` notes in `web/src/rooms.js`).
 
 Assets and their licenses are listed in `CREDITS.md`.

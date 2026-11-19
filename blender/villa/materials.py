@@ -12,13 +12,16 @@ kind:
 
 Colours are sRGB values from 0 to 1. Tints are plain multipliers.
 
-Furniture adds two things:
+Furniture adds three things:
   img      a picture laid over the object's own UVs instead of a tiling texture:
            either made by the build (the rug, the painting, the chessboard) or
            taken from a downloaded model ("src", relative to assets_src/models).
            Saved as build/textures/<img>.png and exported as textures/<img>.ktx2.
   room     the furnished room the material belongs to. The website fetches its
            picture with that room, after the first view is up, not before.
+  albedo   the colour is painted per vertex (the visitor's skin on the pool deck).
+           The bake multiplies it into the vertex light, so the website needs
+           nothing extra.
 """
 
 MATS = {
@@ -88,6 +91,49 @@ MATS = {
                         src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
     "philo_leaves": dict(kind="vertex", room="dining", img="philo_leaves", size=256, double_sided=True,
                          src="potted_plant_02/textures/potted_plant_02_leaves_diff_1k.jpg", color=(1, 1, 1)),
+
+    # --- pool deck (pool.py) ---
+    # teak and travertine reuse textures the house already loads, so they cost nothing extra
+    "teak":        dict(kind="baked", tex="oak_veneer_01", tile=1.1, tint=(0.80, 0.60, 0.43), rough=0.6),
+    "travertine":  dict(kind="baked", tex="marble_01", tile=0.9, tint=(1.0, 0.92, 0.80), rough=0.7),
+    "rug_outdoor": dict(kind="baked", room="pool", color=(0.80, 0.76, 0.68), rough=1.0),
+    "rug_border":  dict(kind="baked", room="pool", color=(0.45, 0.39, 0.32), rough=1.0),
+    "card":        dict(kind="baked", room="pool", img="contact_card", color=(1, 1, 1), rough=0.8),
+    "card_back":   dict(kind="baked", room="pool", color=(0.95, 0.935, 0.895), rough=0.8),
+    "canvas":      dict(kind="vertex", room="pool", color=(0.88, 0.85, 0.78)),
+    "canvas_sand": dict(kind="vertex", room="pool", color=(0.76, 0.70, 0.60)),
+    "canvas_seam": dict(kind="vertex", room="pool", color=(0.80, 0.77, 0.69)),     # the parasol's seams
+    "pillow_rust": dict(kind="vertex", room="pool", color=(0.62, 0.33, 0.21)),
+    "pillow_olive": dict(kind="vertex", room="pool", color=(0.46, 0.46, 0.32)),
+    "towel":       dict(kind="vertex", room="pool", color=(0.95, 0.94, 0.90)),
+    "towel_stripe": dict(kind="vertex", room="pool", color=(0.72, 0.60, 0.44)),
+    "towel_navy":  dict(kind="vertex", room="pool", color=(0.11, 0.16, 0.29)),
+    "bronze_dark": dict(kind="vertex", room="pool", color=(0.11, 0.09, 0.075)),
+    # the quiver trees, a Poly Haven model keeping its own colour picture
+    "quiver_tree": dict(kind="vertex", room="pool", img="quiver_tree", size=256, double_sided=True,
+                        src="quiver_tree_02/textures/quiver_tree_02_diff_1k.jpg", color=(1, 1, 1)),
+    "fire_glass":  dict(kind="vertex", room="pool", color=(0.08, 0.07, 0.065)),
+    "flame":       dict(kind="emissive", room="pool", color=(1.0, 0.55, 0.20), strength=14.0),
+    "lantern_glow": dict(kind="emissive", room="pool", color=(1.0, 0.70, 0.42), strength=2.4),
+    # the table setting
+    "sake_bottle": dict(kind="vertex", room="pool", color=(0.07, 0.10, 0.08)),
+    "sake_cap":    dict(kind="vertex", room="pool", color=(0.10, 0.09, 0.09)),
+    "bottle_gloss": dict(kind="glass", room="pool", color=(0.30, 0.36, 0.32), opacity=0.10),
+    "sake_label":  dict(kind="vertex", room="pool", img="sake_label", color=(1, 1, 1)),
+    "stoneware":   dict(kind="vertex", room="pool", color=(0.80, 0.77, 0.70)),
+    "sake":        dict(kind="vertex", room="pool", color=(0.78, 0.74, 0.58)),
+    # what I left behind: sunglasses on the table, loafers on the deck
+    "shades":      dict(kind="vertex", room="pool", color=(0.03, 0.028, 0.026)),
+    "shades_lens": dict(kind="glass", room="pool", color=(0.05, 0.04, 0.035), opacity=0.85),
+    "suede":       dict(kind="vertex", room="pool", color=(0.42, 0.28, 0.18)),
+    "sole":        dict(kind="vertex", room="pool", color=(0.16, 0.10, 0.07)),
+    # the visitor's hand and drink, carried with the camera (skin painted per vertex)
+    "skin":        dict(kind="vertex", room="pool", albedo=True, color=(1, 1, 1)),
+    "visitor_cuff": dict(kind="vertex", room="pool", color=(0.78, 0.82, 0.87)),
+    "martini_glass": dict(kind="glass", room="pool", color=(0.86, 0.90, 0.90), opacity=0.16),
+    "martini":     dict(kind="glass", room="pool", color=(0.85, 0.86, 0.76), opacity=0.32),
+    "olive_fruit": dict(kind="vertex", room="pool", color=(0.34, 0.40, 0.14)),
+    "pick":        dict(kind="vertex", room="pool", color=(0.12, 0.09, 0.07)),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.
@@ -173,6 +219,15 @@ def build_materials():
                 mul.operation = "MULTIPLY"
                 mul.inputs[1].default_value = srgb_to_linear(m.get("color", (1, 1, 1)))
                 link(node.outputs["Color"], mul.inputs[0])
+                link(mul.outputs[0], bsdf.inputs["Base Color"])
+            elif m.get("albedo"):
+                # colour painted per vertex (the character's skin), times a plain colour
+                attr = new("ShaderNodeAttribute")
+                attr.attribute_name = "Albedo"
+                mul = new("ShaderNodeVectorMath")
+                mul.operation = "MULTIPLY"
+                mul.inputs[1].default_value = srgb_to_linear(m.get("color", (1, 1, 1)))
+                link(attr.outputs["Color"], mul.inputs[0])
                 link(mul.outputs[0], bsdf.inputs["Base Color"])
             else:
                 bsdf.inputs["Base Color"].default_value = (*srgb_to_linear(m["color"]), 1.0)

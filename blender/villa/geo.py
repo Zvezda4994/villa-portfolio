@@ -48,10 +48,12 @@ def _dist(a, b):
 
 
 class Part:
-    def __init__(self, name, group, mode, atlas, room=None):
+    def __init__(self, name, group, mode, atlas, room=None, attach=None):
         self.name, self.group, self.mode, self.atlas, self.room = name, group, mode, atlas, room
+        self.attach = attach
         self.verts, self.faces, self.mats = [], [], []
         self.uv0, self.uv1, self.smooth = [], [], []
+        self.colors = {}                 # vertex index -> linear colour, for surfaces painted per vertex
         self.dead = set()
 
 
@@ -64,6 +66,18 @@ class Builder:
         self.densities = {}
         self.atlas_rects = {}            # atlas -> [(x, y, w, h)] in texels, for the bake's hole filling
         self.current_room = None
+        self.current_attach = None
+
+    @contextmanager
+    def attached(self, name):
+        """Everything added inside this block is kept in its own objects, tagged
+        attach=name. "camera" means the website carries it along with the camera
+        (the visitor's hand at the pool)."""
+        old, self.current_attach = self.current_attach, name
+        try:
+            yield self
+        finally:
+            self.current_attach = old
 
     @contextmanager
     def room(self, name):
@@ -92,8 +106,10 @@ class Builder:
                 raise ValueError(f"{room} furniture should use its own lightmap, not '{atlas}'")
         elif atlas and C.ATLASES[atlas].get("room"):
             raise ValueError(f"lightmap '{atlas}' belongs to a room; build inside `with b.room(...)`")
+        if self.current_attach:
+            key = f"{key}__{self.current_attach}"
         if key not in self.parts:
-            self.parts[key] = Part(key, group, mode, atlas, room)
+            self.parts[key] = Part(key, group, mode, atlas, room, self.current_attach)
         return self.parts[key]
 
     def quad(self, group, mat, pts, atlas=None, density=1.0, rot=False, cull=False, uv=None):
@@ -168,15 +184,19 @@ class Builder:
         (x0, x1), (z0, z1) = sorted(x), sorted(z)
         return self.quad(group, mat, [(x0, y, z0), (x1, y, z0), (x1, y, z1), (x0, y, z1)], atlas, density, rot)
 
-    def mesh(self, group, mat, verts, faces, smooth=True, uvs=None):
+    def mesh(self, group, mat, verts, faces, smooth=True, uvs=None, colors=None):
         """Any other shape (plants, rocks, furniture). Only for materials lit per
         vertex. `uvs`, if given, has one list of (u, v) per face, one pair per corner,
-        for materials with a picture on them."""
+        for materials with a picture on them. `colors`, if given, is a colour per
+        vertex (linear), painted onto surfaces whose material says "albedo"."""
         part = self.part(group, mat)
         if part.mode == "lightmap":
             raise ValueError("free-form meshes cannot use a lightmap material")
         i = len(part.verts)
         part.verts.extend(verts)
+        if colors is not None:
+            for n, c in enumerate(colors):
+                part.colors[i + n] = tuple(c)
         for n, f in enumerate(faces):
             part.faces.append(tuple(i + k for k in f))
             part.mats.append(mat)
@@ -276,6 +296,16 @@ class Builder:
                 uv.active_render = True
             elif part.mode == "vertex":
                 me.color_attributes.new(name="Light", type="FLOAT_COLOR", domain="POINT")
+            if part.colors:
+                # surface colour painted per vertex; the bake folds it into the light
+                rgba = np.ones((len(verts), 4), dtype=np.float32)
+                for old, new in remap.items():
+                    if old in part.colors:
+                        rgba[new, :3] = part.colors[old]
+                albedo = me.color_attributes.new(name="Albedo", type="FLOAT_COLOR", domain="POINT")
+                albedo.data.foreach_set("color", rgba.ravel())
+                if part.mode == "vertex":
+                    me.color_attributes.active_color = me.color_attributes["Light"]
             me.update()
 
             ob = bpy.data.objects.new(part.name, me)
@@ -285,6 +315,8 @@ class Builder:
                 ob["lightmap"] = part.atlas
             if part.room:
                 ob["room"] = part.room
+            if part.attach:
+                ob["attach"] = part.attach
             collection.objects.link(ob)
             objects[part.name] = ob
         print(f"[geo] {len(objects)} objects, {dropped} hidden faces dropped, lightmap texels per metre: "

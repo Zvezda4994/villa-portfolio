@@ -10,6 +10,10 @@
 //   todo   a note to self, shown in the panel until the real copy is in
 //   near   (optional) lets the camera come closer than usual, for close-ups like
 //          the chessboard; the camera then drops in from above instead of flying straight
+//   moment (optional) the camera in the manifest this stop is staged for; things
+//          modelled to travel with that camera (the visitor's martini) show there
+//   click  (optional) materials in the model that open this stop's panel when
+//          clicked or tapped, like the contact card on the pool deck's table
 //
 // The copy is still draft. Rooms marked todo are waiting on real numbers and lists.
 
@@ -67,10 +71,14 @@ export const ROOMS = [
     body: ["Currently learning Darija, Russian and Japanese."],
     todo: "Optional. Keep it if you can hold a short conversation in at least one."},
 
-  {id: "pool", floor: "out", area: "Pool deck", title: "Get in touch", at: [4, 1.2, -13], view: [[18, 7, -24], [4, 0.5, -12]],
-    body: ["Open to co-op and new-grad roles for 2027."],
+  {id: "pool", floor: "out", area: "Pool deck", title: "Get in touch", at: [-0.3, 2.1, -17.4],
+    // the visitor's lounger, looking out over the pool to the house (blender/villa/pool.py, MOMENT_CAM)
+    view: [[-1.351, 0.98, -18.062], [0.35, 0.56, -15.63]], near: 0.3, moment: "pool_moment",
+    click: ["card", "card_back"],
+    body: ["Open to co-op and new-grad roles for 2027.",
+      "Pull up a lounger. My details are on the card on the table."],
     links: [["GitHub", "https://github.com/Zvezda4994"]],
-    todo: "Add your email and LinkedIn as plain text."},
+    todo: "Add your email and LinkedIn as plain text. The card on the table shows placeholders until then (CONTACT_CARD in blender/villa/config.py)."},
 ];
 
 export const FLOOR_NAME = {out: "Outside", g: "Ground floor", u: "Upstairs"};

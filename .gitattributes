@@ -9,4 +9,5 @@
 *.jpg  binary
 *.png  binary
 *.npy  binary
+*.npz  binary
 *.blend binary

@@ -17,6 +17,7 @@ MODEL_IDS = [
     "horse_head",
     "potted_plant_01",
     "potted_plant_02",
+    "quiver_tree_02",
 ]
 
 
@@ -50,6 +51,7 @@ def load(model_id, only=None, skip=(), thin=None):
     if not path.exists():
         raise FileNotFoundError(f"{path} is missing. Run blender/fetch_assets.py first.")
     before = set(bpy.data.objects)
+    kept = {coll: set(coll) for coll in (bpy.data.materials, bpy.data.images)}
     bpy.ops.import_scene.gltf(filepath=str(path))
     new = [o for o in bpy.data.objects if o not in before]
     out = {}
@@ -82,9 +84,10 @@ def load(model_id, only=None, skip=(), thin=None):
         bpy.data.objects.remove(ob)
         if data is not None and data.users == 0 and isinstance(data, bpy.types.Mesh):
             bpy.data.meshes.remove(data)
-    for coll in (bpy.data.materials, bpy.data.images):
+    # (only what the import brought in: the scene's own materials may not have users yet)
+    for coll, old in kept.items():
         for item in list(coll):
-            if item.users == 0:
+            if item not in old and item.users == 0:
                 coll.remove(item)
     return out
 

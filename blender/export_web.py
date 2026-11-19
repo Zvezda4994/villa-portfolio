@@ -49,7 +49,26 @@ def _needs_uvs(ob):
     return False
 
 
-def export_glb(objects, path):
+# Blender's exporter stores Meshopt-compressed positions with a 12-bit mantissa per
+# vertex (EXP_FILTER_BITS in its meshopt module), so precision falls off with distance
+# from the origin: about 1 cm out at the pool deck, 18 m away. Walls don't mind, but
+# small furniture comes out blocky and a towel lying 9 mm over a cushion sinks into
+# it. Room files get 16 bits (under 1 mm there); the house keeps 12, which is smaller.
+ROOM_POSITION_BITS = 16
+
+
+def _position_bits(bits):
+    """Set the exporter's position precision; returns the old value, or None if this
+    Blender's exporter no longer has the setting (then nothing is changed)."""
+    from io_scene_gltf2.io.exp import meshopt
+    if not isinstance(getattr(meshopt, "EXP_FILTER_BITS", None), int):
+        print("[export] WARNING: the glTF exporter has no EXP_FILTER_BITS any more; positions keep its default precision")
+        return None
+    old, meshopt.EXP_FILTER_BITS = meshopt.EXP_FILTER_BITS, bits
+    return old
+
+
+def export_glb(objects, path, position_bits=None):
     for ob in objects:
         if not _needs_uvs(ob):
             for layer in list(ob.data.uv_layers):
@@ -59,6 +78,16 @@ def export_glb(objects, path):
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objects[0]
     path.parent.mkdir(parents=True, exist_ok=True)
+    old_bits = _position_bits(position_bits) if position_bits else None
+    try:
+        _export(path)
+    finally:
+        if old_bits is not None:
+            _position_bits(old_bits)
+    return path
+
+
+def _export(path):
     bpy.ops.export_scene.gltf(
         filepath=str(path), export_format="GLB", use_selection=True, export_yup=True,
         export_extras=True, export_cameras=False, export_lights=False, export_animations=False,
@@ -66,7 +95,6 @@ def export_glb(objects, path):
         export_image_format="NONE", export_materials="EXPORT", export_normals=False, export_tangents=False,
         export_vertex_color="ACTIVE", export_all_vertex_colors=False,
         export_meshopt_compression_enable=True)
-    return path
 
 
 def export_textures():
@@ -308,7 +336,7 @@ def main():
     for room in sorted({ob["room"] for ob in model.objects if ob.get("room")}):
         objects = [ob for ob in model.objects if ob.get("room") == room]
         rel = f"rooms/{room}.glb"
-        sizes[f"room {room}"] = export_glb(objects, C.ASSETS / rel).stat().st_size
+        sizes[f"room {room}"] = export_glb(objects, C.ASSETS / rel, ROOM_POSITION_BITS).stat().st_size
         rooms[room] = dict(model=rel)
     for old in (C.ASSETS / "rooms").glob("*.glb"):
         if old.stem not in rooms:

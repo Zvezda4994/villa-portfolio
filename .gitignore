@@ -13,3 +13,6 @@ __pycache__/
 .claude/
 .vscode/
 node_modules/
+
+# Work set aside for later (the scripted character), kept locally, never committed
+_shelved/

@@ -29,9 +29,12 @@ def main():
     scene.render.image_settings.quality = 92
     out = C.BUILD / "draft" if draft else C.PREVIEWS
     out.mkdir(parents=True, exist_ok=True)
+    carried = [ob for ob in bpy.data.objects if ob.get("attach") == "camera"]
     for name in names:
         start = time.time()
         scene.camera = bpy.data.objects[f"cam_{name}"]
+        for ob in carried:                # the visitor's hand only belongs in the pool moment
+            ob.hide_render = name != "pool_moment"
         scene.render.filepath = str(out / f"{name}.jpg")
         bpy.ops.render.render(write_still=True)
         print(f"[render] {name}.jpg  {time.time() - start:.1f}s")

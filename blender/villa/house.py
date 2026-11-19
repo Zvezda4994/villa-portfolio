@@ -27,9 +27,10 @@ DOOR = 2.3            # head height of inside doorways
 
 # Furnished rooms whose sheer curtains have gone (the games room has a blackout
 # blind instead), and rooms whose ceiling downlights are switched off (the games
-# room is lit by its screens). Their fittings are still there, just not glowing.
+# room is lit by its screens, the gym by its hanging LED bars). Their fittings are
+# still there, just not glowing.
 NO_SHEERS = {"games"}
-LIGHTS_OFF = {"games"}
+LIGHTS_OFF = {"games", "gym"}
 
 # Rooms: name -> (group, x range, z range, floor material). Also used to place lights.
 ROOMS = {

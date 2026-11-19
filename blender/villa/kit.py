@@ -55,6 +55,28 @@ class Kit:
                  for i in range(nx) for j in range(nz)]
         self.b.mesh(self.g, mat, f.many(verts), faces, smooth=False)
 
+    def block(self, mat, f, lo, hi, step=0.08, skip=()):
+        """A box lit per vertex with every face a fine grid (cabinet fronts, an island,
+        shelves seen from below), so light falling across it stays smooth even from a
+        quick draft bake. `mat` must be lit per vertex."""
+        (x0, y0, z0), (x1, y1, z1) = lo, hi
+        dx, dy, dz = x1 - x0, y1 - y0, z1 - z0
+        faces = {
+            "+y": ((x0, y1, z1), (dx, 0, 0), (0, 0, -dz)),
+            "-y": ((x0, y0, z0), (dx, 0, 0), (0, 0, dz)),
+            "+x": ((x1, y0, z1), (0, 0, -dz), (0, dy, 0)),
+            "-x": ((x0, y0, z0), (0, 0, dz), (0, dy, 0)),
+            "+z": ((x0, y0, z1), (dx, 0, 0), (0, dy, 0)),
+            "-z": ((x1, y0, z0), (-dx, 0, 0), (0, dy, 0)),
+        }
+        for name, (o, u, v) in faces.items():
+            if name in skip:
+                continue
+            nu = max(1, round(float(np.linalg.norm(u)) / step))
+            nv = max(1, round(float(np.linalg.norm(v)) / step))
+            verts, fc, _ = grid(o, u, v, nu, nv)
+            self.mesh(mat, f, verts, fc, smooth=False)
+
     def quad(self, mat, f, pts, density=1.0, uv=None):
         """One rectangle from four local corners, anticlockwise seen from the front."""
         self.b.quad(self.g, mat, f.many(pts), self.atlas, density, uv=uv)
@@ -107,44 +129,51 @@ class Kit:
         V, F = _rounded_box((0, 0, 0), (thick, thick, length), thick * 0.3, n)
         self.b.mesh(self.g, mat, [tuple((p0 + p1) / 2 + M @ np.asarray(v)) for v in V], F)
 
-    def sweep(self, mat, path, r, segments=12, caps=True):
+    def sweep(self, mat, path, r, segments=12, caps=True, colors=None):
         """A round tube along a path of world points (a lamp's arm, a cable). `r`
-        is one radius or one per point. Rings are kept from twisting by carrying
-        each one's frame along from the last."""
-        P = np.asarray(path, float)
-        n = len(P)
-        radii = np.broadcast_to(np.asarray(r, float), (n,)) if np.ndim(r) == 0 else np.interp(
-            np.linspace(0, 1, n), np.linspace(0, 1, len(r)), np.asarray(r, float))
-        tangents = np.gradient(P, axis=0)
-        tangents /= np.linalg.norm(tangents, axis=1, keepdims=True)
-        ref = np.array([0.0, 1.0, 0.0]) if abs(tangents[0][1]) < 0.9 else np.array([1.0, 0.0, 0.0])
-        u = np.cross(tangents[0], ref)
-        u /= np.linalg.norm(u)
-        verts, faces = [], []
-        for i in range(n):
-            t = tangents[i]
-            u = u - t * np.dot(u, t)
-            u /= np.linalg.norm(u)
-            v = np.cross(t, u)
-            for k in range(segments):
-                a = 2 * math.pi * k / segments
-                verts.append(tuple(P[i] + radii[i] * (math.cos(a) * u + math.sin(a) * v)))
-        for i in range(n - 1):
-            for k in range(segments):
-                a, c = i * segments + k, i * segments + (k + 1) % segments
-                faces.append((a, c, c + segments, a + segments))
-        if caps:
-            for i, flip in ((0, True), (n - 1, False)):
-                centre = len(verts)
-                verts.append(tuple(P[i]))
-                for k in range(segments):
-                    a, c = i * segments + k, i * segments + (k + 1) % segments
-                    faces.append((centre, c, a) if flip else (centre, a, c))
-        self.b.mesh(self.g, mat, verts, faces)
+        is one radius or one per point. `colors` (a function of a point) paints it
+        per vertex, for materials marked "albedo"."""
+        verts, faces = sweep_geom(path, r, segments, caps)
+        self.b.mesh(self.g, mat, verts, faces, colors=[colors(v) for v in verts] if colors else None)
 
     def mesh(self, mat, f, verts, faces, smooth=True, uvs=None):
         """Any shape given in local coordinates."""
         self.b.mesh(self.g, mat, f.many(verts), faces, smooth=smooth, uvs=uvs)
+
+
+def sweep_geom(path, r, segments=12, caps=True):
+    """Points and faces of a round tube along a path. Rings are kept from twisting by
+    carrying each one's frame along from the last."""
+    P = np.asarray(path, float)
+    n = len(P)
+    radii = np.broadcast_to(np.asarray(r, float), (n,)) if np.ndim(r) == 0 else np.interp(
+        np.linspace(0, 1, n), np.linspace(0, 1, len(r)), np.asarray(r, float))
+    tangents = np.gradient(P, axis=0)
+    tangents /= np.linalg.norm(tangents, axis=1, keepdims=True)
+    ref = np.array([0.0, 1.0, 0.0]) if abs(tangents[0][1]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    u = np.cross(tangents[0], ref)
+    u /= np.linalg.norm(u)
+    verts, faces = [], []
+    for i in range(n):
+        t = tangents[i]
+        u = u - t * np.dot(u, t)
+        u /= np.linalg.norm(u)
+        v = np.cross(t, u)
+        for k in range(segments):
+            a = 2 * math.pi * k / segments
+            verts.append(tuple(P[i] + radii[i] * (math.cos(a) * u + math.sin(a) * v)))
+    for i in range(n - 1):
+        for k in range(segments):
+            a, c = i * segments + k, i * segments + (k + 1) % segments
+            faces.append((a, c, c + segments, a + segments))
+    if caps:
+        for i, flip in ((0, True), (n - 1, False)):
+            centre = len(verts)
+            verts.append(tuple(P[i]))
+            for k in range(segments):
+                a, c = i * segments + k, i * segments + (k + 1) % segments
+                faces.append((centre, c, a) if flip else (centre, a, c))
+    return verts, faces
 
 
 def arc(p0, p1, bulge, n=16, up=(0.0, 1.0, 0.0)):
@@ -201,6 +230,17 @@ def cushion(size, r, n=3, div=8):
                 centre = sum(p) / 4
                 faces.append(f if np.dot(nrm, centre) >= 0 else f[::-1])
     return verts, faces
+
+
+def panel(kit, mat, origin, u, v, step=0.22):
+    """A flat panel in world coordinates lit per vertex on a grid about `step` apart,
+    facing along u x v: used to line a furnished room's walls over the house's own, so
+    they stay smooth from a draft bake. Lay it at least 12 mm off the house's wall:
+    the house file's positions are rounded to a few millimetres (gotcha 22)."""
+    nu = max(1, int(round(float(np.linalg.norm(u)) / step)))
+    nv = max(1, int(round(float(np.linalg.norm(v)) / step)))
+    verts, faces, _ = grid(origin, u, v, nu, nv)
+    kit.b.mesh(kit.g, mat, verts, faces, smooth=False)
 
 
 def grid(origin, u, v, nu, nv):

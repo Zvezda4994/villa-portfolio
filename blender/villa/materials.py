@@ -224,6 +224,73 @@ MATS = {
                         src="potted_plant_02/textures/potted_plant_02_leaves_diff_1k.jpg", color=(1, 1, 1)),
     "screen_main": dict(kind="screen", room="games", img="screen_main", color=(1, 1, 1), strength=1.4),
     "screen_chart": dict(kind="screen", room="games", img="screen_chart", color=(1, 1, 1), strength=1.4),
+
+    # --- shared by the kitchen and the gym (plain colours) ---
+    "oak_light":   dict(kind="vertex", color=(0.71, 0.60, 0.46)),          # pale oak: shelves, stools, the speed bag's board
+    "steel_black": dict(kind="vertex", color=(0.05, 0.05, 0.055)),
+    "steel_brushed": dict(kind="vertex", color=(0.66, 0.67, 0.68)),
+    "plaster_v":   dict(kind="vertex", color=(0.92, 0.91, 0.88)),          # the house's plaster, lining a room's walls
+
+    # --- kitchen (kitchen.py): white, pale oak and quartz ---
+    "kitchen_white": dict(kind="baked", room="kitchen", color=(0.90, 0.90, 0.88), rough=0.6),
+    "kitchen_plinth": dict(kind="baked", room="kitchen", color=(0.16, 0.16, 0.16), rough=0.8),
+    "kitchen_white_v": dict(kind="vertex", room="kitchen", color=(0.90, 0.90, 0.88)),
+    "kitchen_gap": dict(kind="vertex", room="kitchen", color=(0.16, 0.16, 0.16)),
+    "kitchen_quartz": dict(kind="vertex", room="kitchen", color=(0.91, 0.90, 0.87)),
+    "kitchen_tile": dict(kind="vertex", room="kitchen", img="kitchen_tile", color=(1, 1, 1)),
+    "kitchen_labels": dict(kind="vertex", room="kitchen", img="kitchen_labels", color=(1, 1, 1)),
+    "jar_glass":   dict(kind="glass", room="kitchen", color=(0.86, 0.91, 0.90), opacity=0.12, reflect=0.25),
+    "jar_seal":    dict(kind="vertex", room="kitchen", color=(0.80, 0.78, 0.74)),
+    "canister_white": dict(kind="vertex", room="kitchen", color=(0.93, 0.92, 0.89)),
+    "tin_black":   dict(kind="vertex", room="kitchen", color=(0.07, 0.07, 0.075)),
+    "tin_sage":    dict(kind="vertex", room="kitchen", color=(0.56, 0.61, 0.52)),
+    "content_pasta": dict(kind="vertex", room="kitchen", color=(0.86, 0.70, 0.42)),
+    "content_coffee": dict(kind="vertex", room="kitchen", color=(0.20, 0.12, 0.07)),
+    "content_rice": dict(kind="vertex", room="kitchen", color=(0.93, 0.91, 0.86)),
+    "content_lentils": dict(kind="vertex", room="kitchen", color=(0.78, 0.38, 0.18)),
+    "content_oats": dict(kind="vertex", room="kitchen", color=(0.80, 0.71, 0.55)),
+    "content_beans": dict(kind="vertex", room="kitchen", color=(0.13, 0.10, 0.10)),
+    "glass_black": dict(kind="vertex", room="kitchen", color=(0.03, 0.03, 0.035)),
+    "lemon":       dict(kind="vertex", room="kitchen", color=(0.88, 0.80, 0.08)),
+    "kitchen_coffee": dict(kind="vertex", room="kitchen", color=(0.16, 0.09, 0.05)),
+    "lamp_brass_k": dict(kind="vertex", room="kitchen", color=(0.82, 0.63, 0.37)),
+    "kitchen_globe": dict(kind="emissive", room="kitchen", color=(1.0, 0.90, 0.78), strength=2.0),
+    "kitchen_led": dict(kind="emissive", room="kitchen", color=(1.0, 0.92, 0.82), strength=3.0),
+    # the haworthia (Poly Haven's potted_plant_04) and the fig (potted_plant_01), as in the study
+    "kitchen_succulent": dict(kind="vertex", room="kitchen", img="succulent", size=256,
+                              src="potted_plant_04/textures/potted_plant_04_diff_1k.jpg", color=(1, 1, 1)),
+    "kitchen_fig_leaves": dict(kind="vertex", room="kitchen", img="fig_leaves", size=256, double_sided=True,
+                               src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "kitchen_fig_stems": dict(kind="vertex", room="kitchen", img="fig_stems", size=256,
+                              src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
+
+    # --- gym (gym.py): black mats, black and red leather, hard white light ---
+    "gym_mat":     dict(kind="vertex", room="gym", color=(0.105, 0.105, 0.11)),
+    "gym_mat_b":   dict(kind="vertex", room="gym", color=(0.125, 0.125, 0.13)),
+    "leather_black": dict(kind="vertex", room="gym", color=(0.055, 0.052, 0.05)),
+    "bag_band":    dict(kind="vertex", room="gym", color=(0.58, 0.06, 0.05)),
+    "speedbag":    dict(kind="vertex", room="gym", color=(0.50, 0.29, 0.15)),
+    "glove_red":   dict(kind="vertex", room="gym", color=(0.62, 0.05, 0.045)),
+    "glove_white": dict(kind="vertex", room="gym", color=(0.90, 0.90, 0.88)),
+    "glove_inside": dict(kind="vertex", room="gym", color=(0.03, 0.03, 0.03)),
+    "duffel_black": dict(kind="vertex", room="gym", color=(0.065, 0.065, 0.07)),
+    "duffel_inside": dict(kind="vertex", room="gym", color=(0.02, 0.02, 0.022)),
+    "duffel_trim": dict(kind="vertex", room="gym", color=(0.30, 0.30, 0.31)),
+    "duffel_zip":  dict(kind="vertex", room="gym", color=(0.55, 0.55, 0.56)),
+    "shin_white":  dict(kind="vertex", room="gym", color=(0.90, 0.90, 0.88)),
+    "shin_pad":    dict(kind="vertex", room="gym", color=(0.05, 0.05, 0.055)),
+    "shin_black":  dict(kind="vertex", room="gym", color=(0.085, 0.085, 0.09)),
+    "wrap_black":  dict(kind="vertex", room="gym", color=(0.07, 0.07, 0.075)),
+    "wrap_layer":  dict(kind="vertex", room="gym", color=(0.15, 0.15, 0.16)),     # the turns seen at a roll's end
+    "wrap_velcro": dict(kind="vertex", room="gym", color=(0.30, 0.30, 0.31)),
+    # the worn brown lace-up pair: the leather's colour is painted per vertex (gym._wear)
+    "glove_brown": dict(kind="vertex", room="gym", albedo=True, color=(1, 1, 1)),
+    "glove_black": dict(kind="vertex", room="gym", color=(0.045, 0.045, 0.05)),
+    "lace_tan":    dict(kind="vertex", room="gym", color=(0.80, 0.72, 0.58)),
+    "gym_board":   dict(kind="vertex", room="gym", img="gym_board", color=(1, 1, 1)),
+    "rope":        dict(kind="vertex", room="gym", color=(0.06, 0.06, 0.065)),
+    "gym_led":     dict(kind="emissive", room="gym", color=(0.92, 0.96, 1.0), strength=4.0),
+    "gym_timer":   dict(kind="screen", room="gym", img="gym_timer", color=(1, 1, 1), strength=1.6),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.

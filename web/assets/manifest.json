@@ -28,6 +28,12 @@
   "games": {
    "model": "rooms/games.glb"
   },
+  "gym": {
+   "model": "rooms/gym.glb"
+  },
+  "kitchen": {
+   "model": "rooms/kitchen.glb"
+  },
   "pool": {
    "model": "rooms/pool.glb"
   },
@@ -67,6 +73,10 @@
   "gam": {
    "file": "lightmaps/gam.ktx2",
    "room": "games"
+  },
+  "kit": {
+   "file": "lightmaps/kit.ktx2",
+   "room": "kitchen"
   }
  },
  "materials": {
@@ -1517,6 +1527,522 @@
    "map": "textures/screen_chart.ktx2",
    "room": "games",
    "strength": 1.4
+  },
+  "oak_light": {
+   "kind": "vertex",
+   "color": [
+    0.46236136930676214,
+    0.31854677812509186,
+    0.1788675039555289
+   ]
+  },
+  "steel_black": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.003935939504088967,
+    0.00440084974745434
+   ]
+  },
+  "steel_brushed": {
+   "kind": "vertex",
+   "color": [
+    0.3931231302267222,
+    0.40644830114675407,
+    0.4200332886842154
+   ]
+  },
+  "plaster_v": {
+   "kind": "vertex",
+   "color": [
+    0.8275708303626798,
+    0.8073459089125289,
+    0.748414103499371
+   ]
+  },
+  "kitchen_white": {
+   "kind": "baked",
+   "color": [
+    0.7874122893956174,
+    0.7874122893956174,
+    0.748414103499371
+   ],
+   "room": "kitchen",
+   "rough": 0.6
+  },
+  "kitchen_plinth": {
+   "kind": "baked",
+   "color": [
+    0.021980947079887205,
+    0.021980947079887205,
+    0.021980947079887205
+   ],
+   "room": "kitchen",
+   "rough": 0.8
+  },
+  "kitchen_white_v": {
+   "kind": "vertex",
+   "color": [
+    0.7874122893956174,
+    0.7874122893956174,
+    0.748414103499371
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_gap": {
+   "kind": "vertex",
+   "color": [
+    0.021980947079887205,
+    0.021980947079887205,
+    0.021980947079887205
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_quartz": {
+   "kind": "vertex",
+   "color": [
+    0.8073459089125289,
+    0.7874122893956174,
+    0.7293470915734015
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_tile": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/kitchen_tile.ktx2",
+   "room": "kitchen"
+  },
+  "kitchen_labels": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/kitchen_labels.ktx2",
+   "room": "kitchen"
+  },
+  "jar_glass": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.8073459089125289,
+    0.7874122893956174
+   ],
+   "room": "kitchen",
+   "opacity": 0.12,
+   "reflect": 0.25
+  },
+  "jar_seal": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5704815954749093,
+    0.5070785101492276
+   ],
+   "room": "kitchen"
+  },
+  "canister_white": {
+   "kind": "vertex",
+   "color": [
+    0.8480882574948619,
+    0.8275708303626798,
+    0.7677687605549981
+   ],
+   "room": "kitchen"
+  },
+  "tin_black": {
+   "kind": "vertex",
+   "color": [
+    0.00598105957261676,
+    0.00598105957261676,
+    0.006571403616195705
+   ],
+   "room": "kitchen"
+  },
+  "tin_sage": {
+   "kind": "vertex",
+   "color": [
+    0.27383841647314605,
+    0.3303437128042374,
+    0.23302199930143813
+   ],
+   "room": "kitchen"
+  },
+  "content_pasta": {
+   "kind": "vertex",
+   "color": [
+    0.7105664902244221,
+    0.44798841244188325,
+    0.147318999244498
+   ],
+   "room": "kitchen"
+  },
+  "content_coffee": {
+   "kind": "vertex",
+   "color": [
+    0.033104766570885055,
+    0.01341174889765847,
+    0.00598105957261676
+   ],
+   "room": "kitchen"
+  },
+  "content_rice": {
+   "kind": "vertex",
+   "color": [
+    0.8480882574948619,
+    0.8073459089125289,
+    0.7105664902244221
+   ],
+   "room": "kitchen"
+  },
+  "content_lentils": {
+   "kind": "vertex",
+   "color": [
+    0.5704815954749093,
+    0.1192801876221121,
+    0.027211780951381357
+   ],
+   "room": "kitchen"
+  },
+  "content_oats": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.46236136930676214,
+    0.26327340845612224
+   ],
+   "room": "kitchen"
+  },
+  "content_beans": {
+   "kind": "vertex",
+   "color": [
+    0.01532520332062848,
+    0.010022825574869039,
+    0.010022825574869039
+   ],
+   "room": "kitchen"
+  },
+  "glass_black": {
+   "kind": "vertex",
+   "color": [
+    0.0023219814241486067,
+    0.0023219814241486067,
+    0.002708978328173375
+   ],
+   "room": "kitchen"
+  },
+  "lemon": {
+   "kind": "vertex",
+   "color": [
+    0.748414103499371,
+    0.6038273388553378,
+    0.007194409291082934
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_coffee": {
+   "kind": "vertex",
+   "color": [
+    0.021980947079887205,
+    0.008540382112116999,
+    0.003935939504088967
+   ],
+   "room": "kitchen"
+  },
+  "lamp_brass_k": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_globe": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.7874122893956174,
+    0.5704815954749093
+   ],
+   "room": "kitchen",
+   "strength": 2.0
+  },
+  "kitchen_led": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.8275708303626798,
+    0.6382832153523972
+   ],
+   "room": "kitchen",
+   "strength": 3.0
+  },
+  "kitchen_succulent": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/succulent.ktx2",
+   "room": "kitchen"
+  },
+  "kitchen_fig_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_leaves.ktx2",
+   "room": "kitchen",
+   "doubleSided": true
+  },
+  "kitchen_fig_stems": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_stems.ktx2",
+   "room": "kitchen"
+  },
+  "gym_mat": {
+   "kind": "vertex",
+   "color": [
+    0.010816382958706206,
+    0.010816382958706206,
+    0.011645430905844125
+   ],
+   "room": "gym"
+  },
+  "gym_mat_b": {
+   "kind": "vertex",
+   "color": [
+    0.014349874706802563,
+    0.014349874706802563,
+    0.01532520332062848
+   ],
+   "room": "gym"
+  },
+  "leather_black": {
+   "kind": "vertex",
+   "color": [
+    0.00440084974745434,
+    0.004118273291493248,
+    0.003935939504088967
+   ],
+   "room": "gym"
+  },
+  "bag_band": {
+   "kind": "vertex",
+   "color": [
+    0.29569980462568246,
+    0.004896310081623859,
+    0.003935939504088967
+   ],
+   "room": "gym"
+  },
+  "speedbag": {
+   "kind": "vertex",
+   "color": [
+    0.21404114048223255,
+    0.06838485415816624,
+    0.01960664851623822
+   ],
+   "room": "gym"
+  },
+  "glove_red": {
+   "kind": "vertex",
+   "color": [
+    0.34239163959260344,
+    0.003935939504088967,
+    0.0035010160107980036
+   ],
+   "room": "gym"
+  },
+  "glove_white": {
+   "kind": "vertex",
+   "color": [
+    0.7874122893956174,
+    0.7874122893956174,
+    0.748414103499371
+   ],
+   "room": "gym"
+  },
+  "glove_inside": {
+   "kind": "vertex",
+   "color": [
+    0.0023219814241486067,
+    0.0023219814241486067,
+    0.0023219814241486067
+   ],
+   "room": "gym"
+  },
+  "duffel_black": {
+   "kind": "vertex",
+   "color": [
+    0.005422868676138171,
+    0.005422868676138171,
+    0.00598105957261676
+   ],
+   "room": "gym"
+  },
+  "duffel_inside": {
+   "kind": "vertex",
+   "color": [
+    0.0015479876160990713,
+    0.0015479876160990713,
+    0.0017027863777089782
+   ],
+   "room": "gym"
+  },
+  "duffel_trim": {
+   "kind": "vertex",
+   "color": [
+    0.07323895587840543,
+    0.07323895587840543,
+    0.07828831963873101
+   ],
+   "room": "gym"
+  },
+  "duffel_zip": {
+   "kind": "vertex",
+   "color": [
+    0.26327340845612224,
+    0.26327340845612224,
+    0.27383841647314605
+   ],
+   "room": "gym"
+  },
+  "shin_white": {
+   "kind": "vertex",
+   "color": [
+    0.7874122893956174,
+    0.7874122893956174,
+    0.748414103499371
+   ],
+   "room": "gym"
+  },
+  "shin_pad": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.003935939504088967,
+    0.00440084974745434
+   ],
+   "room": "gym"
+  },
+  "shin_black": {
+   "kind": "vertex",
+   "color": [
+    0.007850573473382362,
+    0.007850573473382362,
+    0.008540382112116999
+   ],
+   "room": "gym"
+  },
+  "wrap_black": {
+   "kind": "vertex",
+   "color": [
+    0.00598105957261676,
+    0.00598105957261676,
+    0.006571403616195705
+   ],
+   "room": "gym"
+  },
+  "wrap_layer": {
+   "kind": "vertex",
+   "color": [
+    0.01960664851623822,
+    0.01960664851623822,
+    0.021980947079887205
+   ],
+   "room": "gym"
+  },
+  "wrap_velcro": {
+   "kind": "vertex",
+   "color": [
+    0.07323895587840543,
+    0.07323895587840543,
+    0.07828831963873101
+   ],
+   "room": "gym"
+  },
+  "glove_brown": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "gym"
+  },
+  "glove_black": {
+   "kind": "vertex",
+   "color": [
+    0.0035010160107980036,
+    0.0035010160107980036,
+    0.003935939504088967
+   ],
+   "room": "gym"
+  },
+  "lace_tan": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.47699978456654196,
+    0.29569980462568246
+   ],
+   "room": "gym"
+  },
+  "gym_board": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/gym_board.ktx2",
+   "room": "gym"
+  },
+  "rope": {
+   "kind": "vertex",
+   "color": [
+    0.004896310081623859,
+    0.004896310081623859,
+    0.005422868676138171
+   ],
+   "room": "gym"
+  },
+  "gym_led": {
+   "kind": "emissive",
+   "color": [
+    0.8275708303626798,
+    0.9114075004063535,
+    1.0
+   ],
+   "room": "gym",
+   "strength": 4.0
+  },
+  "gym_timer": {
+   "kind": "screen",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/gym_timer.ktx2",
+   "room": "gym",
+   "strength": 1.6
   }
  },
  "cameras": {
@@ -1675,13 +2201,104 @@
     -3.67
    ],
    "fov": 36.0
+  },
+  "kitchen": {
+   "pos": [
+    -6.45,
+    1.36,
+    -3.02
+   ],
+   "target": [
+    -6.62,
+    1.47,
+    -0.075
+   ],
+   "fov": 52.0
+  },
+  "kitchen_shelf": {
+   "pos": [
+    -6.4,
+    1.66,
+    -1.3
+   ],
+   "target": [
+    -6.55,
+    1.78,
+    -0.1
+   ],
+   "fov": 50.0
+  },
+  "kitchen_wide": {
+   "pos": [
+    -5.55,
+    1.7,
+    -7.05
+   ],
+   "target": [
+    -9.4,
+    1.0,
+    -2.1
+   ],
+   "fov": 58.0
+  },
+  "gym": {
+   "pos": [
+    8.75,
+    1.4,
+    6.3
+   ],
+   "target": [
+    7.15,
+    1.0,
+    0.25
+   ],
+   "fov": 34.0
+  },
+  "gym_gear": {
+   "pos": [
+    7.95,
+    1.3,
+    2.05
+   ],
+   "target": [
+    7.05,
+    1.02,
+    0.1
+   ],
+   "fov": 52.0
+  },
+  "gym_wide": {
+   "pos": [
+    6.55,
+    1.7,
+    0.55
+   ],
+   "target": [
+    10.2,
+    0.85,
+    5.6
+   ],
+   "fov": 60.0
+  },
+  "gym_board": {
+   "pos": [
+    10.15,
+    1.45,
+    1.7
+   ],
+   "target": [
+    10.35,
+    1.4,
+    0.1
+   ],
+   "fov": 50.0
   }
  },
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303997,
-  "sky pool": 339807,
-  "sky front": 382776,
+  "sky environment": 303998,
+  "sky pool": 339751,
+  "sky front": 387692,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -1702,8 +2319,12 @@
   "texture fig_stems": 84183,
   "texture game_spines": 18220,
   "texture games_print": 273332,
+  "texture gym_board": 64144,
+  "texture gym_timer": 7640,
   "texture horse_head": 83148,
   "texture journal": 178839,
+  "texture kitchen_labels": 649396,
+  "texture kitchen_tile": 23537,
   "texture painting": 317639,
   "texture persian_rug": 507179,
   "texture philo_leaves": 67382,
@@ -1716,22 +2337,25 @@
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "texture whiteboard": 157289,
-  "model": 2380528,
+  "model": 2381008,
   "room dining": 2009996,
   "room games": 653768,
+  "room gym": 707912,
+  "room kitchen": 1321444,
   "room pool": 1214128,
   "room study": 1188908,
-  "lightmap ext": 313178,
-  "lightmap ext (small)": 309202,
-  "lightmap gnd": 298397,
-  "lightmap gnd (small)": 294437,
-  "lightmap upr": 267150,
-  "lightmap upr (small)": 263414,
-  "lightmap terrain": 289561,
-  "lightmap terrain (small)": 285665,
-  "lightmap din": 78036,
-  "lightmap pol": 64080,
-  "lightmap stu": 57541,
-  "lightmap gam": 41730
+  "lightmap ext": 313463,
+  "lightmap ext (small)": 309455,
+  "lightmap gnd": 280981,
+  "lightmap gnd (small)": 277085,
+  "lightmap upr": 267425,
+  "lightmap upr (small)": 263665,
+  "lightmap terrain": 289886,
+  "lightmap terrain (small)": 285982,
+  "lightmap din": 78537,
+  "lightmap pol": 63688,
+  "lightmap stu": 58969,
+  "lightmap gam": 50242,
+  "lightmap kit": 47563
  }
 }

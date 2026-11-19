@@ -84,6 +84,7 @@ ATLASES = {
     "pol": dict(size=1024, density=90.0, room="pool"),
     "stu": dict(size=1024, density=110.0, room="study"),
     "gam": dict(size=1024, density=110.0, room="games"),
+    "kit": dict(size=1024, density=90.0, room="kitchen"),
 }
 
 # The game on the dining table, in standard chess notation (FEN). Ruy Lopez,

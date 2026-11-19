@@ -1,0 +1,30 @@
+# The labels on the jars and tins on the kitchen's open shelves, one per line,
+# in order: top shelf first, left to right as you face the shelves.
+#
+# Change, add or remove lines freely; the shelves re-space themselves for any
+# number up to about 30. Lines starting with # are ignored. Long names with a
+# space in them are set on two lines. Rebuild to reprint them:
+#     npm run scene, then npm run bake:draft, then npm run export
+Python
+Java
+JavaScript
+SQL
+C
+HTML/CSS
+React
+Node.js
+Flask
+Streamlit
+pandas
+NumPy
+scikit-learn
+PyTorch
+SQLite
+Git
+Google Cloud
+Apps Script
+BeautifulSoup
+three.js
+Blender
+Stockfish
+ONNX

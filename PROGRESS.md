@@ -94,6 +94,38 @@ Previews: `previews/study.jpg`, `study_desk.jpg`, `games.jpg`, `games_desk.jpg`,
 `games_shelf.jpg` and their `browser_*` pairs. Downloads: the
 study 2.3 MB, the games room 1.1 MB (draft lightmaps; the full bake adds about 0.8 MB each).
 
+**Step 5, batch 2: the kitchen and the gym** (approved 19 Nov 2026, the gym after a
+second pass). Opening either room on the site drops the camera inside it.
+
+The kitchen (tools and stack), bright and clean, white, pale oak and quartz
+(`blender/villa/kitchen.py`):
+- open oak shelves over white tiles on the garage wall, an LED strip under each, with
+  23 jars, canisters and tins labelled in plain type with your tools. The labels
+  are in `data/kitchen_labels.txt`, one per line; the shelves re-space themselves for
+  any number, and long names shrink to fit their label;
+- a counter under the shelves with an espresso machine, a crock of wooden spoons
+  and a chopping board;
+- a quartz island with waterfall ends, three oak stools, three opal pendants, a
+  bowl of lemons and the visitor's coffee;
+- counters under both windows (sink, tall tap, induction hob, ceiling extractor),
+  tall white units with the fridge and two ovens, and a fig by the side window.
+
+The gym (boxing), black mats under hard white light (`blender/villa/gym.py`):
+- black rubber mats, kept clear but for the heavy bag (black, red bands, on chains);
+  the speed bag on its wall platform; three bare linear LEDs hung from the ceiling,
+  the house's downlights off;
+- the gear wall, left of the living room door: an oak bench with an open duffel
+  (shin and instep guards sticking up out of it), two rolled hand wraps (one partly
+  unrolled) and a bottle; above it a rack with three pairs of gloves (black, red,
+  black), and the worn brown lace-up sparring gloves hung from a hook by their laces;
+- right of the door, a small whiteboard with the round plan in marker ("12 x 3 min
+  open sparring" boxed in red); the round timer at 3:00 over the door; a jump rope.
+
+Previews: `previews/kitchen.jpg`, `kitchen_shelf.jpg`, `kitchen_wide.jpg`, `gym.jpg`,
+`gym_gear.jpg`, `gym_board.jpg`, `gym_wide.jpg`, and the `browser_*` pairs of the
+kitchen, kitchen_shelf, gym, gym_gear and gym_board. Downloads: the kitchen
+2.3 MB (the label picture 0.65 MB of it), the gym 0.8 MB (no lightmap).
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -148,7 +180,10 @@ change later.
 - Newer rooms build with `blender/villa/kit.py`: `Kit(b, group, atlas)` gives boxes,
   rounded and shapeable cushions (`cushion`), lathes, tubes, swept arms and flat
   grids in a piece's own `Frame`. `study.task_chair`, `study.sofa`, `book_upright`
-  and `book_flat` are reusable furniture.
+  and `book_flat` are reusable furniture. `Kit.block` is a box with every face a
+  fine grid lit per vertex (cabinet fronts, the island, shelves seen from below);
+  `kit.panel` lines a wall; `kit.sweep_geom` gives a tube's points without adding
+  it, and `Kit.sweep(..., colors=)` paints one per vertex.
 - A room's module also sets `ROOM` and `CEILING_LIGHT`, and may set `CEILING_COLOUR`;
   `lighting.furnished_rooms()` lists the room modules. Room lamps can be `"area"`
   (default), `"spot"` or `"point"`, each with an optional `colour`.
@@ -162,6 +197,17 @@ change later.
   its sky reflection down with `reflect`.
 - A room can drop its sheer curtains and switch its downlights off (`NO_SHEERS`,
   `LIGHTS_OFF` in `house.py`); it can line its walls (see `games.walls`).
+- **Line the walls the room's view looks at** with plaster lit per vertex
+  (`kit.panel` with `plaster_v`, as `kitchen.walls` and `gym.walls` do). The house's
+  own walls are on the ground and upper lightmaps, which the draft leaves very
+  blotchy close up. Lay linings 12 mm off the wall (gotcha 30), and start them at
+  the top of any counter standing against them (gotcha 26).
+- A room with nothing big and flat can do without a lightmap: the gym has none
+  (`Kit(b, G, None)`).
+- Worn or uneven colour on a small thing goes per vertex: an `albedo` material and
+  `colors=` on its meshes (the brown gloves, `gym._wear`).
+- Lists the user edits (labels, titles) go in `data/`, read by the room's script at
+  build time; rebuild to reprint them.
 - **Budget: around 4 MB per room.** That means the room's own file, the pictures
   only it uses, and its lightmap (a seated figure is counted separately, since it
   can come and go). Prefer materials other rooms already load, keep pictures at
@@ -207,6 +253,36 @@ change later.
   `GAMES_CAM`, from beside the sofa; `DESK_CAM` (`games_desk`) is the close-up.
 - Screen content: `paint_wallpaper` (main), `paint_chart` (team names in `TEAMS`),
   `paint_spines` (titles in `GAMES`). The print: `paint_print`.
+
+**The kitchen**
+
+- Layout: the labelled shelves and their counter on the garage wall, between the
+  garage door and the dining room wall (`RUN`); the island in front of them, its
+  stools on the window side; counters under the back and side windows; tall units
+  between the west wall and the garage door.
+- The site's view is `KITCHEN_CAM`, sitting on the right-hand stool, looking across
+  the island at the shelves; `kitchen_shelf` is the close-up where every label reads.
+- Labels: `data/kitchen_labels.txt`, top shelf first, left to right. `paint_labels`
+  sets them in Inter in one picture (4 across, 256 x 144 px each) and fits each to
+  its label (gotcha 32). Which container a label goes on (jar, canister, three kinds
+  of tin) follows its position (`KINDS`, `container_spec`).
+- The tiles stand 14 mm off the wall (`TILE_Z`, gotcha 30) and are laid in strips
+  between the shelves (gotcha 26). The tile picture is painted by `paint_tiles`.
+
+**The gym**
+
+- Layout: the gear wall left of the living room door (`GEAR_BENCH`, `RACK`, `HOOK`),
+  the whiteboard right of it (`BOARD`), the speed bag next to the east glass, the
+  heavy bag on the mat (`HEAVY_BAG`), placed so the site's view sees past it.
+- The site's view is `GYM_CAM`, standing on the mat behind the heavy bag, looking at
+  the gear wall, the bag in the left foreground; `gym_gear` and `gym_board` are the
+  close-ups, `gym_wide` the whole room. A bench by the front glass is left from the
+  first pass.
+- Gloves: `glove()` builds any of the kinds in `GLOVES` (lace-up brown, black, red);
+  the brown leather's wear is painted by `_wear`. The round plan is `ROUND_PLAN`
+  (Kalam, `paint_board`); the timer's face `paint_timer`.
+- Shin and instep guards: black with a white stripe down the front. All white, they
+  looked like legs sticking out of the bag.
 
 **The figure at the table**
 
@@ -463,6 +539,16 @@ The traps hit so far, so they don't get rediscovered.
     cool (`CEILING_COLOUR`). Very dark walls (0.1) also swallow the LED glows;
     charcoal around 0.2 still reads as charcoal and lets them show.
 29. **`_smooth_noise(shape, scale, rng)`: a bigger `scale` is smoother**, not rougher.
+30. **The house wall shows through things laid 3 mm in front of it.** The house file
+    keeps its positions at 12 bits (gotcha 22), a few millimetres out on the ground
+    floor, so a stretch of the kitchen's own wall came forward through its tiles as
+    a black strip, in the browser only. Tiles and wall linings now stand 12 to 14 mm
+    off the wall.
+31. **The export doesn't clear old lightmaps.** When a room drops its lightmap, delete
+    its `web/assets/lightmaps/<name>.ktx2` by hand (the gym's was).
+32. **Fitting text to a label: measure it small.** Set at full size, a long name
+    spills into the next label and measures as no wider than its own. `paint_labels`
+    sets every label at 0.4 first, measures, then sets each at the size that fits.
 
 ## Next
 
@@ -488,7 +574,7 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Next: batch 2, the kitchen and the gym.**
+5. **The remaining rooms (in progress). Next: batch 3, the living room and the library.**
    See "Step 5: the brief for the remaining rooms" below.
 6. **Polish.** The brief's performance section now has targets and no hard
    total size limit. Step 6 builds them:
@@ -513,6 +599,8 @@ The traps hit so far, so they don't get rediscovered.
    - **Prefetching.** Start loading a room when the visitor hovers over its label,
      and the neighbouring rooms while they're in one. This needs a room-to-room
      neighbour list.
+   - **A ceiling over the ground floor rooms** while the camera is inside one (see
+     "Smaller things noted along the way").
    - **Phones get lower-resolution textures** (a second, smaller set of pictures
      and lightmaps); desktops get the full set.
    - **While the still is showing and the 3D isn't ready:**
@@ -540,6 +628,13 @@ The traps hit so far, so they don't get rediscovered.
 
 **Smaller things noted along the way**
 
+- **No ceiling over the ground floor rooms on the site.** Opening a ground floor room
+  switches to the ground floor view, which hides the upper floor (`setView` in
+  `main.js`), and the ceiling belongs to it, so sky shows overhead in the study, the
+  dining room, the kitchen and the gym (and in their `browser_*` shots). The Blender
+  renders have the ceiling. For step 6: keep the upper floor's underside, or a
+  ceiling, showing while the camera is inside a ground floor room.
+
 - The glass reflections could use a probe in front of the house, like the water.
 - The far hills are hazier in the browser than in Blender, on purpose.
 - Sand facing the sun lacks Cycles' faint sheen.
@@ -558,8 +653,8 @@ panel text as it is; you're supplying it separately. Any text on screens, spines
 labels is plain type: no real logos, cover art or screenshots, except the moodboard
 images you supply.
 
-**Batches:** (1) study and games room, done; **(2) kitchen and gym, next**;
-(3) living room and library; (4) trophy room, bedroom, garage and foyer; (5) the
+**Batches:** (1) study and games room, done; (2) kitchen and gym, done;
+**(3) living room and library, next**; (4) trophy room, bedroom, garage and foyer; (5) the
 resume view.
 
 **What you asked for in each room** (your words, lightly trimmed):

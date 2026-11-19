@@ -185,8 +185,8 @@ def setup_lamps(collection):
 
 def furnished_rooms():
     """The modules of the furnished rooms that have their own lamps and ceiling light."""
-    from . import dining, games, study
-    return [dining, study, games]
+    from . import dining, games, gym, kitchen, study
+    return [dining, study, games, kitchen, gym]
 
 
 def furnished_lamps():
@@ -231,6 +231,8 @@ def add_camera(collection, name, pos, target, fov=45.0):
 
 from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
 from .games import DESK_CAM as GAMES_DESK_CAM, GAMES_CAM, SHELF_CAM  # noqa: E402
+from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_WIDE_CAM  # noqa: E402
+from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
 from .pool import MOMENT_CAM  # noqa: E402
 from .study import DESK_CAM, STUDY_CAM  # noqa: E402
 
@@ -249,6 +251,13 @@ PREVIEW_CAMERAS = {
     "games": GAMES_CAM,
     "games_desk": GAMES_DESK_CAM,
     "games_shelf": SHELF_CAM,
+    "kitchen": KITCHEN_CAM,
+    "kitchen_shelf": KITCHEN_SHELF_CAM,
+    "kitchen_wide": KITCHEN_WIDE_CAM,
+    "gym": GYM_CAM,
+    "gym_gear": GEAR_CAM,
+    "gym_wide": GYM_WIDE_CAM,
+    "gym_board": GYM_BOARD_CAM,
 }
 
 

@@ -41,7 +41,9 @@ export const ROOMS = [
     body: ["I run a four-car rental fleet on Turo with my dad: pricing, scheduling, guest communication and maintenance."],
     todo: "Add utilisation or revenue figures, and any tooling you built for it."},
 
-  {id: "gym", floor: "g", area: "Home gym", title: "Boxing", at: [9, 1.7, 4], view: [[9, 8.5, 11.5], [9, 0.8, 4]],
+  {id: "gym", floor: "g", area: "Home gym", title: "Boxing", at: [9, 1.7, 4],
+    // behind the heavy bag, looking at the gear wall (blender/villa/gym.py, GYM_CAM)
+    view: [[8.75, 1.4, 6.3], [7.15, 1.0, 0.25]], near: 0.4,
     body: ["Competitive boxer for years, and now a coach to more than 30 athletes."],
     todo: "A photo and one line on your coaching approach would land well here."},
 
@@ -49,7 +51,9 @@ export const ROOMS = [
     body: ["Floor-to-ceiling tank with a moss-covered mech resting on the bottom. Pure decoration, and the thing guests ask about first."],
     todo: "The tank and the mech arrive when this room is furnished."},
 
-  {id: "kitchen", floor: "g", area: "Kitchen", title: "Tools and stack", at: [-8.5, 1.7, -4], view: [[-8.5, 8.5, 3.5], [-8.5, 0.8, -4]],
+  {id: "kitchen", floor: "g", area: "Kitchen", title: "Tools and stack", at: [-8.5, 1.7, -4],
+    // sitting at the island, looking across it at the labelled shelves (blender/villa/kitchen.py, KITCHEN_CAM)
+    view: [[-6.45, 1.36, -3.02], [-6.62, 1.47, -0.075]], near: 0.4,
     body: ["What I build with day to day."],
     todo: "List languages, frameworks and tools you can defend in an interview."},
 

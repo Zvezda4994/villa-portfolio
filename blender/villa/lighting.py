@@ -128,11 +128,11 @@ def _lamp(collection, name, pos, size, watts, aim=(0.0, -1.0, 0.0), colour=LAMP_
     return ob
 
 
-def _spot(collection, name, pos, aim, watts, cone):
-    """A small spotlight, for the uplights and step lights outside."""
+def _spot(collection, name, pos, aim, watts, cone, colour=LAMP_COLOUR):
+    """A small spotlight: the uplights and step lights outside, a desk lamp."""
     light = bpy.data.lights.new(name, "SPOT")
     light.energy = watts
-    light.color = LAMP_COLOUR
+    light.color = colour
     light.spot_size = math.radians(cone)
     light.spot_blend = 0.6
     light.shadow_soft_size = 0.03
@@ -146,8 +146,9 @@ def _spot(collection, name, pos, aim, watts, cone):
 def setup_lamps(collection):
     """Lights are on in every room, plus a row of small ones under the overhangs.
     Furnished rooms turn their ceiling light down and add their own lamps."""
-    from .dining import CEILING_LIGHT as DINING_CEILING
-    FURNISHED_CEILING = {"dining": DINING_CEILING}
+    FURNISHED_CEILING = {room.ROOM: room.CEILING_LIGHT for room in furnished_rooms()}
+    # a room can also change its ceiling light's colour (the games room's is cool white)
+    CEILING_COLOUR = {room.ROOM: getattr(room, "CEILING_COLOUR", LAMP_COLOUR) for room in furnished_rooms()}
     for name, (group, (x0, x1), (z0, z1), _mat) in ROOMS.items():
         ceiling = H1 if group == "ground" else RY
         w, d = x1 - x0, z1 - z0
@@ -155,7 +156,8 @@ def setup_lamps(collection):
         if name == "foyer":                      # keep clear of the stairwell
             cz, d = (SZ1 + z1) / 2, z1 - SZ1
         watts = ROOM_LAMP_WATTS * w * d * FURNISHED_CEILING.get(name, 1.0)
-        _lamp(collection, f"lamp_{name}", (cx, ceiling - 0.25, cz), (w * 0.55, d * 0.55), watts)
+        _lamp(collection, f"lamp_{name}", (cx, ceiling - 0.25, cz), (w * 0.55, d * 0.55), watts,
+              colour=CEILING_COLOUR.get(name, LAMP_COLOUR))
     for i in range(10):
         _lamp(collection, f"soffit_low_{i}", (-10.8 + i * 2.4, H1 - 0.03, 8.7), (0.14, 0.14), SOFFIT_LAMP_WATTS)
         _lamp(collection, f"soffit_high_{i}", (-11.7 + i * 2.6, RY - 0.03, 9.4), (0.14, 0.14), SOFFIT_LAMP_WATTS)
@@ -167,18 +169,30 @@ def setup_lamps(collection):
     for i, x in enumerate(pool_light_positions()):
         _lamp(collection, f"pool_{i}", (x, -0.85, C.POOL_Z[1] - 0.06), (0.3, 0.3), POOL_LAMP_WATTS,
               aim=(0.0, -0.15, -1.0), colour=(0.75, 0.95, 1.0))
-    # the furnished rooms' own lamps: pendants, picture lights
-    from .dining import LAMPS as DINING_LAMPS
-    for lamp in DINING_LAMPS:
-        _lamp(collection, lamp["name"], lamp["pos"], lamp["size"], lamp["watts"], aim=lamp["aim"])
-    # the pool deck's lanterns, uplights and fire (filled in by pool.build_pool)
-    from .pool import LAMPS as POOL_LAMPS
-    for lamp in POOL_LAMPS:
-        if lamp["kind"] == "spot":
-            _spot(collection, lamp["name"], lamp["pos"], lamp["aim"], lamp["watts"], lamp["cone"])
+    # The furnished rooms' own lamps (pendants, picture lights, desk lamps, screens),
+    # and the pool deck's lanterns, uplights and fire (filled in while building).
+    # Each is a dict: "kind" is "area" (the default), "spot" or "point".
+    for lamp in furnished_lamps():
+        colour = lamp.get("colour", LAMP_COLOUR)
+        kind = lamp.get("kind", "area")
+        if kind == "spot":
+            _spot(collection, lamp["name"], lamp["pos"], lamp["aim"], lamp["watts"], lamp["cone"], colour)
+        elif kind == "point":
+            _point(collection, lamp["name"], lamp["pos"], lamp["watts"], lamp.get("radius", 0.05), colour)
         else:
-            _point(collection, lamp["name"], lamp["pos"], lamp["watts"], lamp.get("radius", 0.05),
-                   lamp.get("colour", LAMP_COLOUR))
+            _lamp(collection, lamp["name"], lamp["pos"], lamp["size"], lamp["watts"], aim=lamp["aim"], colour=colour)
+
+
+def furnished_rooms():
+    """The modules of the furnished rooms that have their own lamps and ceiling light."""
+    from . import dining, games, study
+    return [dining, study, games]
+
+
+def furnished_lamps():
+    from .pool import LAMPS as POOL_LAMPS
+    lamps = [lamp for room in furnished_rooms() for lamp in room.LAMPS]
+    return lamps + POOL_LAMPS
 
 
 def _point(collection, name, pos, watts, radius, colour):
@@ -216,7 +230,9 @@ def add_camera(collection, name, pos, target, fov=45.0):
 
 
 from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
+from .games import DESK_CAM as GAMES_DESK_CAM, GAMES_CAM, SHELF_CAM  # noqa: E402
 from .pool import MOMENT_CAM  # noqa: E402
+from .study import DESK_CAM, STUDY_CAM  # noqa: E402
 
 # The views rendered for review after each build step. The website can jump to
 # any of them with ?shot=name.
@@ -228,6 +244,11 @@ PREVIEW_CAMERAS = {
     "chess": CHESS_CAM,
     "deck": dict(pos=(-7.0, 4.2, -10.0), target=(2.0, 0.0, -17.8), fov=50.0),
     "pool_moment": MOMENT_CAM,
+    "study": STUDY_CAM,
+    "study_desk": DESK_CAM,
+    "games": GAMES_CAM,
+    "games_desk": GAMES_DESK_CAM,
+    "games_shelf": SHELF_CAM,
 }
 
 

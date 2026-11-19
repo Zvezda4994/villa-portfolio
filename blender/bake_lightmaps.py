@@ -190,7 +190,9 @@ def main():
 
     if not only and not encode_only:
         start = time.time()
-        scene.cycles.samples = 64 if draft else 512
+        # Vertex light is cheap (seconds) and lives in the room files, not the lightmaps,
+        # so even a draft gives it enough samples for dark rooms to come out clean.
+        scene.cycles.samples = 256 if draft else 512
         n = bake_vertices(model)
         print(f"[bake] vertex light on {n} objects  {time.time() - start:.0f}s")
         bpy.ops.wm.save_as_mainfile(filepath=str(BAKED_BLEND))

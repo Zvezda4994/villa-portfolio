@@ -278,7 +278,7 @@ def write_manifest(fog, sizes, sky_paths, rooms):
             bl = m["blend"]
             entry["blend"] = dict(map=f"textures/{bl['tex']}.ktx2", tile=bl["tile"], color=list(bl["tint"]),
                                   mask=f"textures/{bl['mask']}.ktx2")
-        for key in ("rough", "metal", "opacity", "strength", "probe", "ripple"):
+        for key in ("rough", "metal", "opacity", "strength", "probe", "ripple", "reflect"):
             if key in m:
                 entry[key] = m[key]
         if m.get("double_sided"):

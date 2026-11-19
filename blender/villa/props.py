@@ -18,6 +18,7 @@ MODEL_IDS = [
     "potted_plant_01",
     "potted_plant_02",
     "quiver_tree_02",
+    "potted_plant_04",
 ]
 
 

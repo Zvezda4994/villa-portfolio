@@ -62,11 +62,43 @@ site is live at https://zvezda4994.github.io/villa-portfolio/. Every push to `ma
 runs `npm test` and then publishes `web/` to GitHub Pages, the same setup as the
 chess project.
 
-**The lighting in the repo is mostly a draft bake.** It's quick to make but
-blotchy. Two lightmaps have the full bake since step 4: `ext` (the house's
-outside, the paving and the pool) and `pol` (the pool room's furniture), to
-check the camera moment. The rest, and all the per-vertex light, wait for the
-full bake once the rooms are done.
+**Step 5, batch 1: the study and the games room** (approved 19 Nov 2026). Both are
+furnished to the dining room's standard. Opening either room on the site drops the
+camera inside it (`view` with `near` in `rooms.js`, like the dining room).
+
+The study (VAREK), warm and late-evening (`blender/villa/study.py`):
+- a 2.6 m whiteboard on the dark stone wall with "call comes in → AI agent answers
+  → appointment booked" drawn in marker (Kalam), a tray of markers, a brass
+  picture light; a tall fig on one side, a slim smoked-oak bookshelf on the other;
+- a deep moss-green sofa facing the board across a glass and brass coffee table,
+  on an original Persian-style rug, worn and faded, with fringes; a brass floor lamp;
+- a smoked-oak desk at the front glass with a brass task lamp, an open journal
+  (notes on the call flow), a pen and a cup, and a shaped, padded swivel chair;
+- a low oak credenza with books, a brass sphere and a succulent.
+
+The games room (CS2), black and white and lit by its screens (`blender/villa/games.py`):
+- charcoal walls and ceiling laid over the house's own, a blackout blind over the
+  window, the ceiling downlights off and the sheers gone;
+- a white desk; a 32" OLED (black wallpaper) and a second monitor (win-probability
+  chart, "Team Alpha" and "Team Bravo" as placeholders) on a white dual arm whose
+  arms show under the screens; a light bar, a bias light and an LED wash behind the desk;
+- a white keyboard and mouse on a black mat, a white showcase PC on a plinth (glass
+  front and side, board, pump, RAM, graphics card, seven glowing fans), the white chair;
+- a small white shelf with the five games, white spines and black titles: Yakuza 0,
+  Hotline Miami, S.T.A.L.K.E.R., Titanfall 2, Metro Exodus;
+- black slat acoustic panels lit from below, a large framed black and white print
+  (an original dune landscape) under its own spot, a philodendron with an uplight,
+  an off-white sofa with a low round black table across the room.
+
+Previews: `previews/study.jpg`, `study_desk.jpg`, `games.jpg`, `games_desk.jpg`,
+`games_shelf.jpg` and their `browser_*` pairs. Downloads: the
+study 2.3 MB, the games room 1.1 MB (draft lightmaps; the full bake adds about 0.8 MB each).
+
+**The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
+committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
+touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
+looks blotchy on walls, floors and lightmapped furniture in the browser; the
+Blender previews show the intended look.
 
 ## Decisions
 
@@ -113,6 +145,23 @@ change later.
 - A furnished room turns its general ceiling light down (`CEILING_LIGHT`) and
   adds its own lamps (`LAMPS`), which `lighting.py` picks up.
 - Add its review cameras to `PREVIEW_CAMERAS`; they also work as `?shot=` in the site.
+- Newer rooms build with `blender/villa/kit.py`: `Kit(b, group, atlas)` gives boxes,
+  rounded and shapeable cushions (`cushion`), lathes, tubes, swept arms and flat
+  grids in a piece's own `Frame`. `study.task_chair`, `study.sofa`, `book_upright`
+  and `book_flat` are reusable furniture.
+- A room's module also sets `ROOM` and `CEILING_LIGHT`, and may set `CEILING_COLOUR`;
+  `lighting.furnished_rooms()` lists the room modules. Room lamps can be `"area"`
+  (default), `"spot"` or `"point"`, each with an optional `colour`.
+- **Things the draft bake makes blotchy, light per vertex on a grid instead**: a
+  signature surface (the whiteboard, the games desk top, the print) looks bad
+  mottled in the browser. `Kit.slab` and `kit.grid` make finely divided surfaces
+  lit per vertex, which stay smooth at any bake quality.
+- Lettering (labels, spines, screens, whiteboards) is painted by `labels.text_mask`
+  with Inter, or a font from `config.FONTS` (downloaded by `fetch_assets.py`).
+- Glowing pictures (monitors) use the `screen` material kind. Indoor glass can turn
+  its sky reflection down with `reflect`.
+- A room can drop its sheer curtains and switch its downlights off (`NO_SHEERS`,
+  `LIGHTS_OFF` in `house.py`); it can line its walls (see `games.walls`).
 - **Budget: around 4 MB per room.** That means the room's own file, the pictures
   only it uses, and its lightmap (a seated figure is counted separately, since it
   can come and go). Prefer materials other rooms already load, keep pictures at
@@ -136,6 +185,28 @@ change later.
   it down are below, under "The figure at the table".
 - The fish tank in the living room isn't built yet; nothing in the dining room
   blocks the living room's walls.
+
+**The study**
+
+- Layout: the lounge faces the whiteboard on the dark stone wall (`LOUNGE_Z`); the
+  desk faces the front glass; the credenza is on the gym wall by the desk. The
+  site's view is `STUDY_CAM`, from behind the sofa.
+- The rug is painted by `study.paint_rug` (an original medallion design, then
+  knots, abrash, wear and fading). The whiteboard by `paint_whiteboard`, the
+  journal by `paint_journal`. Change the text there and rebuild.
+- Brass on lamps is pale (`lamp_brass`): the site shows only diffuse light, so a
+  realistic brass reads as black in the dim corner by the glass.
+
+**The games room**
+
+- Strictly black and white: charcoal lining (`wall_charcoal` 0.22, ceiling 0.17),
+  white furniture, cool-white light only (`CEILING_COLOUR`). The ceiling lining is in
+  the "roof" group so it lifts off with the roof in the Upstairs view.
+- The setup is built in `setup_frame()`: origin on the bedroom wall at the desk's
+  middle, +z into the room, +x to the sitter's right. The site's view is
+  `GAMES_CAM`, from beside the sofa; `DESK_CAM` (`games_desk`) is the close-up.
+- Screen content: `paint_wallpaper` (main), `paint_chart` (team names in `TEAMS`),
+  `paint_spines` (titles in `GAMES`). The print: `paint_print`.
 
 **The figure at the table**
 
@@ -322,7 +393,7 @@ The traps hit so far, so they don't get rediscovered.
     "configure pages" because the repo had Pages off. The fix was Settings → Pages
     → Source: GitHub Actions. It's on now.
 13. **Every bake commit adds its lightmaps to Git history.** That's about 2 MB
-    for a draft and 16 MB for a full bake. Commit full bakes only at milestones.
+    for a draft and 16 MB for a full bake. Commit draft lightmaps only.
     If history gets heavy, consider Git LFS (the Pages workflow would need
     `lfs: true` on checkout).
 14. **Tools on this machine.** The GitHub CLI isn't installed; pushes use Git's
@@ -373,6 +444,25 @@ The traps hit so far, so they don't get rediscovered.
     harmless; the pool loads its trees after, when none of the scene's own
     materials has a user yet, and the build fell over. It now removes only what
     the import brought in.
+24. **Browser review shots from a background tab.** With the preview pane in the
+    background the page gets no animation frames, so the camera never turned to
+    its target and `?save=` pictures looked straight down -z. `main.js` now aims
+    the camera when a `?shot=` is set up and again just before saving.
+25. **Per-vertex light needs vertices in the open.** A rod whose only rings sit
+    inside what it's fixed to, or a shell 3 mm from a second shell, bakes black.
+    `Kit.tube` adds a ring every 5 cm; make the inside of a lampshade glow
+    (emissive) rather than a second solid skin.
+26. **Don't lay a picture over a whole panel lit per vertex.** The panel's points
+    under the picture bake dark and the visible border blends toward them and goes
+    muddy brown. Build mats and borders as strips round the picture.
+27. **Dark rooms need more vertex samples.** The draft's 64 were speckled in the
+    games room; the draft now uses 256 for vertex light (seconds, and it lives in
+    the room files, not the lightmaps). Lightmaps stay at the draft's 48.
+28. **Warm light makes white look beige.** The house's lamp colour is warm; the
+    games room's faint ceiling fill tinted every white surface until it was made
+    cool (`CEILING_COLOUR`). Very dark walls (0.1) also swallow the LED glows;
+    charcoal around 0.2 still reads as charcoal and lets them show.
+29. **`_smooth_noise(shape, scale, rng)`: a bigger `scale` is smoother**, not rougher.
 
 ## Next
 
@@ -383,9 +473,10 @@ The traps hit so far, so they don't get rediscovered.
   `npm run figure` (steps above).
 - The car (step 2): pick a model and an engine sound from the options shown,
   whenever you want to pick it back up.
-- Panel copy: VAREK and Turo numbers, the trophy list, the library list, the stack
-  list, contact details. The contact details also go on the card on the pool
-  deck's table (`CONTACT_CARD` in `config.py`).
+- Panel copy, which you're supplying separately (leave the panel text as it is
+  until then): VAREK and Turo numbers, the trophy list, contact details. The
+  contact details also go on the card on the pool deck's table (`CONTACT_CARD`).
+- Images for the living room's gallery wall, in `assets_src/moodboard/` (batch 3).
 - For later steps:
   - a choice of chess position for the dining table;
   - approval before buying anything over about $60, most likely the car model.
@@ -397,8 +488,8 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms,** one at a time as each room's story arrives. When a
-   room is furnished, its curtains can go.
+5. **The remaining rooms (in progress). Next: batch 2, the kitchen and the gym.**
+   See "Step 5: the brief for the remaining rooms" below.
 6. **Polish.** The brief's performance section now has targets and no hard
    total size limit. Step 6 builds them:
    - **A still of the landing shot within about 1 second.** It's a full-quality
@@ -447,3 +538,95 @@ The traps hit so far, so they don't get rediscovered.
 - The glass reflections could use a probe in front of the house, like the water.
 - The far hills are hazier in the browser than in Blender, on purpose.
 - Sand facing the sun lacks Cycles' faint sheen.
+
+## Step 5: the brief for the remaining rooms
+
+Your brief for step 5 (18 Nov 2026), kept here so each session can pick up the next
+batch. The dining room is the template for the level of detail.
+
+**How each batch runs.** One batch per session: build, `npm run bake:draft`, show
+browser shots of each room (and the Blender renders of the same cameras), wait for
+your OK, commit (draft lightmaps only), then update this file with what's done and
+what's next. Use CC0 assets (Poly Haven, Quaternius, ambientCG) and credit them in
+`CREDITS.md`, or model pieces yourself. Stay within the per-room budget. Leave
+panel text as it is; you're supplying it separately. Any text on screens, spines or
+labels is plain type: no real logos, cover art or screenshots, except the moodboard
+images you supply.
+
+**Batches:** (1) study and games room, done; **(2) kitchen and gym, next**;
+(3) living room and library; (4) trophy room, bedroom, garage and foyer; (5) the
+resume view.
+
+**What you asked for in each room** (your words, lightly trimmed):
+
+- **Kitchen (tools and stack).** Bright and clean. An island with stools and open
+  shelving where jars and tins are labelled with my tools. Keep the labels in a data
+  file so I can edit them. Labels: Python, Java, JavaScript, SQL, C, HTML/CSS, React,
+  Node.js, Flask, Streamlit, pandas, NumPy, scikit-learn, PyTorch, SQLite, Git,
+  Google Cloud, Apps Script, BeautifulSoup, three.js, Blender, Stockfish, ONNX. The
+  labelled shelf is the room's signature.
+- **Gym (boxing).** Floor mats, a heavy bag on the left, a speed bag on the right.
+  Gear set out neatly: an open duffel bag with shin guards poking out, a pair of
+  boxing gloves, hand wraps. Clean, harsh overhead light.
+- **Living room.** L-shaped sofa, rug, coffee table, a large OLED TV on a wooden
+  stand showing a dark, streaming-style paused screen with "Hunter × Hunter" in
+  plain type (no logo or artwork). A gallery wall of 4–6 frames in mixed sizes that
+  works as a moodboard: images go in `assets_src/moodboard/`. Write a script that
+  resizes and compresses them into the site, with a manifest; each time the living
+  room is opened the frames show a random selection. Frame images load only when
+  the room opens and don't count toward the landing download. Until images are
+  added, plain colour fields. Sparse and calm. The aquarium wall stays, with a
+  moss-covered rock in place of the mech for now.
+- **Library (books and my writing).** Floor-to-ceiling dark-wood shelves are the
+  main attraction, plus a reading chair, a green banker's lamp, and a desk with a
+  laptop and a manuscript stack. The book list goes in a data file. Real titles at
+  eye level as plain spines (title, plus author where given); fill the rest with
+  unmarked spines and a few objects, full but not cluttered. Each Travis McGee spine
+  is printed in the colour from its title.
+  - Dumas: The Three Musketeers, Twenty Years After, The Vicomte de Bragelonne,
+    Louise de la Vallière, The Man in the Iron Mask, The Count of Monte Cristo,
+    Queen Margot, La Dame de Monsoreau, The Forty-Five Guardsmen, The Black Tulip,
+    Joseph Balsamo, The Queen's Necklace
+  - Ian Fleming: Casino Royale, Live and Let Die, Moonraker, Diamonds Are Forever,
+    From Russia with Love, Dr. No, Goldfinger, For Your Eyes Only, Thunderball, The
+    Spy Who Loved Me, On Her Majesty's Secret Service, You Only Live Twice, The Man
+    with the Golden Gun, Octopussy and The Living Daylights
+  - John D. MacDonald (Travis McGee): The Deep Blue Good-by, Nightmare in Pink, A
+    Purple Place for Dying, The Quick Red Fox, A Deadly Shade of Gold, Bright Orange
+    for the Shroud, Darker Than Amber, One Fearful Yellow Eye, Pale Gray for Guilt,
+    The Girl in the Plain Brown Wrapper, Dress Her in Indigo, The Long Lavender Look,
+    A Tan and Sandy Silence, The Scarlet Ruse, The Turquoise Lament, The Dreadful
+    Lemon Sky, The Empty Copper Sea, The Green Ripper, Free Fall in Crimson,
+    Cinnamon Skin, The Lonely Silver Rain
+  - Vadim Zeland: Reality Transurfing, volumes I–V
+  - Maxwell Maltz: Psycho-Cybernetics
+  - Randy Wayne White: The Man Who Invented Florida, The Heat Islands
+  - Joseph Conrad: Heart of Darkness
+  - Cormac McCarthy: Blood Meridian
+  - Amor Towles: A Gentleman in Moscow
+  - Objective: Secure
+  - Whiskey Tango Foxtrot
+  - Heartiste, set in a blackletter font (UnifrakturMaguntia, SIL Open Font
+    License, credit it; add it to `config.FONTS`, its file is
+    `ofl/unifrakturmaguntia/UnifrakturMaguntia-Book.ttf` in the Google Fonts repo)
+- **Trophy room.** Spotlit glass cases with medals and a belt, a trophy, a framed
+  team-photo spot (empty frame for now), and a chessboard. Opens onto the terrace.
+- **Main bedroom (languages).** Soft and minimal: bed in linen, a nightstand, a
+  shelf with a few books, a world map with three pins (Morocco, Russia, Japan).
+- **Garage (Turo).** A clean, bright showroom: two empty bays, a key cabinet with
+  four labelled keys, a wall screen with a simple booking calendar.
+- **Foyer.** An empty plinth (the sculpture comes later), the stairs, a console table.
+- **Resume.** "Skip to resume" and the under-stairs door open the same resume view:
+  a clean HTML page built from a data file (`resume.json`), plus a "Download PDF"
+  button. The current resume is at `assets_src/resume.pdf`; use it for the content.
+  On the web version, show email, LinkedIn and GitHub only (no phone number). The
+  content is outdated and will be updated in the data file later, so keep the
+  structure simple: education, experience, projects, skills.
+
+**Room positions, for planning** (from `house.ROOMS`; the kitchen and gym are on the
+ground floor): kitchen x -12 to -5, z -8 to 0 (window on the back wall at x -11 to -6,
+side window on the west wall); gym x 6 to 12, z 0 to 8 (front glass, and glass on the
+east wall at z 1 to 7; doors to the study at z 3.4 to 4.6 and to the living room at
+x 8.4 to 9.6). Batch 1's lessons to reuse: light signature surfaces per vertex on a
+grid, keep lamp metals light, give the site's view a seat-height camera inside the room.
+

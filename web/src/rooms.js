@@ -31,7 +31,9 @@ export const ROOMS = [
       "On the table: a Ruy Lopez, Chigorin variation, after 16...Bd7. White to move, and it's your seat."],
     links: [["Live site", "https://zvezda4994.github.io/Meruem-Chess-Coach/"], ["Code", "https://github.com/Zvezda4994/Meruem-Chess-Coach", 0, 1]]},
 
-  {id: "study", floor: "g", area: "The study", title: "VAREK Systems", at: [3.75, 1.7, 4], view: [[3.75, 8.5, 11.5], [3.75, 0.8, 4]],
+  {id: "study", floor: "g", area: "The study", title: "VAREK Systems", at: [3.75, 1.7, 4],
+    // from behind the sofa, looking over it at the whiteboard (blender/villa/study.py, STUDY_CAM)
+    view: [[5.8, 1.55, 2.95], [1.5, 1.05, 1.75]], near: 0.4,
     body: ["Co-founder of an AI automation agency for local Halifax businesses: voice agents and workflow automation built on Synthflow."],
     todo: "Add two client case studies with one number each (calls handled, hours saved)."},
 
@@ -63,7 +65,9 @@ export const ROOMS = [
     body: ["Wins in coding, boxing and esports."],
     todo: "Add the trophy list: what, when, and one line on each."},
 
-  {id: "games", floor: "u", area: "Games room", title: "CS2 and the pick'em model", at: [-0.5, 5.2, -4], view: [[-0.5, 12, 4], [-0.5, 4.2, -4]],
+  {id: "games", floor: "u", area: "Games room", title: "CS2 and the pick'em model", at: [-0.5, 5.2, -4],
+    // from beside the sofa, across the room to the setup (blender/villa/games.py, GAMES_CAM)
+    view: [[1.625, 5.12, -2.1], [-4.325, 4.42, -4.65]], near: 0.4,
     body: ["I compete on Dalhousie's collegiate esports team in Counter-Strike 2, and built a win-probability model for pick'em predictions."],
     todo: "Link the model's repo and give its accuracy against a baseline."},
 

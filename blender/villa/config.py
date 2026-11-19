@@ -15,6 +15,7 @@ BLEND_FILE = BUILD / "villa.blend"
 BAKE_DIR = BUILD / "bake"                   # raw lightmaps before compression
 SRC_TEX = ROOT / "assets_src" / "textures"  # downloaded source textures
 SRC_MODELS = ROOT / "assets_src" / "models" # downloaded source models (glTF)
+SRC_FONTS = ROOT / "assets_src" / "fonts"   # downloaded fonts for painted lettering
 ASSETS = ROOT / "web" / "assets"            # what the website loads
 PREVIEWS = ROOT / "previews"
 
@@ -81,6 +82,8 @@ ATLASES = {
     # loaded together with the room after the first view is up.
     "din": dict(size=1024, density=140.0, room="dining"),
     "pol": dict(size=1024, density=90.0, room="pool"),
+    "stu": dict(size=1024, density=110.0, room="study"),
+    "gam": dict(size=1024, density=110.0, room="games"),
 }
 
 # The game on the dining table, in standard chess notation (FEN). Ruy Lopez,
@@ -119,6 +122,13 @@ CONTACT_CARD = dict(
     name="Name",
     lines=["email", "LinkedIn", "GitHub"],
 )
+
+# Extra typefaces for painted lettering, all SIL Open Font License, from the Google
+# Fonts collection (credited in CREDITS.md): file name -> where fetch_assets.py gets it.
+FONTS = {
+    "Kalam-Regular.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Regular.ttf",
+    "Kalam-Bold.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf",
+}
 
 ATLAS_PADDING = 8        # empty texels between islands
 LOW_RES = 512            # size of the quick-loading preview copy of each lightmap

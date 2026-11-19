@@ -9,6 +9,12 @@ kind:
   sheer    see-through curtain fabric, lit per vertex like the above.
   glass / water / emissive / flat   handled specially on the website. Water
            reflects a panorama taken from where it sits ("probe").
+  reflect  (glass) how strongly it reflects the sky panorama; indoor glass that the
+           sky can't really reach (a glass table) turns it down. Default 1.
+  screen   a glowing picture (the games room's monitors): the picture times the
+           colour times "strength", the same in Blender and on the website. Like
+           the lampshade diffusers, it lights nothing in the bake; the room puts
+           a lamp in front of it instead.
 
 Colours are sRGB values from 0 to 1. Tints are plain multipliers.
 
@@ -50,6 +56,7 @@ MATS = {
     "light_warm":  dict(kind="emissive", color=(1.0, 0.72, 0.42), strength=12.0),
     "light_pool":  dict(kind="emissive", color=(0.70, 0.95, 1.0), strength=10.0),
     "cut":         dict(kind="flat", color=(0.07, 0.065, 0.06)),   # wall tops seen when the roof lifts off
+    "light_off":   dict(kind="vertex", color=(0.80, 0.80, 0.78)),    # a ceiling downlight switched off
     "sheer":       dict(kind="sheer", color=(0.93, 0.90, 0.84), opacity=0.62, double_sided=True),
     # --- small things lit per vertex ---
     "frame":       dict(kind="vertex", color=(0.06, 0.055, 0.05)),
@@ -134,6 +141,89 @@ MATS = {
     "martini":     dict(kind="glass", room="pool", color=(0.85, 0.86, 0.76), opacity=0.32),
     "olive_fruit": dict(kind="vertex", room="pool", color=(0.34, 0.40, 0.14)),
     "pick":        dict(kind="vertex", room="pool", color=(0.12, 0.09, 0.07)),
+
+    # --- shared by the furnished rooms (plain colours, nothing to download) ---
+    "aluminium":   dict(kind="vertex", color=(0.70, 0.71, 0.72)),
+    "caster":      dict(kind="vertex", color=(0.06, 0.06, 0.06)),
+    "paper_edge":  dict(kind="vertex", color=(0.90, 0.87, 0.78)),
+    "ceramic_white": dict(kind="vertex", color=(0.92, 0.91, 0.88)),
+    "book_navy":   dict(kind="vertex", color=(0.13, 0.17, 0.29)),
+    "book_cream":  dict(kind="vertex", color=(0.84, 0.79, 0.68)),
+    "book_rust":   dict(kind="vertex", color=(0.55, 0.25, 0.15)),
+    "book_olive":  dict(kind="vertex", color=(0.36, 0.37, 0.24)),
+    "book_charcoal": dict(kind="vertex", color=(0.15, 0.15, 0.16)),
+    # smoked oak: the house's oak picture, darker, so it costs nothing extra to load
+    "study_oak":   dict(kind="baked", tex="oak_veneer_01", tile=1.4, tint=(0.62, 0.48, 0.37), rough=0.45),
+
+    # --- study (study.py) ---
+    "persian_rug": dict(kind="baked", room="study", img="persian_rug", color=(1, 1, 1), rough=1.0),
+    "whiteboard":  dict(kind="vertex", room="study", img="whiteboard", color=(1, 1, 1)),
+    "glass_table": dict(kind="glass", room="study", color=(0.78, 0.86, 0.84), opacity=0.22, reflect=0.2),
+    "sofa_wool":   dict(kind="vertex", room="study", color=(0.27, 0.30, 0.20)),
+    "cushion_rust": dict(kind="vertex", room="study", color=(0.63, 0.34, 0.19)),
+    "cushion_cream": dict(kind="vertex", room="study", color=(0.86, 0.82, 0.73)),
+    "throw":       dict(kind="vertex", room="study", color=(0.74, 0.68, 0.58)),
+    "chair_leather": dict(kind="vertex", room="study", color=(0.47, 0.27, 0.15)),
+    "chair_shell": dict(kind="vertex", room="study", color=(0.09, 0.085, 0.08)),
+    "dark_bronze": dict(kind="vertex", room="study", color=(0.12, 0.10, 0.08)),
+    # aged brass, less yellow than the house's; light, since the website shows only its diffuse light, not its shine
+    "lamp_brass":  dict(kind="vertex", room="study", color=(0.82, 0.63, 0.37)),
+    "black_marble": dict(kind="vertex", room="study", color=(0.06, 0.06, 0.065)),
+    "shade_linen": dict(kind="emissive", room="study", color=(1.0, 0.80, 0.58), strength=1.6),
+    "lamp_glow":   dict(kind="emissive", room="study", color=(1.0, 0.76, 0.48), strength=1.2),
+    "fringe":      dict(kind="vertex", room="study", color=(0.80, 0.74, 0.62)),
+    "planter_dark": dict(kind="vertex", room="study", color=(0.10, 0.095, 0.09)),
+    # the fig tree again (Poly Haven's potted_plant_01), here beside the whiteboard
+    "study_fig_leaves": dict(kind="vertex", room="study", img="fig_leaves", size=256, double_sided=True,
+                             src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "study_fig_stems": dict(kind="vertex", room="study", img="fig_stems", size=256,
+                            src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
+    "marker_body": dict(kind="vertex", room="study", color=(0.92, 0.92, 0.90)),
+    "marker_black": dict(kind="vertex", room="study", color=(0.05, 0.05, 0.06)),
+    "marker_blue": dict(kind="vertex", room="study", color=(0.12, 0.25, 0.60)),
+    "eraser_felt": dict(kind="vertex", room="study", color=(0.55, 0.55, 0.55)),
+    "journal_cover": dict(kind="vertex", room="study", color=(0.22, 0.13, 0.08)),
+    "journal_pages": dict(kind="vertex", room="study", img="journal", color=(1, 1, 1)),
+    "ribbon":      dict(kind="vertex", room="study", color=(0.50, 0.12, 0.10)),
+    "pen_black":   dict(kind="vertex", room="study", color=(0.04, 0.04, 0.045)),
+    "coffee":      dict(kind="vertex", room="study", color=(0.16, 0.09, 0.05)),
+    # Poly Haven's potted_plant_04 (a haworthia in a white pot), keeping its own picture
+    "succulent":   dict(kind="vertex", room="study", img="succulent", size=256,
+                        src="potted_plant_04/textures/potted_plant_04_diff_1k.jpg", color=(1, 1, 1)),
+
+    # --- games room (games.py): black and white, lit by the screens ---
+    "desk_mat":    dict(kind="vertex", room="games", color=(0.035, 0.035, 0.038)),
+    "rug_charcoal": dict(kind="baked", room="games", color=(0.10, 0.10, 0.105), rough=1.0),
+    "rug_line":    dict(kind="baked", room="games", color=(0.80, 0.80, 0.78), rough=1.0),
+    "white_v":     dict(kind="vertex", room="games", color=(0.88, 0.88, 0.87)),
+    "keycap":      dict(kind="vertex", room="games", color=(0.93, 0.93, 0.92)),
+    "monitor_black": dict(kind="vertex", room="games", color=(0.025, 0.025, 0.028)),
+    "metal_black": dict(kind="vertex", room="games", color=(0.04, 0.04, 0.045)),
+    "chair_white": dict(kind="vertex", room="games", color=(0.90, 0.90, 0.89)),
+    "chair_white_shell": dict(kind="vertex", room="games", color=(0.80, 0.80, 0.80)),
+    "board_white": dict(kind="vertex", room="games", color=(0.82, 0.82, 0.83)),
+    "fan_blade":   dict(kind="vertex", room="games", color=(0.86, 0.86, 0.86), double_sided=True),
+    "sofa_charcoal": dict(kind="vertex", room="games", color=(0.13, 0.13, 0.14)),
+    "cushion_white": dict(kind="vertex", room="games", color=(0.86, 0.86, 0.84)),
+    "cushion_black": dict(kind="vertex", room="games", color=(0.05, 0.05, 0.055)),
+    "case_black":  dict(kind="vertex", room="games", color=(0.03, 0.03, 0.033)),
+    "case_white":  dict(kind="vertex", room="games", color=(0.90, 0.90, 0.89)),
+    "blind":       dict(kind="vertex", room="games", color=(0.07, 0.07, 0.075)),
+    "blind_metal": dict(kind="vertex", room="games", color=(0.12, 0.12, 0.13)),
+    "pc_glass":    dict(kind="glass", room="games", color=(0.30, 0.32, 0.34), opacity=0.14, reflect=0.15),
+    "led_white":   dict(kind="emissive", room="games", color=(0.85, 0.90, 1.0), strength=2.2),
+    "game_spines": dict(kind="vertex", room="games", img="game_spines", color=(1, 1, 1)),
+    "wall_charcoal": dict(kind="vertex", room="games", color=(0.22, 0.22, 0.225)),
+    "ceiling_charcoal": dict(kind="vertex", room="games", color=(0.17, 0.17, 0.175)),
+    "felt_dark":   dict(kind="vertex", room="games", color=(0.30, 0.30, 0.30)),
+    "slat_black":  dict(kind="vertex", room="games", color=(0.035, 0.035, 0.038)),
+    "sofa_boucle": dict(kind="vertex", room="games", color=(0.80, 0.79, 0.76)),
+    "games_print": dict(kind="vertex", room="games", img="games_print", color=(1, 1, 1)),
+    # the philodendron (Poly Haven's potted_plant_02), as in the dining room
+    "games_philo": dict(kind="vertex", room="games", img="philo_leaves", size=256, double_sided=True,
+                        src="potted_plant_02/textures/potted_plant_02_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "screen_main": dict(kind="screen", room="games", img="screen_main", color=(1, 1, 1), strength=1.4),
+    "screen_chart": dict(kind="screen", room="games", img="screen_chart", color=(1, 1, 1), strength=1.4),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.
@@ -260,6 +350,22 @@ def build_materials():
             glow = new("ShaderNodeEmission")
             glow.inputs["Color"].default_value = (*srgb_to_linear(m["color"]), 1.0)
             glow.inputs["Strength"].default_value = m["strength"]
+            link(glow.outputs[0], output.inputs["Surface"])
+
+        elif kind == "screen":
+            # a picture that glows: what's on a monitor
+            node = new("ShaderNodeTexImage")
+            node.image = image(picture_path(m["img"]))
+            coords = new("ShaderNodeUVMap")
+            coords.uv_map = "UVMap"
+            link(coords.outputs["UV"], node.inputs["Vector"])
+            mul = new("ShaderNodeVectorMath")
+            mul.operation = "MULTIPLY"
+            mul.inputs[1].default_value = srgb_to_linear(m.get("color", (1, 1, 1)))
+            link(node.outputs["Color"], mul.inputs[0])
+            glow = new("ShaderNodeEmission")
+            glow.inputs["Strength"].default_value = m["strength"]
+            link(mul.outputs[0], glow.inputs["Color"])
             link(glow.outputs[0], output.inputs["Surface"])
 
         elif kind in ("glass", "water"):

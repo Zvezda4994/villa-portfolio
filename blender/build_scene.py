@@ -17,12 +17,14 @@ import bpy  # noqa: E402
 from villa import config as C  # noqa: E402
 from villa.dining import build_dining  # noqa: E402
 from villa.exterior import build_exterior  # noqa: E402
+from villa.games import build_games  # noqa: E402
 from villa.geo import Builder  # noqa: E402
 from villa.house import build_house  # noqa: E402
 from villa.lighting import setup_cameras, setup_lamps, setup_render, setup_world  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, build_materials  # noqa: E402
 from villa.plants import build_plants  # noqa: E402
 from villa.pool import build_pool, paint_pictures as paint_pool_pictures  # noqa: E402
+from villa.study import build_study  # noqa: E402
 from villa.terrain import build_hills, build_mask, build_sand  # noqa: E402
 from villa.textures import prepare_all, prepare_pictures  # noqa: E402
 
@@ -36,6 +38,8 @@ def main():
     build_mask()                      # where the sand turns to gravel; the sand material needs it
     b = Builder()
     build_dining(b)                   # paints the rug, painting and chessboard before materials load them
+    build_study(b)                    # and the Persian rug, the whiteboard and the journal
+    build_games(b)                    # and the screens and the game cases' spines
     paint_pool_pictures()             # the contact card and the sake label
     materials = build_materials()
 

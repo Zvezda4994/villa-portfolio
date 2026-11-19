@@ -236,11 +236,16 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         color: new THREE.Color().setRGB(...m.color).multiplyScalar(lightScale), vertexColors: true,
         transparent: true, opacity: m.opacity, depthWrite: false, side: THREE.DoubleSide,
       });
+    } else if (m.kind === "screen") {
+      // A glowing picture (what's on a monitor), as bright as it is in Blender.
+      mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setRGB(...m.color).multiplyScalar(m.strength ?? 1), map: m.map ? maps[m.map] : null,
+      });
     } else if (m.kind === "glass" || m.kind === "water") {
       // Reflections are added at full strength while what is behind shows through dimmed, like real glass.
       mat = new THREE.MeshPhysicalMaterial({
         color: 0x000000, roughness: m.kind === "water" ? 0.06 : 0.02, metalness: 0, ior: m.kind === "water" ? 1.33 : 1.9,
-        envMap: reflections, envMapIntensity: 1, transparent: true, opacity: m.opacity ?? 0.3, depthWrite: false,
+        envMap: reflections, envMapIntensity: m.reflect ?? 1, transparent: true, opacity: m.opacity ?? 0.3, depthWrite: false,
         side: THREE.DoubleSide, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
       });
       if (m.kind === "water") {

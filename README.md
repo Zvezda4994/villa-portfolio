@@ -7,14 +7,14 @@ follows; `blockout.html` is the first prototype, kept for reference.
 **Where it stands:** build step 1 (the house shell, grounds, sky and golden-hour
 lighting), step 3 (the dining room, fully furnished, with a game in progress
 on the table) and step 4 (the pool deck, furnished, with the "Get in touch"
-camera moment) are done. My character on the deck comes last. The car (step 2)
-is on hold. The other rooms are still empty. See `PROGRESS.md` for the decisions made so far and what
+camera moment) are done. Step 5, the remaining rooms, is under way in batches: the
+study and the games room are furnished. My character on the deck comes last. The
+car (step 2) is on hold. See `PROGRESS.md` for the decisions made so far and what
 to watch out for.
 
-**The lighting is currently mostly a quick draft bake**, so walls and rooms look a
-little blotchy in the browser. The house's outside and the pool deck already have
-the full-quality bake; the rest gets it (`npm run bake`) once all the rooms are
-built.
+**The lighting in the repo is a quick draft bake**, so walls and floors look a
+little blotchy in the browser. Only draft lightmaps are committed; the full-quality
+bake (`npm run bake`) is run once all the rooms are built.
 
 ## Look at it
 
@@ -45,7 +45,10 @@ GitHub Pages (`.github/workflows/pages.yml`).
 | `blender/villa/props.py` | Brings in the downloaded Poly Haven models and places copies of them. |
 | `blender/villa/pool.py` | The pool deck: loungers, towels, parasol, fire-pit lounge, planters and trees, lanterns, the table setting, and the camera moment. |
 | `blender/villa/frozen/` | The visitor's hand and a loafer, kept as plain meshes (see `PROGRESS.md`, "The pool deck"). |
-| `blender/villa/labels.py` | Prints the contact card and the sake label (text set with Blender's own copy of Inter). |
+| `blender/villa/study.py` | The study (VAREK): whiteboard, sofa, desk, bookshelf, the Persian rug, its lamps and cameras. |
+| `blender/villa/games.py` | The games room (CS2): the black and white setup, the screens, PC, panels, print and sofa. |
+| `blender/villa/kit.py` | Building blocks the newer rooms share: boxes, shaped cushions, tubes, swept arms, grids. |
+| `blender/villa/labels.py` | Prints lettering into pictures: the contact card, the sake label, screens and spines (Inter), the whiteboard and journal (Kalam). |
 | `previews/` | Review pictures for each build step. |
 | `tools/` | Small helpers: a runner for the Blender scripts and the local preview server. |
 | `tests/` | Checks run before every deploy: the exported files load, the downloads fit the budget, the rooms data is complete. |

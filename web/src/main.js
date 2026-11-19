@@ -190,6 +190,7 @@ window.addEventListener("hashchange", fromHash);
    On the real site nothing is listening, so this does nothing there. */
 function savePicture(name) {
   renderer.setPixelRatio(1); renderer.setSize(1920, 1080, false); camera.aspect = 16 / 9; camera.updateProjectionMatrix();
+  controls.update();       // (as above) the camera may not have been aimed yet if the page is in the background
   renderer.render(scene, camera);
   canvas.toBlob(blob => {
     fetch("/__shot?name=" + encodeURIComponent(name), {method: "POST", body: blob}).then(r => { document.body.dataset.saved = r.ok ? name : "failed"; }, () => {});
@@ -212,6 +213,7 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
     // the review cameras can sit below what they look at, which normal navigation forbids
     controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
     camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
+    controls.update();      // aim it now: a page in a background tab gets no animation frames to do it
     if (params.get("shot").endsWith("_moment")) shotMoment = params.get("shot");
   }
   if (params.get("ui") === "0") document.body.classList.add("bare");

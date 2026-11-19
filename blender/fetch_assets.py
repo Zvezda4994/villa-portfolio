@@ -1,7 +1,8 @@
-"""Download the source textures and models the scene uses into assets_src/.
+"""Download the source textures, models and fonts the scene uses into assets_src/.
 
-They are all CC0 assets from Poly Haven (see CREDITS.md). They are not kept in
-the repo, so run this once after cloning:
+The textures and models are CC0 assets from Poly Haven; the fonts are from the
+Google Fonts collection, under the SIL Open Font License (see CREDITS.md). None
+of them are kept in the repo, so run this once after cloning:
 
     python blender/fetch_assets.py
 
@@ -14,7 +15,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from villa.config import SRC_MODELS, SRC_TEX   # noqa: E402
+from villa.config import FONTS, SRC_FONTS, SRC_MODELS, SRC_TEX   # noqa: E402
 from villa.materials import TEXTURE_IDS       # noqa: E402
 from villa.props import MODEL_IDS             # noqa: E402
 
@@ -65,9 +66,25 @@ def fetch_models():
         print(f"fetched  {model_id}  ({len(wanted)} files, {total // 1024} KB)")
 
 
+def fetch_fonts():
+    """Typefaces for hand lettering and printed labels (Blender's own Inter covers the rest)."""
+    SRC_FONTS.mkdir(parents=True, exist_ok=True)
+    for name, url in FONTS.items():
+        dest = SRC_FONTS / name
+        if dest.exists() and dest.stat().st_size > 10_000:
+            print(f"have     {name}")
+            continue
+        data = get(url)
+        if data[:4] not in (b"\x00\x01\x00\x00", b"OTTO", b"true"):
+            raise SystemExit(f"{name}: the download is not a font file, check the link")
+        dest.write_bytes(data)
+        print(f"fetched  {name}  ({len(data) // 1024} KB)")
+
+
 def main():
     fetch_textures()
     fetch_models()
+    fetch_fonts()
 
 
 if __name__ == "__main__":

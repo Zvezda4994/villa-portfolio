@@ -1,9 +1,13 @@
-"""Small printed pictures for the pool deck: the contact card and the sake label.
+"""Printed and hand-lettered pictures: the contact card and the sake label on the
+pool deck, and the lettering in the furnished rooms (the study's whiteboard and
+journal, the games room's screens and game cases).
 
-Text is set with Blender's own text objects and the Inter typeface that ships
-with Blender (SIL Open Font License, the same face the website uses). Each line
-of text is rendered flat, white on black, as a mask, then laid over a paper
-background painted here, so no font file needs to be in the repo.
+Text is set with Blender's own text objects. Printed things use the Inter
+typeface that ships with Blender (SIL Open Font License, the same face the
+website uses); hand lettering uses the fonts in config.FONTS, which fetch_assets.py
+downloads into assets_src/fonts. Each line of text is rendered flat, white on
+black, as a mask, then laid over a background painted here, so no font file
+needs to be in the repo.
 """
 import math
 import tempfile
@@ -14,23 +18,29 @@ import numpy as np
 from . import config as C
 from .textures import load_pixels, picture_path, save_png
 
-
-def _font():
+def _font(name=None):
+    """Inter (Blender's own copy) by default, or one of config.FONTS by file name."""
     import bpy
+    if name:
+        path = C.SRC_FONTS / name
+        if not path.exists():
+            raise FileNotFoundError(f"{path} is missing. Run blender/fetch_assets.py first.")
+        return bpy.data.fonts.load(str(path), check_existing=True)
     fonts = Path(bpy.utils.system_resource("DATAFILES", path="fonts"))
-    for name in ("Inter.woff2", "Inter.ttf"):
-        if (fonts / name).exists():
+    for file in ("Inter.woff2", "Inter.ttf"):
+        if (fonts / file).exists():
             try:
-                return bpy.data.fonts.load(str(fonts / name), check_existing=True)
+                return bpy.data.fonts.load(str(fonts / file), check_existing=True)
             except RuntimeError:
                 pass
     return bpy.data.fonts.load("<builtin>")
 
 
-def text_mask(size, lines):
+def text_mask(size, lines, font=None):
     """White-on-black mask of some lines of text. `size` is (width, height) in
-    pixels; each line is (text, x, y, height, align, spacing) with x, y and height
-    as fractions of the picture height, measured from the bottom left."""
+    pixels; each line is (text, x, y, height, align, spacing), with x a fraction
+    of the picture's width and y and height fractions of its height, measured
+    from the bottom left. `font` is a file name from config.FONTS (default Inter)."""
     import bpy
     w, h = size
     scene = bpy.data.scenes.new("label_mask")
@@ -55,7 +65,7 @@ def text_mask(size, lines):
     scene.collection.objects.link(cam_ob)
     scene.camera = cam_ob
 
-    font = _font()
+    font = _font(font)
     made = []
     for text, x, y, height, align, spacing in lines:
         curve = bpy.data.curves.new("label_text", "FONT")

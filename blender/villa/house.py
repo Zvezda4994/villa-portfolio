@@ -25,6 +25,12 @@ SX0, SX1 = C.STAIR_X0, C.STAIR_X1
 SZ0, SZ1 = C.STAIR_Z
 DOOR = 2.3            # head height of inside doorways
 
+# Furnished rooms whose sheer curtains have gone (the games room has a blackout
+# blind instead), and rooms whose ceiling downlights are switched off (the games
+# room is lit by its screens). Their fittings are still there, just not glowing.
+NO_SHEERS = {"games"}
+LIGHTS_OFF = {"games"}
+
 # Rooms: name -> (group, x range, z range, floor material). Also used to place lights.
 ROOMS = {
     "garage":  ("ground", (-W, -5), (0, D), "floor_dark"),
@@ -267,21 +273,22 @@ def upper_floor(b):
     wall_run(b, g, "z", -D + T, D - T, W - T, W, F2, RY, [], inside="upr", outside="+x")
 
     zf, zb = D - T / 2, -D + T / 2
-    # (direction, start, end, glass line, which way is indoors, mullion spacing)
+    # (room, direction, start, end, glass line, which way is indoors, mullion spacing)
     runs = [
-        ("x", -11.2, -5.8, zf, -1, 1.8),        # lounge
-        ("x", -4.3, BX0, zf, -1, 1.75),         # landing
-        ("x", 2.2, 11.4, zf, -1, 1.85),         # library
-        ("x", -10.5, -6.5, zb, 1, 2.0),         # bedroom
-        ("x", -1.5, 1.5, zb, 1, 1.5),           # games
-        ("x", 5.0, 11.0, zb, 1, 2.0),           # trophy room, onto the terrace
-        ("z", -6.0, -2.0, -W + T / 2, 1, 2.0),  # bedroom side window
+        ("lounge", "x", -11.2, -5.8, zf, -1, 1.8),
+        ("landing", "x", -4.3, BX0, zf, -1, 1.75),
+        ("library", "x", 2.2, 11.4, zf, -1, 1.85),
+        ("bedroom", "x", -10.5, -6.5, zb, 1, 2.0),
+        ("games", "x", -1.5, 1.5, zb, 1, 1.5),
+        ("trophy", "x", 5.0, 11.0, zb, 1, 2.0),            # onto the terrace
+        ("bedroom", "z", -6.0, -2.0, -W + T / 2, 1, 2.0),  # side window
     ]
     rng = random.Random(3)
-    for along, a0, a1, t, indoors, every in runs:
+    for room, along, a0, a1, t, indoors, every in runs:
         glazing(b, g, along, a0, a1, t, F2, RY, every=every)
-        # Sheer curtains just inside, until the rooms are furnished.
-        sheers(b, rng, along, a0, a1, t + indoors * (T / 2 + 0.16), indoors)
+        # Sheer curtains just inside, until the room is furnished. (The random
+        # numbers are drawn either way, so the other rooms' curtains don't move.)
+        sheers(b, rng, along, a0, a1, t + indoors * (T / 2 + 0.16), indoors, keep=room not in NO_SHEERS)
 
     h = P / 2
     top = F2 + DOOR
@@ -291,9 +298,10 @@ def upper_floor(b):
     wall_run(b, g, "z", -D + T, -h, 4 - h, 4 + h, F2, RY, [(-4.6, -3.4, F2, top)], inside="upr")       # games | trophy
 
 
-def sheers(b, rng, along, a0, a1, t, indoors):
+def sheers(b, rng, along, a0, a1, t, indoors, keep=True):
     """Two sheer curtains along one run of glass, drawn in from the ends with a gap
-    of varying width between them, softly gathered into folds."""
+    of varying width between them, softly gathered into folds. With keep=False
+    nothing is built, but the same random numbers are used up."""
     y0, y1 = F2 + 0.03, RY - 0.05
     span = a1 - a0
     left, right = rng.uniform(0.3, 0.55), rng.uniform(0.3, 0.55)
@@ -304,6 +312,8 @@ def sheers(b, rng, along, a0, a1, t, indoors):
         n = int((p1 - p0) / 0.05) + 2
         verts, faces = [], []
         phase = rng.uniform(0, 2 * math.pi)
+        if not keep:
+            continue
         for i in range(n):
             s = p0 + (p1 - p0) * i / (n - 1)
             # deeper folds near the outer end, where the fabric is stacked
@@ -371,8 +381,8 @@ def downlights(b):
     light comes from lamps added in lighting.py; these are just the visible fittings."""
     s = 0.07
 
-    def spot(group, x, y, z):
-        b.quad(group, "light_warm", [(x - s, y, z - s), (x + s, y, z - s), (x + s, y, z + s), (x - s, y, z + s)])
+    def spot(group, x, y, z, mat="light_warm"):
+        b.quad(group, mat, [(x - s, y, z - s), (x + s, y, z - s), (x + s, y, z + s), (x - s, y, z + s)])
 
     for name, (group, (x0, x1), (z0, z1), _mat) in ROOMS.items():
         y, owner = (H1 - 0.004, "upper") if group == "ground" else (RY - 0.004, "roof")
@@ -382,7 +392,7 @@ def downlights(b):
                 px, pz = x0 + (x1 - x0) * (i + 0.5) / nx, z0 + (z1 - z0) * (j + 0.5) / nz
                 if name == "foyer" and SX0 - 0.2 < px < SX1 + 0.2 and pz < SZ1 + 0.2:
                     continue                      # no ceiling there, it is the stairwell
-                spot(owner, px, y, pz)
+                spot(owner, px, y, pz, "light_off" if name in LIGHTS_OFF else "light_warm")
     # under the upstairs ledge along the front, and under the roof overhang
     for i in range(10):
         spot("upper", -10.8 + i * 2.4, H1 - 0.004, 8.7)

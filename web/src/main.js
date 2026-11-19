@@ -29,12 +29,30 @@ camera.position.set(...HOME.pos); controls.target.set(...HOME.target);
 /* ---------- Views and fly-to ---------- */
 let world = null;
 let view = "out";
+// The floor views lift off what's above that floor (the roof for upstairs, the
+// upstairs and the roof for the ground floor) so it can be seen from above. Once
+// the camera is inside the house and below that floor's ceiling, the lifted floors
+// go back on, so a room has its ceiling at eye level. The switch happens as the
+// camera passes down through the ceiling on the way in, where nothing pops. It
+// stays on until the camera rises back through the ceiling of the floor it came in
+// on, even if the view changes first (from the games room to the kitchen, say).
+// Sizes from blender/villa/config.py: HALF_W, HALF_D, H1 and ROOF_Y.
+const HOUSE = {halfW: 12, halfD: 8, ceiling: {g: 3.2, u: 6.5}};
+let lifted = "", inside = null;                  // inside: the floor whose room the camera is in
+function fitFloors() {
+  if (!world) return;
+  const p = camera.position, inHouse = Math.abs(p.x) < HOUSE.halfW && Math.abs(p.z) < HOUSE.halfD;
+  if (inside && !(inHouse && p.y < HOUSE.ceiling[inside])) inside = null;
+  if (!inside && inHouse && p.y < HOUSE.ceiling[view]) inside = view;
+  const now = inside ? "out" : view;             // inside a room, the whole house shows
+  if (now === lifted) return;
+  lifted = now;
+  world.setVisible("roof", now === "out");      // the roof lifts off for the floor views
+  world.setVisible("upper", now !== "g");       // and the upstairs too, to see the ground floor
+}
 function setView(v, fly = true) {
   view = v;
-  if (world) {
-    world.setVisible("roof", v === "out");      // the roof lifts off for the floor views
-    world.setVisible("upper", v !== "g");       // and the upstairs too, to see the ground floor
-  }
+  fitFloors();
   controls.minDistance = 4;
   $("vOut").setAttribute("aria-pressed", v === "out"); $("vG").setAttribute("aria-pressed", v === "g"); $("vU").setAttribute("aria-pressed", v === "u");
   if (fly) {
@@ -56,13 +74,15 @@ let current = null;
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
   current = r;
-  if (r.floor !== view) setView(r.floor, false);
+  const otherFloor = r.floor !== view;
+  if (otherFloor) setView(r.floor, false);
   // Rooms with a close-up (the chessboard) let the camera come in near and drop
-  // in from above; the rest keep the normal fly-to.
+  // in from above; the rest keep the normal fly-to. Between floors it bends higher,
+  // so it leaves through the roof (6.5 m) instead of through the floor between them.
   controls.minDistance = r.near ?? 4;
   if (fly) {
     const [p, t] = r.view;
-    flyTo(p, t, r.near ? 1700 : 1300, r.near ? [t[0], 9, t[2] + 3] : null);
+    flyTo(p, t, r.near ? 1700 : 1300, r.near ? [t[0], otherFloor ? 12 : 9, t[2] + 3] : null);
   }
   renderPanel(r); $("rooms").hidden = true; $("roomsBtn").setAttribute("aria-expanded", "false");
   $("hint").hidden = true;
@@ -171,6 +191,7 @@ renderer.setAnimationLoop(t => {
     controls.target.lerpVectors(tween.t0, tween.t1, e); if (k >= 1) tween = null;
   }
   if (world) {
+    fitFloors();
     world.update(t / 1000);
     // At the pool the visitor holds a martini at the bottom of the frame, once the
     // camera has settled on their lounger and while they stay near it.
@@ -191,6 +212,7 @@ window.addEventListener("hashchange", fromHash);
 function savePicture(name) {
   renderer.setPixelRatio(1); renderer.setSize(1920, 1080, false); camera.aspect = 16 / 9; camera.updateProjectionMatrix();
   controls.update();       // (as above) the camera may not have been aimed yet if the page is in the background
+  fitFloors();             // and the floors may not have been fitted to where it is
   renderer.render(scene, camera);
   canvas.toBlob(blob => {
     fetch("/__shot?name=" + encodeURIComponent(name), {method: "POST", body: blob}).then(r => { document.body.dataset.saved = r.ok ? name : "failed"; }, () => {});

@@ -152,9 +152,8 @@ def monitors(k, f):
     for m, bend in ((main, (0.12, 0.17)), (side, (0.52, 0.12))):
         plate = np.array(m((0, -0.02, -0.056)))
         foot = np.array(m((0, -0.02, -0.07)))
-        foot[1] = arm_y
-        elbow = np.array(f((bend[0], 0.0, bend[1])))
-        elbow[1] = arm_y
+        foot[1] = hub[1]                                 # world height of arm_y (hub is already in world space)
+        elbow = np.array(f((bend[0], arm_y, bend[1])))
         for a, c in ((hub, elbow), (elbow, foot)):
             k.tube("white_v", tuple(a), tuple(c), 0.016, segments=14)
         for j in (elbow, foot):

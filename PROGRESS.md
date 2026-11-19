@@ -160,6 +160,11 @@ change later.
 - Space for the later "vault" is a lower level off the foyer, beside the stairs.
   Nothing blocks it.
 - The car will park on the setts court, angled to face the landing camera.
+- The Ground and Upstairs views lift off what's above that floor, so it's seen from
+  above. Once the camera is inside the house and below that floor's ceiling (3.2 m
+  or 6.5 m), the whole house goes back on, so a room has its ceiling; it lifts again
+  as the camera rises back through that ceiling (`fitFloors` in `main.js`). Flights
+  between floors bend up to 12 m so they leave through the roof, not the floor.
 
 **Furnishing a room** (the pattern the dining room sets)
 
@@ -549,6 +554,12 @@ The traps hit so far, so they don't get rediscovered.
 32. **Fitting text to a label: measure it small.** Set at full size, a long name
     spills into the next label and measures as no wider than its own. `paint_labels`
     sets every label at 0.4 first, measures, then sets each at the size that fits.
+33. **A room's frame heights aren't world heights upstairs.** The games room's monitor
+    arms set a point's y to `arm_y`, a height in the desk's frame, after the point had
+    been turned into world coordinates. That's 3.5 m (`F2`) too low, so the arms ran
+    down through the floor and hung in the dining room like ropes. Nobody saw them
+    until the ground floor rooms got their ceilings back (the Ground view used to hide
+    the whole upstairs). Take heights from a point already passed through the frame.
 
 ## Next
 
@@ -599,8 +610,6 @@ The traps hit so far, so they don't get rediscovered.
    - **Prefetching.** Start loading a room when the visitor hovers over its label,
      and the neighbouring rooms while they're in one. This needs a room-to-room
      neighbour list.
-   - **A ceiling over the ground floor rooms** while the camera is inside one (see
-     "Smaller things noted along the way").
    - **Phones get lower-resolution textures** (a second, smaller set of pictures
      and lightmaps); desktops get the full set.
    - **While the still is showing and the 3D isn't ready:**
@@ -627,13 +636,6 @@ The traps hit so far, so they don't get rediscovered.
    to match. The reference photos are needed then.
 
 **Smaller things noted along the way**
-
-- **No ceiling over the ground floor rooms on the site.** Opening a ground floor room
-  switches to the ground floor view, which hides the upper floor (`setView` in
-  `main.js`), and the ceiling belongs to it, so sky shows overhead in the study, the
-  dining room, the kitchen and the gym (and in their `browser_*` shots). The Blender
-  renders have the ceiling. For step 6: keep the upper floor's underside, or a
-  ceiling, showing while the camera is inside a ground floor room.
 
 - The glass reflections could use a probe in front of the house, like the water.
 - The far hills are hazier in the browser than in Blender, on purpose.

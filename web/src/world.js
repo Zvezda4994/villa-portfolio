@@ -355,13 +355,86 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     addModel(roomGltf.scene);
     for (const g of figureGltfs) addModel(g.scene);
   }
+  // One promise per room, settled once its furniture is in (or has failed to load).
+  // A room the visitor opens jumps the queue.
+  const queue = Object.keys(manifest.rooms || {});
+  const roomDone = {}, roomReady = {};
+  for (const name of queue) roomReady[name] = new Promise(r => { roomDone[name] = r; });
+  let wanted = null;
   const rooms = (async () => {
     await sharp;
-    for (const name of Object.keys(manifest.rooms || {})) {
+    while (queue.length) {
+      const i = Math.max(0, queue.indexOf(wanted));
+      const [name] = queue.splice(i, 1);
       try { await loadRoom(name); } catch (e) { console.warn("Could not load the", name, "furniture", e); }
+      roomDone[name]();
     }
     ktx2.dispose();
   })();
+
+  // ---- the living room's moodboard ----
+  // Its frames (materials marked "moodboard" in the manifest, each with its picture's
+  // shape) show pictures listed in assets/moodboard/moodboard.json (npm run moodboard),
+  // a fresh random pick each time the room is opened. Nothing is fetched before that.
+  // With no pictures listed, the frames stay the plain colour fields they were built with.
+  const frames = Object.entries(manifest.materials).filter(([, m]) => m.moodboard)
+    .map(([name, m]) => ({name, room: m.room, aspect: m.moodboard}));
+  const imageLoader = new THREE.TextureLoader();
+  const pictureTex = new Map();
+  let pictureList = null, shuffles = 0;
+  async function shuffleMoodboard(room) {
+    const mine = frames.filter(f => f.room === room);
+    if (!mine.length) return;
+    const turn = ++shuffles;
+    pictureList ||= fetch(ASSETS + "moodboard/moodboard.json")
+      .then(r => (r.ok ? r.json() : {images: []}))
+      .then(j => j.images || [], () => []);
+    const [images] = await Promise.all([pictureList, roomReady[room]]);
+    if (!images.length || turn !== shuffles) return;
+    // shuffle the pictures, then give each frame (in random order) whichever of the
+    // next few is closest to its shape, so few get cropped hard
+    const pool = images.slice();
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const misfit = (img, f) => Math.abs(Math.log(img.w / img.h / f.aspect));
+    const picks = mine.map(f => [Math.random(), f]).sort((a, b) => a[0] - b[0]).map(([, f]) => {
+      if (!pool.length) return [f, null];
+      const best = pool.slice(0, 3).reduce((a, b) => (misfit(b, f) < misfit(a, f) ? b : a));
+      pool.splice(pool.indexOf(best), 1);
+      return [f, best];
+    });
+    await Promise.all(picks.map(async ([f, img]) => {
+      const mat = (byMaterial.get(f.name) || [])[0]?.material;
+      if (!mat) return;
+      mat.userData.base ||= mat.color.clone();
+      let tex = null;
+      if (img) {
+        if (!pictureTex.has(img.file)) {
+          pictureTex.set(img.file, imageLoader.loadAsync(ASSETS + img.file).then(t => {
+            t.colorSpace = THREE.SRGBColorSpace;
+            t.flipY = false;                       // the frames' UVs come from glTF, which counts v from the top
+            t.anisotropy = Math.min(8, maxAniso);
+            return t;
+          }, () => null));
+        }
+        tex = await pictureTex.get(img.file);
+      }
+      if (turn !== shuffles) return;             // opened again meanwhile; the newer pick wins
+      if (!tex) {
+        if (mat.map) { mat.map = null; mat.color.copy(mat.userData.base); mat.needsUpdate = true; }
+        return;
+      }
+      // crop the picture to fill the frame, keeping its middle
+      const a = img.w / img.h;
+      if (a > f.aspect) { tex.repeat.set(f.aspect / a, 1); tex.offset.set((1 - f.aspect / a) / 2, 0); }
+      else { tex.repeat.set(1, a / f.aspect); tex.offset.set(0, (1 - a / f.aspect) / 2); }
+      if (!mat.map) mat.needsUpdate = true;
+      mat.map = tex;
+      mat.color.setScalar(lightScale);            // the picture's own colours, times the baked light
+    }));
+  }
 
   return {
     manifest, groups, sharp, rooms,
@@ -369,6 +442,11 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     setVisible(group, on) { visibleNow[group] = on; groups[group].forEach(o => { o.visible = on; }); },
     carry,
     hasCarried: () => carried.length > 0,
+    // The visitor opened this room: load its furniture next, and pick its moodboard's pictures.
+    openRoom(name) {
+      if (queue.includes(name)) wanted = name;
+      return shuffleMoodboard(name);
+    },
     // every mesh drawn with any of these materials (empty until its room has loaded)
     meshesWith: names => names.flatMap(n => byMaterial.get(n) || []),
     update(seconds) {

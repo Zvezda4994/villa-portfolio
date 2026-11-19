@@ -377,6 +377,21 @@ def blade_wall(b):
     seg("roof", "ext", (SZ0, ze), (RY, C.BLADE_TOP), over={})
 
 
+def downlight_spots(name):
+    """Where a room's ceiling downlights sit, (x, z). A room that lines its ceiling
+    (the living room, the library) puts fittings of its own under these."""
+    _group, (x0, x1), (z0, z1), _mat = ROOMS[name]
+    nx, nz = max(2, round((x1 - x0) / 2.6)), max(2, round((z1 - z0) / 2.8))
+    out = []
+    for i in range(nx):
+        for j in range(nz):
+            px, pz = x0 + (x1 - x0) * (i + 0.5) / nx, z0 + (z1 - z0) * (j + 0.5) / nz
+            if name == "foyer" and SX0 - 0.2 < px < SX1 + 0.2 and pz < SZ1 + 0.2:
+                continue                      # no ceiling there, it is the stairwell
+            out.append((px, pz))
+    return out
+
+
 def downlights(b):
     """Small glowing discs in the ceilings and under the overhangs. The actual
     light comes from lamps added in lighting.py; these are just the visible fittings."""
@@ -385,15 +400,10 @@ def downlights(b):
     def spot(group, x, y, z, mat="light_warm"):
         b.quad(group, mat, [(x - s, y, z - s), (x + s, y, z - s), (x + s, y, z + s), (x - s, y, z + s)])
 
-    for name, (group, (x0, x1), (z0, z1), _mat) in ROOMS.items():
+    for name, (group, _x, _z, _mat) in ROOMS.items():
         y, owner = (H1 - 0.004, "upper") if group == "ground" else (RY - 0.004, "roof")
-        nx, nz = max(2, round((x1 - x0) / 2.6)), max(2, round((z1 - z0) / 2.8))
-        for i in range(nx):
-            for j in range(nz):
-                px, pz = x0 + (x1 - x0) * (i + 0.5) / nx, z0 + (z1 - z0) * (j + 0.5) / nz
-                if name == "foyer" and SX0 - 0.2 < px < SX1 + 0.2 and pz < SZ1 + 0.2:
-                    continue                      # no ceiling there, it is the stairwell
-                spot(owner, px, y, pz, "light_off" if name in LIGHTS_OFF else "light_warm")
+        for px, pz in downlight_spots(name):
+            spot(owner, px, y, pz, "light_off" if name in LIGHTS_OFF else "light_warm")
     # under the upstairs ledge along the front, and under the roof overhang
     for i in range(10):
         spot("upper", -10.8 + i * 2.4, H1 - 0.004, 8.7)

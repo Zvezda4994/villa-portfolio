@@ -60,6 +60,11 @@ def text_mask(size, lines, font=None):
     cam = bpy.data.cameras.new("label_cam")
     cam.type = "ORTHO"
     cam.ortho_scale = w / h                    # the frame is (w/h) wide and 1 tall
+    if w < h:
+        # (Blender's ortho scale spans the longer side, so a portrait picture needs it
+        # pinned to the height; landscape ones are left exactly as they were)
+        cam.sensor_fit = "VERTICAL"
+        cam.ortho_scale = 1.0
     cam_ob = bpy.data.objects.new("label_cam", cam)
     cam_ob.location = (w / h / 2, 0.5, 5.0)
     scene.collection.objects.link(cam_ob)

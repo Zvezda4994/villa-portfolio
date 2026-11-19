@@ -1,0 +1,40 @@
+{
+ "note": "Written by blender/villa/moodboard.py from assets_src/moodboard/. Do not edit by hand.",
+ "images": [
+  {
+   "file": "moodboard/1243d770bcd2.jpg",
+   "w": 624,
+   "h": 768
+  },
+  {
+   "file": "moodboard/19ed4c9f29d4.jpg",
+   "w": 587,
+   "h": 768
+  },
+  {
+   "file": "moodboard/44bb4ce27c07.jpg",
+   "w": 713,
+   "h": 768
+  },
+  {
+   "file": "moodboard/691a3b1ca6e5.jpg",
+   "w": 736,
+   "h": 757
+  },
+  {
+   "file": "moodboard/6a75ab190e3f.jpg",
+   "w": 768,
+   "h": 579
+  },
+  {
+   "file": "moodboard/8d0a6e0bce2e.jpg",
+   "w": 584,
+   "h": 525
+  },
+  {
+   "file": "moodboard/9e40acd106e4.jpg",
+   "w": 736,
+   "h": 622
+  }
+ ]
+}

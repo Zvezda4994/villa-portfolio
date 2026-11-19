@@ -1,0 +1,119 @@
+# The books with real titles on the library's eye-level shelves.
+# blender/villa/library.py reads this when the scene is built. After editing it,
+# rebuild: npm run scene, then npm run bake:draft and npm run export.
+#
+# Books go in groups, in shelf order: the upper eye-level shelf first, left to right,
+# then the one below it. Each group starts with two lines, then one title per line:
+#   author: the name printed on the spine (leave it empty for none)
+#   spine:  how the spines look, one of the styles below
+# Blank lines and lines starting with # are skipped.
+#
+# Spine styles:
+#   oxblood cloth   gold serif lettering on dark red cloth, tall hardbacks
+#   black serif     off-white serif lettering on black, hardbacks
+#   navy            white lettering on navy
+#   cream           black lettering on cream
+#   white           black lettering on white
+#   grey            white lettering on slate grey
+#   olive           cream lettering on olive
+#   title colour    the spine is printed in the colour its title names ("The Deep
+#                   Blue Good-by" is blue), paperbacks; the colour words it knows
+#                   are COLOUR_WORDS in library.py
+#   blackletter     off-white blackletter (UnifrakturMaguntia) on black
+
+author: Alexandre Dumas
+spine: oxblood cloth
+The Three Musketeers
+Twenty Years After
+The Vicomte de Bragelonne
+Louise de la Vallière
+The Man in the Iron Mask
+The Count of Monte Cristo
+Queen Margot
+La Dame de Monsoreau
+The Forty-Five Guardsmen
+The Black Tulip
+Joseph Balsamo
+The Queen's Necklace
+
+author: Ian Fleming
+spine: black serif
+Casino Royale
+Live and Let Die
+Moonraker
+Diamonds Are Forever
+From Russia with Love
+Dr. No
+Goldfinger
+For Your Eyes Only
+Thunderball
+The Spy Who Loved Me
+On Her Majesty's Secret Service
+You Only Live Twice
+The Man with the Golden Gun
+Octopussy and The Living Daylights
+
+author: John D. MacDonald
+spine: title colour
+The Deep Blue Good-by
+Nightmare in Pink
+A Purple Place for Dying
+The Quick Red Fox
+A Deadly Shade of Gold
+Bright Orange for the Shroud
+Darker Than Amber
+One Fearful Yellow Eye
+Pale Gray for Guilt
+The Girl in the Plain Brown Wrapper
+Dress Her in Indigo
+The Long Lavender Look
+A Tan and Sandy Silence
+The Scarlet Ruse
+The Turquoise Lament
+The Dreadful Lemon Sky
+The Empty Copper Sea
+The Green Ripper
+Free Fall in Crimson
+Cinnamon Skin
+The Lonely Silver Rain
+
+author: Vadim Zeland
+spine: navy
+Reality Transurfing I
+Reality Transurfing II
+Reality Transurfing III
+Reality Transurfing IV
+Reality Transurfing V
+
+author: Maxwell Maltz
+spine: cream
+Psycho-Cybernetics
+
+author: Randy Wayne White
+spine: white
+The Man Who Invented Florida
+The Heat Islands
+
+author: Joseph Conrad
+spine: cream
+Heart of Darkness
+
+author: Cormac McCarthy
+spine: black serif
+Blood Meridian
+
+author: Amor Towles
+spine: navy
+A Gentleman in Moscow
+
+author:
+spine: grey
+Objective: Secure
+
+author:
+spine: olive
+Whiskey Tango Foxtrot
+
+author:
+spine: blackletter
+Heartiste

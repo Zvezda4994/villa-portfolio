@@ -146,6 +146,34 @@ test("the models only use extensions and materials the site understands", () => 
   }
 });
 
+// The living room's moodboard: pictures shrunk by `npm run moodboard`, picked at random
+// by the page each time the room opens. They are never part of the first view.
+test("the moodboard's pictures and frames are in order", () => {
+  const frames = Object.entries(manifest.materials).filter(([, m]) => m.moodboard !== undefined);
+  assert.ok(frames.length >= 4 && frames.length <= 6, `the moodboard should have 4 to 6 frames, not ${frames.length}`);
+  for (const [name, m] of frames) {
+    assert.ok(Number.isFinite(m.moodboard) && m.moodboard > 0.2 && m.moodboard < 5, `${name}: its picture's shape should be width / height`);
+    assert.ok(manifest.rooms[m.room], `${name} belongs to "${m.room}", which isn't a furnished room`);
+    assert.ok(!m.map, `${name} should have no picture of its own; the page lays one over it`);
+  }
+  const list = join(ASSETS, "moodboard", "moodboard.json");
+  let images = [];
+  try { images = JSON.parse(readFileSync(list, "utf8")).images; } catch { return; }      // no pictures yet: plain colour fields
+  assert.ok(Array.isArray(images), "moodboard.json should list its pictures under images");
+  const first = new Set(firstViewFiles());
+  for (const img of images) {
+    assert.match(img.file, /^moodboard\/[\w-]+\.jpg$/, `${img.file}: expected moodboard/<name>.jpg`);
+    assert.ok(Number.isInteger(img.w) && Number.isInteger(img.h) && img.w > 0 && img.h > 0, `${img.file}: needs its size`);
+    assert.ok(Math.max(img.w, img.h) <= 1024, `${img.file}: ${img.w}x${img.h} is bigger than the site needs`);
+    assert.ok(size(img.file) < 400e3, `${img.file} is ${(size(img.file) / 1e3).toFixed(0)} KB; run npm run moodboard`);
+    assert.ok(!first.has(img.file), `${img.file} must not be part of the landing download`);
+  }
+  const listed = new Set(images.map(i => i.file.split("/")[1]));
+  for (const f of readdirSync(join(ASSETS, "moodboard")).filter(f => f.endsWith(".jpg"))) {
+    assert.ok(listed.has(f), `moodboard/${f} isn't listed in moodboard.json, so it would be deployed for nothing`);
+  }
+});
+
 test("rooms data is complete and its links go somewhere", async () => {
   const {ROOMS, FLOOR_NAME} = await import(pathToFileURL(join(WEB, "src", "rooms.js")).href);
   const ids = new Set();

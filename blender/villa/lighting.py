@@ -185,8 +185,8 @@ def setup_lamps(collection):
 
 def furnished_rooms():
     """The modules of the furnished rooms that have their own lamps and ceiling light."""
-    from . import dining, games, gym, kitchen, study
-    return [dining, study, games, kitchen, gym]
+    from . import dining, games, gym, kitchen, library, living, study
+    return [dining, study, games, kitchen, gym, living, library]
 
 
 def furnished_lamps():
@@ -233,6 +233,8 @@ from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
 from .games import DESK_CAM as GAMES_DESK_CAM, GAMES_CAM, SHELF_CAM  # noqa: E402
 from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_WIDE_CAM  # noqa: E402
 from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
+from .library import DESK_CAM as LIBRARY_DESK_CAM, LIBRARY_CAM, SPINES_CAM, SPINES_CAM_B  # noqa: E402
+from .living import LIVING_CAM, MOODBOARD_CAM, TANK_CAM, TV_CAM  # noqa: E402
 from .pool import MOMENT_CAM  # noqa: E402
 from .study import DESK_CAM, STUDY_CAM  # noqa: E402
 
@@ -258,6 +260,14 @@ PREVIEW_CAMERAS = {
     "gym_gear": GEAR_CAM,
     "gym_wide": GYM_WIDE_CAM,
     "gym_board": GYM_BOARD_CAM,
+    "living": LIVING_CAM,
+    "living_tv": TV_CAM,
+    "living_moodboard": MOODBOARD_CAM,
+    "living_tank": TANK_CAM,
+    "library": LIBRARY_CAM,
+    "library_spines": SPINES_CAM,
+    "library_spines_b": SPINES_CAM_B,
+    "library_desk": LIBRARY_DESK_CAM,
 }
 
 

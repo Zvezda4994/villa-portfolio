@@ -6,6 +6,8 @@ kind:
            "blend" mixes in a second texture wherever a mask says so (the gravel
            borders on the sand).
   vertex   small things (window frames, plants, rocks) with light baked per vertex.
+           With a "tex" it carries a tiling texture too, laid in metres like the
+           house's (the walnut in the living room and the library, Kit.grain).
   sheer    see-through curtain fabric, lit per vertex like the above.
   glass / water / emissive / flat   handled specially on the website. Water
            reflects a panorama taken from where it sits ("probe").
@@ -28,6 +30,9 @@ Furniture adds three things:
   albedo   the colour is painted per vertex (the visitor's skin on the pool deck).
            The bake multiplies it into the vertex light, so the website needs
            nothing extra.
+  moodboard  a frame on the living room's moodboard: the number is its picture's
+           shape (width / height). The site lays one of the pictures in
+           web/assets/moodboard/ over it, picked at random each time the room opens.
 """
 
 MATS = {
@@ -291,6 +296,69 @@ MATS = {
     "rope":        dict(kind="vertex", room="gym", color=(0.06, 0.06, 0.065)),
     "gym_led":     dict(kind="emissive", room="gym", color=(0.92, 0.96, 1.0), strength=4.0),
     "gym_timer":   dict(kind="screen", room="gym", img="gym_timer", color=(1, 1, 1), strength=1.6),
+
+    # --- living room (living.py): oatmeal linen, walnut, the tank's glow ---
+    # walnut lit per vertex, its grain from the dining table's texture (fetched with the room)
+    "living_walnut": dict(kind="vertex", room="living", tex="walnut_veneer", tile=1.6, tint=(0.50, 0.42, 0.37)),
+    # one material painted per vertex for the many small things: the rug, the tank's
+    # sand, rocks, moss and fish
+    "living_albedo": dict(kind="vertex", room="living", albedo=True, color=(1, 1, 1)),
+    "living_sofa": dict(kind="vertex", room="living", color=(0.80, 0.76, 0.68)),
+    "pillow_teal": dict(kind="vertex", room="living", color=(0.11, 0.27, 0.29)),
+    "pillow_rust": dict(kind="vertex", room="living", color=(0.58, 0.32, 0.20)),
+    "pillow_sand": dict(kind="vertex", room="living", color=(0.74, 0.66, 0.52)),
+    "living_throw": dict(kind="vertex", room="living", color=(0.52, 0.40, 0.30)),
+    "tv_black":    dict(kind="vertex", room="living", color=(0.025, 0.025, 0.028)),
+    "tv_screen":   dict(kind="screen", room="living", img="living_tv", color=(1, 1, 1), strength=1.0),
+    "living_brass": dict(kind="vertex", room="living", color=(0.82, 0.63, 0.37)),
+    "living_shade": dict(kind="emissive", room="living", color=(1.0, 0.80, 0.58), strength=1.6),
+    "mat_white":   dict(kind="vertex", room="living", color=(0.91, 0.90, 0.87)),
+    # the tank: a glowing backdrop, glass, a dark plinth, plants and driftwood
+    "tank_back":   dict(kind="screen", room="living", img="tank_back", color=(1, 1, 1), strength=0.8),
+    "tank_glass":  dict(kind="glass", room="living", color=(0.74, 0.88, 0.88), opacity=0.12, reflect=0.35),
+    "tank_black":  dict(kind="vertex", room="living", color=(0.025, 0.03, 0.035)),
+    "tank_plinth": dict(kind="vertex", room="living", color=(0.11, 0.11, 0.115)),
+    "aqua_grass":  dict(kind="vertex", room="living", color=(0.24, 0.47, 0.16), double_sided=True),
+    "aqua_leaf":   dict(kind="vertex", room="living", color=(0.15, 0.36, 0.12), double_sided=True),
+    "aqua_red":    dict(kind="vertex", room="living", color=(0.62, 0.22, 0.14), double_sided=True),
+    "aqua_olive":  dict(kind="vertex", room="living", color=(0.40, 0.48, 0.16), double_sided=True),
+    "driftwood":   dict(kind="vertex", room="living", color=(0.23, 0.16, 0.10)),
+    # the moodboard's frames: plain colour fields in the file; the site lays one of the
+    # pictures in web/assets/moodboard/ over each when the room opens. The number is
+    # the picture's shape (width / height), for cropping.
+    "moodboard_1": dict(kind="vertex", room="living", color=(0.66, 0.38, 0.26), moodboard=0.673),
+    "moodboard_2": dict(kind="vertex", room="living", color=(0.33, 0.40, 0.50), moodboard=1.491),
+    "moodboard_3": dict(kind="vertex", room="living", color=(0.78, 0.62, 0.30), moodboard=1.0),
+    "moodboard_4": dict(kind="vertex", room="living", color=(0.56, 0.61, 0.52), moodboard=1.383),
+    "moodboard_5": dict(kind="vertex", room="living", color=(0.85, 0.78, 0.66), moodboard=0.680),
+    # the fig by the TV (Poly Haven's potted_plant_01), as in the kitchen
+    "living_fig_leaves": dict(kind="vertex", room="living", img="fig_leaves", size=256, double_sided=True,
+                              src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "living_fig_stems": dict(kind="vertex", room="living", img="fig_stems", size=256,
+                             src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
+
+    # --- library (library.py): dark walnut shelves, books, a green banker's lamp ---
+    "library_walnut": dict(kind="vertex", room="library", tex="walnut_veneer", tile=1.6, tint=(0.36, 0.28, 0.23)),
+    # painted per vertex: every unmarked book its own colour, the rug, the titled books' sides
+    "library_albedo": dict(kind="vertex", room="library", albedo=True, color=(1, 1, 1)),
+    # the titled spines, all in one picture (data/library_books.txt, library.paint_spines)
+    "library_spines": dict(kind="vertex", room="library", img="library_spines", color=(1, 1, 1)),
+    "library_brass": dict(kind="vertex", room="library", color=(0.82, 0.63, 0.37)),
+    "library_leather": dict(kind="vertex", room="library", color=(0.36, 0.19, 0.10)),
+    # the banker's lamp's cased glass shade glows a little, lit from inside
+    "banker_green": dict(kind="emissive", room="library", color=(0.10, 0.42, 0.20), strength=0.5),
+    "banker_glow": dict(kind="emissive", room="library", color=(1.0, 0.84, 0.60), strength=1.8),
+    "library_shade": dict(kind="emissive", room="library", color=(1.0, 0.80, 0.58), strength=1.5),
+    "laptop_screen": dict(kind="screen", room="library", img="laptop_screen", color=(1, 1, 1), strength=0.9),
+    "laptop_keys": dict(kind="vertex", room="library", color=(0.10, 0.10, 0.11)),
+    "manuscript":  dict(kind="vertex", room="library", img="manuscript", color=(1, 1, 1)),
+    "library_ink": dict(kind="vertex", room="library", color=(0.05, 0.05, 0.06)),
+    # the house's oak ceiling, lit per vertex (library.ceiling)
+    "library_ceiling": dict(kind="vertex", room="library", tex="oak_veneer_01", tile=1.8, tint=(1.0, 1.0, 1.0)),
+    "library_walnut_v": dict(kind="vertex", room="library", color=(0.30, 0.20, 0.14)),     # small turned and slanted pieces
+    "hourglass_glass": dict(kind="glass", room="library", color=(0.85, 0.88, 0.86), opacity=0.14, reflect=0.3),
+    "hourglass_sand": dict(kind="vertex", room="library", color=(0.82, 0.70, 0.50)),
+    "whisky":      dict(kind="vertex", room="library", color=(0.55, 0.30, 0.08)),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.
@@ -365,16 +433,18 @@ def build_materials():
                     link(other, socket["B_Color"])
                     colour = socket["Result_Color"]
                 link(colour, bsdf.inputs["Base Color"])
-            elif "img" in m:
-                # One picture over the object's own UVs, times a plain colour.
+            elif "img" in m or ("moodboard" in m and picture_path(name).exists()):
+                # One picture over the object's own UVs, times a plain colour. (A moodboard
+                # frame gets one of your pictures only in Blender's renders; on the site the
+                # page picks them at random each time the room opens.)
                 node = new("ShaderNodeTexImage")
-                node.image = image(picture_path(m["img"]))
+                node.image = image(picture_path(m.get("img", name)))
                 coords = new("ShaderNodeUVMap")
                 coords.uv_map = "UVMap"
                 link(coords.outputs["UV"], node.inputs["Vector"])
                 mul = new("ShaderNodeVectorMath")
                 mul.operation = "MULTIPLY"
-                mul.inputs[1].default_value = srgb_to_linear(m.get("color", (1, 1, 1)))
+                mul.inputs[1].default_value = (1, 1, 1) if "moodboard" in m else srgb_to_linear(m.get("color", (1, 1, 1)))
                 link(node.outputs["Color"], mul.inputs[0])
                 link(mul.outputs[0], bsdf.inputs["Base Color"])
             elif m.get("albedo"):

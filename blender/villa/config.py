@@ -85,6 +85,7 @@ ATLASES = {
     "stu": dict(size=1024, density=110.0, room="study"),
     "gam": dict(size=1024, density=110.0, room="games"),
     "kit": dict(size=1024, density=90.0, room="kitchen"),
+    # (the living room and the library have none: everything in them is lit per vertex)
 }
 
 # The game on the dining table, in standard chess notation (FEN). Ruy Lopez,
@@ -129,7 +130,15 @@ CONTACT_CARD = dict(
 FONTS = {
     "Kalam-Regular.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Regular.ttf",
     "Kalam-Bold.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf",
+    # the library's spines: a book-face serif for the cloth sets, blackletter for Heartiste
+    "CrimsonText-SemiBold.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/crimsontext/CrimsonText-SemiBold.ttf",
+    "UnifrakturMaguntia-Book.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/unifrakturmaguntia/UnifrakturMaguntia-Book.ttf",
 }
+
+# The living room's moodboard: your pictures go in assets_src/moodboard/ (never
+# committed); `npm run moodboard` (and every scene build) shrinks them into
+# web/assets/moodboard/ with a list the site picks from at random.
+SRC_MOODBOARD = ROOT / "assets_src" / "moodboard"
 
 ATLAS_PADDING = 8        # empty texels between islands
 LOW_RES = 512            # size of the quick-loading preview copy of each lightmap

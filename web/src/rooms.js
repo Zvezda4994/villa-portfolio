@@ -47,7 +47,10 @@ export const ROOMS = [
     body: ["Competitive boxer for years, and now a coach to more than 30 athletes."],
     todo: "A photo and one line on your coaching approach would land well here."},
 
-  {id: "living", floor: "g", area: "Living room", title: "The fish tank", at: [6.5, 1.9, -6.6], view: [[6.5, 8.5, 4], [6.5, 1.2, -5]],
+  {id: "living", floor: "g", area: "Living room", title: "The fish tank", at: [6.5, 1.9, -6.6],
+    // by the study door, across the sofa to the tank, the moodboard on the right (blender/villa/living.py, LIVING_CAM).
+    // The moodboard's frames get a fresh random pick from web/assets/moodboard/ each time the room opens.
+    view: [[3.45, 1.45, -0.8], [9.4, 1.05, -6.2]], near: 0.4,
     body: ["Floor-to-ceiling tank with a moss-covered mech resting on the bottom. Pure decoration, and the thing guests ask about first."],
     todo: "The tank and the mech arrive when this room is furnished."},
 
@@ -61,7 +64,9 @@ export const ROOMS = [
     body: ["The full resume as a plain page, for anyone short on time."],
     links: [["Open resume", "#resume", 1]]},
 
-  {id: "library", floor: "u", area: "Library", title: "Books and writing", at: [6.75, 5.2, 4], view: [[6.75, 12, 12], [6.75, 4.2, 4]],
+  {id: "library", floor: "u", area: "Library", title: "Books and writing", at: [6.75, 5.2, 4],
+    // from the landing door, across to the east wall's shelves, the desk on the right (blender/villa/library.py, LIBRARY_CAM)
+    view: [[2.55, 5.0, 5.75], [11.0, 4.7, 3.05]], near: 0.4,
     body: ["The books I rate, and my own writing. I'm working on a book; excerpts and notes will live here."],
     todo: "Add the reading list, and a short excerpt once you're happy to share one."},
 

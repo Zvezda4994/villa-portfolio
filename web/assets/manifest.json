@@ -34,6 +34,12 @@
   "kitchen": {
    "model": "rooms/kitchen.glb"
   },
+  "library": {
+   "model": "rooms/library.glb"
+  },
+  "living": {
+   "model": "rooms/living.glb"
+  },
   "pool": {
    "model": "rooms/pool.glb"
   },
@@ -657,11 +663,11 @@
   "pillow_rust": {
    "kind": "vertex",
    "color": [
-    0.34239163959260344,
-    0.08898152563840141,
-    0.036306484118193906
+    0.29569980462568246,
+    0.0835351274258047,
+    0.033104766570885055
    ],
-   "room": "pool"
+   "room": "living"
   },
   "pillow_olive": {
    "kind": "vertex",
@@ -2043,6 +2049,436 @@
    "map": "textures/gym_timer.ktx2",
    "room": "gym",
    "strength": 1.6
+  },
+  "living_walnut": {
+   "kind": "vertex",
+   "map": "textures/walnut_veneer.ktx2",
+   "tile": 1.6,
+   "color": [
+    0.5,
+    0.42,
+    0.37
+   ],
+   "room": "living"
+  },
+  "living_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "living"
+  },
+  "living_sofa": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.4200332886842154
+   ],
+   "room": "living"
+  },
+  "pillow_teal": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.05925352111727415,
+    0.06838485415816624
+   ],
+   "room": "living"
+  },
+  "pillow_sand": {
+   "kind": "vertex",
+   "color": [
+    0.5070785101492276,
+    0.3931231302267222,
+    0.23302199930143813
+   ],
+   "room": "living"
+  },
+  "living_throw": {
+   "kind": "vertex",
+   "color": [
+    0.23302199930143813,
+    0.13286832155381798,
+    0.07323895587840543
+   ],
+   "room": "living"
+  },
+  "tv_black": {
+   "kind": "vertex",
+   "color": [
+    0.0019349845201238392,
+    0.0019349845201238392,
+    0.0021671826625387
+   ],
+   "room": "living"
+  },
+  "tv_screen": {
+   "kind": "screen",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/living_tv.ktx2",
+   "room": "living",
+   "strength": 1.0
+  },
+  "living_brass": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "living"
+  },
+  "living_shade": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6038273388553378,
+    0.29569980462568246
+   ],
+   "room": "living",
+   "strength": 1.6
+  },
+  "mat_white": {
+   "kind": "vertex",
+   "color": [
+    0.8073459089125289,
+    0.7874122893956174,
+    0.7293470915734015
+   ],
+   "room": "living"
+  },
+  "tank_back": {
+   "kind": "screen",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/tank_back.ktx2",
+   "room": "living",
+   "strength": 0.8
+  },
+  "tank_glass": {
+   "kind": "glass",
+   "color": [
+    0.5070785101492276,
+    0.748414103499371,
+    0.748414103499371
+   ],
+   "room": "living",
+   "opacity": 0.12,
+   "reflect": 0.35
+  },
+  "tank_black": {
+   "kind": "vertex",
+   "color": [
+    0.0019349845201238392,
+    0.0023219814241486067,
+    0.002708978328173375
+   ],
+   "room": "living"
+  },
+  "tank_plinth": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.011645430905844125,
+    0.012510408999112432
+   ],
+   "room": "living"
+  },
+  "aqua_grass": {
+   "kind": "vertex",
+   "color": [
+    0.04696420068912289,
+    0.18731666848765954,
+    0.021980947079887205
+   ],
+   "room": "living",
+   "doubleSided": true
+  },
+  "aqua_leaf": {
+   "kind": "vertex",
+   "color": [
+    0.01960664851623822,
+    0.10653922395082352,
+    0.01341174889765847
+   ],
+   "room": "living",
+   "doubleSided": true
+  },
+  "aqua_red": {
+   "kind": "vertex",
+   "color": [
+    0.34239163959260344,
+    0.039681909478526005,
+    0.017389102368488736
+   ],
+   "room": "living",
+   "doubleSided": true
+  },
+  "aqua_olive": {
+   "kind": "vertex",
+   "color": [
+    0.13286832155381798,
+    0.19599417930148813,
+    0.021980947079887205
+   ],
+   "room": "living",
+   "doubleSided": true
+  },
+  "driftwood": {
+   "kind": "vertex",
+   "color": [
+    0.0432336359153358,
+    0.021980947079887205,
+    0.010022825574869039
+   ],
+   "room": "living"
+  },
+  "moodboard_1": {
+   "kind": "vertex",
+   "color": [
+    0.3931231302267222,
+    0.1192801876221121,
+    0.0549717326875717
+   ],
+   "room": "living",
+   "moodboard": 0.673
+  },
+  "moodboard_2": {
+   "kind": "vertex",
+   "color": [
+    0.08898152563840141,
+    0.13286832155381798,
+    0.21404114048223255
+   ],
+   "room": "living",
+   "moodboard": 1.491
+  },
+  "moodboard_3": {
+   "kind": "vertex",
+   "color": [
+    0.5704815954749093,
+    0.34239163959260344,
+    0.07323895587840543
+   ],
+   "room": "living",
+   "moodboard": 1.0
+  },
+  "moodboard_4": {
+   "kind": "vertex",
+   "color": [
+    0.27383841647314605,
+    0.3303437128042374,
+    0.23302199930143813
+   ],
+   "room": "living",
+   "moodboard": 1.383
+  },
+  "moodboard_5": {
+   "kind": "vertex",
+   "color": [
+    0.692071056865372,
+    0.5704815954749093,
+    0.3931231302267222
+   ],
+   "room": "living",
+   "moodboard": 0.68
+  },
+  "living_fig_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_leaves.ktx2",
+   "room": "living",
+   "doubleSided": true
+  },
+  "living_fig_stems": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_stems.ktx2",
+   "room": "living"
+  },
+  "library_walnut": {
+   "kind": "vertex",
+   "map": "textures/walnut_veneer.ktx2",
+   "tile": 1.6,
+   "color": [
+    0.36,
+    0.28,
+    0.23
+   ],
+   "room": "library"
+  },
+  "library_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "library"
+  },
+  "library_spines": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/library_spines.ktx2",
+   "room": "library"
+  },
+  "library_brass": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "library"
+  },
+  "library_leather": {
+   "kind": "vertex",
+   "color": [
+    0.10653922395082352,
+    0.030074104146591292,
+    0.010022825574869039
+   ],
+   "room": "library"
+  },
+  "banker_green": {
+   "kind": "emissive",
+   "color": [
+    0.010022825574869039,
+    0.147318999244498,
+    0.033104766570885055
+   ],
+   "room": "library",
+   "strength": 0.5
+  },
+  "banker_glow": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6738595407338318,
+    0.31854677812509186
+   ],
+   "room": "library",
+   "strength": 1.8
+  },
+  "library_shade": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6038273388553378,
+    0.29569980462568246
+   ],
+   "room": "library",
+   "strength": 1.5
+  },
+  "laptop_screen": {
+   "kind": "screen",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/laptop_screen.ktx2",
+   "room": "library",
+   "strength": 0.9
+  },
+  "laptop_keys": {
+   "kind": "vertex",
+   "color": [
+    0.010022825574869039,
+    0.010022825574869039,
+    0.011645430905844125
+   ],
+   "room": "library"
+  },
+  "manuscript": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/manuscript.ktx2",
+   "room": "library"
+  },
+  "library_ink": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.003935939504088967,
+    0.004896310081623859
+   ],
+   "room": "library"
+  },
+  "library_ceiling": {
+   "kind": "vertex",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.8,
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "library"
+  },
+  "library_walnut_v": {
+   "kind": "vertex",
+   "color": [
+    0.07323895587840543,
+    0.033104766570885055,
+    0.017389102368488736
+   ],
+   "room": "library"
+  },
+  "hourglass_glass": {
+   "kind": "glass",
+   "color": [
+    0.692071056865372,
+    0.748414103499371,
+    0.7105664902244221
+   ],
+   "room": "library",
+   "opacity": 0.14,
+   "reflect": 0.3
+  },
+  "hourglass_sand": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.44798841244188325,
+    0.21404114048223255
+   ],
+   "room": "library"
+  },
+  "whisky": {
+   "kind": "vertex",
+   "color": [
+    0.26327340845612224,
+    0.07323895587840543,
+    0.007194409291082934
+   ],
+   "room": "library"
   }
  },
  "cameras": {
@@ -2292,13 +2728,117 @@
     0.1
    ],
    "fov": 50.0
+  },
+  "living": {
+   "pos": [
+    3.45,
+    1.45,
+    -0.8
+   ],
+   "target": [
+    9.4,
+    1.05,
+    -6.2
+   ],
+   "fov": 55.0
+  },
+  "living_tv": {
+   "pos": [
+    6.1,
+    1.1,
+    -4.12
+   ],
+   "target": [
+    6.3,
+    1.0,
+    -0.1
+   ],
+   "fov": 50.0
+  },
+  "living_moodboard": {
+   "pos": [
+    8.95,
+    1.74,
+    -3.7
+   ],
+   "target": [
+    11.7,
+    1.78,
+    -3.7
+   ],
+   "fov": 50.0
+  },
+  "living_tank": {
+   "pos": [
+    7.75,
+    1.3,
+    -5.15
+   ],
+   "target": [
+    7.0,
+    0.95,
+    -7.4
+   ],
+   "fov": 55.0
+  },
+  "library": {
+   "pos": [
+    2.55,
+    5.0,
+    5.75
+   ],
+   "target": [
+    11.0,
+    4.7,
+    3.05
+   ],
+   "fov": 55.0
+  },
+  "library_spines": {
+   "pos": [
+    10.47,
+    4.95,
+    3.6153125000000004
+   ],
+   "target": [
+    11.34,
+    4.9399999999999995,
+    3.6153125000000004
+   ],
+   "fov": 50.0
+  },
+  "library_spines_b": {
+   "pos": [
+    10.47,
+    4.95,
+    4.519687500000001
+   ],
+   "target": [
+    11.34,
+    4.9399999999999995,
+    4.519687500000001
+   ],
+   "fov": 50.0
+  },
+  "library_desk": {
+   "pos": [
+    6.1,
+    4.82,
+    5.8
+   ],
+   "target": [
+    6.95,
+    4.3,
+    7.1
+   ],
+   "fov": 52.0
   }
  },
  "bytes": {
   "sky background": 521262,
   "sky environment": 303997,
-  "sky pool": 339767,
-  "sky front": 387702,
+  "sky pool": 339924,
+  "sky front": 389705,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -2325,6 +2865,10 @@
   "texture journal": 178839,
   "texture kitchen_labels": 649396,
   "texture kitchen_tile": 23537,
+  "texture laptop_screen": 8660,
+  "texture library_spines": 992471,
+  "texture living_tv": 266874,
+  "texture manuscript": 205199,
   "texture painting": 317639,
   "texture persian_rug": 507179,
   "texture philo_leaves": 67382,
@@ -2334,6 +2878,7 @@
   "texture screen_chart": 30498,
   "texture screen_main": 46643,
   "texture succulent": 80871,
+  "texture tank_back": 62135,
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "texture whiteboard": 157289,
@@ -2342,20 +2887,22 @@
   "room games": 599596,
   "room gym": 707912,
   "room kitchen": 1321444,
+  "room library": 1710032,
+  "room living": 2428348,
   "room pool": 1214128,
   "room study": 1188908,
-  "lightmap ext": 313465,
-  "lightmap ext (small)": 309449,
-  "lightmap gnd": 281171,
-  "lightmap gnd (small)": 277275,
-  "lightmap upr": 267424,
-  "lightmap upr (small)": 263664,
-  "lightmap terrain": 289909,
-  "lightmap terrain (small)": 286005,
-  "lightmap din": 78330,
-  "lightmap pol": 63671,
-  "lightmap stu": 58947,
-  "lightmap gam": 50586,
-  "lightmap kit": 48520
+  "lightmap ext": 313649,
+  "lightmap ext (small)": 309657,
+  "lightmap gnd": 252195,
+  "lightmap gnd (small)": 248403,
+  "lightmap upr": 242347,
+  "lightmap upr (small)": 238747,
+  "lightmap terrain": 289598,
+  "lightmap terrain (small)": 285694,
+  "lightmap din": 78390,
+  "lightmap pol": 65492,
+  "lightmap stu": 57530,
+  "lightmap gam": 50331,
+  "lightmap kit": 46793
  }
 }

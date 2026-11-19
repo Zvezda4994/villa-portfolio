@@ -126,6 +126,58 @@ Previews: `previews/kitchen.jpg`, `kitchen_shelf.jpg`, `kitchen_wide.jpg`, `gym.
 kitchen, kitchen_shelf, gym, gym_gear and gym_board. Downloads: the kitchen
 2.3 MB (the label picture 0.65 MB of it), the gym 0.8 MB (no lightmap).
 
+**Step 5, batch 3: the living room and the library** (approved 19 Nov 2026, after a
+second pass: a bigger moodboard, finer moss, an upholstered desk chair). Opening either
+room on the site drops the camera inside it. Neither has a lightmap: everything in
+them is lit per vertex, ceilings included.
+
+The living room, sparse and calm, oatmeal linen and walnut (`blender/villa/living.py`):
+- an L-shaped sofa with a chaise, facing an 83" OLED on a long walnut stand between the
+  study and gym doors. The screen is a dark paused-player page with "Hunter × Hunter"
+  in plain type, no logo or artwork (`paint_tv`);
+- a stone-grey rug, a low walnut coffee table (bowl, books, the remote), a brass floor
+  lamp, a fig in the corner by the TV;
+- the tank on the back wall, floor to ceiling in a plaster niche: a glowing blue-green
+  backdrop, soil and sand, a big boulder under fine, dark, patchy moss (in the mech's
+  place, for now), smaller stones, two gnarled pieces of driftwood, ribbon grass, red
+  and olive stem plants, sword plants, moss cushions, a school of tetras and three
+  angelfish;
+- the moodboard on the east wall: five frames in mixed sizes (oak and black, two with
+  mats) over a low walnut bench, washed by two ceiling spots.
+
+The moodboard's pictures: put yours in `assets_src/moodboard/` (any common format) and
+run `npm run moodboard` (every scene build runs it too). It shrinks each to 768 px on
+its long side as a JPEG in `web/assets/moodboard/`, named after its contents, removes
+ones you've taken out, and writes `moodboard.json`. No rebuild is needed: each time the
+living room is opened the page picks afresh at random, giving each frame a picture
+close to its shape and cropping it to fill. The pictures load only then, never with
+the landing view. With the folder empty the frames are plain colour fields. Blender's
+renders show a fixed pick (`living.preview_pick`). Seven are in now.
+
+The library, dark walnut and leather (`blender/villa/library.py`):
+- floor-to-ceiling walnut cases on three walls: eight bays on the east wall with a
+  brass rail and a rolling ladder, six and four bays on the back wall either side of
+  the trophy room's door, and a shelf bridging over it. About 3,000 books: unmarked
+  spines in small sets of one height and colour family, a few flat stacks and leaning
+  books, and some objects (vases, brass spheres, an hourglass, walnut boxes);
+- the 61 real titles stand on the east wall's two eye-level shelves (bays 3 and 4).
+  The list is `data/library_books.txt`, in groups by author with a spine style each;
+  its header explains the format. The Travis McGee spines are printed in the colour
+  each title names (`COLOUR_WORDS`), Heartiste in blackletter (UnifrakturMaguntia),
+  the Dumas and Fleming sets in Crimson Text on cloth with gilt rules;
+- a leather club chair with an ottoman, a side table and a reading lamp by the window;
+- a walnut writing desk at the glass: a green banker's lamp, a laptop with the draft
+  on its screen, the manuscript (typed lines as shapes, not words, red-pen edits, a
+  clip, loose pages, a pen), a coffee cup, and an upholstered leather desk chair;
+- an original rug, oxblood with a navy lozenge and border.
+
+Previews: `previews/browser_living.jpg`, `browser_living_moodboard.jpg`,
+`browser_living_tv.jpg`, `browser_living_tank.jpg`, `browser_library.jpg`,
+`browser_library_spines.jpg`, `browser_library_spines_b.jpg`, `browser_library_desk.jpg`.
+Downloads: the living room 3.2 MB, the library 3.5 MB (the spine picture
+0.99 MB of it); the moodboard's pictures about 0.6 MB in all, fetched only when the room
+opens.
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -208,7 +260,20 @@ change later.
   blotchy close up. Lay linings 12 mm off the wall (gotcha 30), and start them at
   the top of any counter standing against them (gotcha 26).
 - A room with nothing big and flat can do without a lightmap: the gym has none
-  (`Kit(b, G, None)`).
+  (`Kit(b, G, None)`), nor do the living room and the library.
+- **Wood grain lit per vertex:** a "vertex" material can carry a tiling texture (`tex`),
+  and `Kit.grain` builds boxes as fine grids with the texture laid in world metres, the
+  grain along the piece's longest side or `along=`. The living room's and library's
+  walnut use the dining table's texture this way (fetched with each room).
+- **Line the ceiling the view looks at, too,** when it fills much of the frame: the
+  draft leaves the house's ceilings very blotchy. Lay it 14 mm under the house's, in
+  the group that lifts off with the floor above ("upper" for the ground floor, "roof"
+  upstairs), and add fittings where `house.downlight_spots(room)` says (the living
+  room's plaster, the library's oak). Stop it at cases and cornices that reach the
+  ceiling.
+- **A whole wall at one grid size.** The moodboard wall needs a finer grid than the
+  others, so frames cast narrow shadows; a finer patch behind the frames alone showed
+  as a rectangle. The east wall is one grid at 10 cm.
 - Worn or uneven colour on a small thing goes per vertex: an `albedo` material and
   `colors=` on its meshes (the brown gloves, `gym._wear`).
 - Lists the user edits (labels, titles) go in `data/`, read by the room's script at
@@ -560,6 +625,10 @@ The traps hit so far, so they don't get rediscovered.
     down through the floor and hung in the dining room like ropes. Nobody saw them
     until the ground floor rooms got their ceilings back (the Ground view used to hide
     the whole upstairs). Take heights from a point already passed through the frame.
+34. **`labels.text_mask` assumed a landscape picture.** Blender's orthographic scale spans
+    the longer side, so a portrait picture's text came out about eight times too big.
+    It now pins the scale to the height when the picture is taller than wide (the
+    library's spine bands); landscape pictures are set exactly as before.
 
 ## Next
 
@@ -573,7 +642,7 @@ The traps hit so far, so they don't get rediscovered.
 - Panel copy, which you're supplying separately (leave the panel text as it is
   until then): VAREK and Turo numbers, the trophy list, contact details. The
   contact details also go on the card on the pool deck's table (`CONTACT_CARD`).
-- Images for the living room's gallery wall, in `assets_src/moodboard/` (batch 3).
+- The aquarium's mech: your spec first (see the build order).
 - For later steps:
   - a choice of chess position for the dining table;
   - approval before buying anything over about $60, most likely the car model.
@@ -585,8 +654,11 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Next: batch 3, the living room and the library.**
-   See "Step 5: the brief for the remaining rooms" below.
+5. **The remaining rooms (in progress). Next: batch 4, the trophy room, the main
+   bedroom, the garage and the foyer.** See "Step 5: the brief for the remaining rooms" below.
+   - **The aquarium mech: its own session after batch 4, with your spec first.** It goes on
+     the tank's floor in place of the moss-covered rock (`ROCK` in `living.py`), an
+     original design, moss-covered. Nothing is built for it yet.
 6. **Polish.** The brief's performance section now has targets and no hard
    total size limit. Step 6 builds them:
    - **A still of the landing shot within about 1 second.** It's a full-quality
@@ -655,9 +727,9 @@ panel text as it is; you're supplying it separately. Any text on screens, spines
 labels is plain type: no real logos, cover art or screenshots, except the moodboard
 images you supply.
 
-**Batches:** (1) study and games room, done; (2) kitchen and gym, done;
-**(3) living room and library, next**; (4) trophy room, bedroom, garage and foyer; (5) the
-resume view.
+**Batches:** (1) study and games room, done; (2) kitchen and gym, done; (3) living
+room and library, done; **(4) trophy room, bedroom, garage and foyer, next**; (5) the
+resume view. The aquarium mech gets its own session after batch 4, from your spec.
 
 **What you asked for in each room** (your words, lightly trimmed):
 

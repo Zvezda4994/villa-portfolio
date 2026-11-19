@@ -14,6 +14,7 @@
     "previews": "node tools/blender.mjs render_previews",
     "previews:draft": "node tools/blender.mjs render_previews --draft",
     "build": "npm run scene && npm run bake && npm run export",
-    "serve": "python tools/serve.py"
+    "serve": "python tools/serve.py",
+    "moodboard": "node tools/blender.mjs moodboard"
   }
 }

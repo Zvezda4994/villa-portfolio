@@ -20,6 +20,8 @@ from villa.exterior import build_exterior  # noqa: E402
 from villa.games import build_games  # noqa: E402
 from villa.gym import build_gym  # noqa: E402
 from villa.kitchen import build_kitchen  # noqa: E402
+from villa.library import build_library  # noqa: E402
+from villa.living import build_living  # noqa: E402
 from villa.geo import Builder  # noqa: E402
 from villa.house import build_house  # noqa: E402
 from villa.lighting import setup_cameras, setup_lamps, setup_render, setup_world  # noqa: E402
@@ -44,6 +46,8 @@ def main():
     build_games(b)                    # and the screens and the game cases' spines
     build_kitchen(b)                  # and the jar labels (data/kitchen_labels.txt) and the tiles
     build_gym(b)                      # and the timer's face
+    build_living(b)                   # and the TV's screen, the tank's backdrop, and the moodboard
+    build_library(b)                  # and the titled spines (data/library_books.txt)
     paint_pool_pictures()             # the contact card and the sake label
     materials = build_materials()
 

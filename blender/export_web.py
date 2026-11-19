@@ -38,13 +38,14 @@ ENV_CLAMP = 40.0      # the sun is far brighter than this; unclamped it makes re
 
 
 def _needs_uvs(ob):
-    """Lightmapped surfaces, the water (for its ripples) and anything with a
-    picture on it keep their UVs. On everything else they would be dead weight."""
+    """Lightmapped surfaces, the water (for its ripples), anything with a picture on
+    it, wood grain lit per vertex, and the moodboard's frames (the site lays pictures
+    on them) keep their UVs. On everything else they would be dead weight."""
     if ob.get("lit") == "lightmap":
         return True
     for m in ob.data.materials:
         spec = MATS.get(m.name, {}) if m is not None else {}
-        if spec.get("kind") == "water" or "img" in spec:
+        if spec.get("kind") == "water" or "img" in spec or "tex" in spec or "moodboard" in spec:
             return True
     return False
 
@@ -278,7 +279,7 @@ def write_manifest(fog, sizes, sky_paths, rooms):
             bl = m["blend"]
             entry["blend"] = dict(map=f"textures/{bl['tex']}.ktx2", tile=bl["tile"], color=list(bl["tint"]),
                                   mask=f"textures/{bl['mask']}.ktx2")
-        for key in ("rough", "metal", "opacity", "strength", "probe", "ripple", "reflect"):
+        for key in ("rough", "metal", "opacity", "strength", "probe", "ripple", "reflect", "moodboard"):
             if key in m:
                 entry[key] = m[key]
         if m.get("double_sided"):

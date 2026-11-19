@@ -70,10 +70,11 @@ function flyTo(pos, target, ms = 1300, via = null) {
   tween = {p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...pos), t1: new THREE.Vector3(...target),
     via: via && new THREE.Vector3(...via), start: performance.now(), ms: reduce ? 1 : ms};
 }
-let current = null;
+let current = null, opening = null;      // opening: the room's own loading (furniture, moodboard pictures)
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
   current = r;
+  if (world) opening = world.openRoom(r.id);
   const otherFloor = r.floor !== view;
   if (otherFloor) setView(r.floor, false);
   // Rooms with a close-up (the chessboard) let the camera come in near and drop
@@ -237,13 +238,14 @@ loadWorld(renderer, scene, (done, total) => { $("loadingNote").textContent = `${
     camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
     controls.update();      // aim it now: a page in a background tab gets no animation frames to do it
     if (params.get("shot").endsWith("_moment")) shotMoment = params.get("shot");
+    opening = w.openRoom(params.get("shot").split("_")[0]);    // its room first, and its moodboard filled
   }
   if (params.get("ui") === "0") document.body.classList.add("bare");
 
   if (params.has("debug")) window.villa = {THREE, scene, camera, controls, renderer, world: w};   // for poking around in the console
   $("loading").hidden = true;
   w.sharp.then(() => { document.body.dataset.ready = "sharp"; });
-  w.rooms.then(() => {
+  w.rooms.then(() => opening).then(() => {
     document.body.dataset.ready = "rooms";
     if (current && !$("panel").hidden) renderPanel(current);      // picks up a figure's credit
     if (params.get("save")) setTimeout(() => savePicture(params.get("save")), 2500);

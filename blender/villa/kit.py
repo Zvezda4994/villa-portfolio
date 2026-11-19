@@ -77,6 +77,43 @@ class Kit:
             verts, fc, _ = grid(o, u, v, nu, nv)
             self.mesh(mat, f, verts, fc, smooth=False)
 
+    def grain(self, mat, f, lo, hi, step=0.08, skip=(), along=None):
+        """Like `block`, for a material with a tiling texture that is lit per vertex
+        (the walnut in the living room and the library): every face a fine grid, its
+        texture laid in world metres, so the pattern lines up across neighbouring faces.
+        The grain runs along the piece's longest side, or along the local axis named by
+        `along` ("x", "y" or "z"). (The walnut picture's grain runs across it, along u.)"""
+        from .materials import MATS
+        tile = MATS[mat].get("tile", 1.0)
+        (x0, y0, z0), (x1, y1, z1) = lo, hi
+        dx, dy, dz = x1 - x0, y1 - y0, z1 - z0
+        local = "xyz".index(along) if along else int(np.argmax(np.abs((dx, dy, dz))))
+        e = np.zeros(3)
+        e[local] = 1.0
+        run = int(np.argmax(np.abs(np.subtract(f(e), f((0, 0, 0))))))         # the grain's world axis
+        faces = {
+            "+y": ((x0, y1, z1), (dx, 0, 0), (0, 0, -dz)),
+            "-y": ((x0, y0, z0), (dx, 0, 0), (0, 0, dz)),
+            "+x": ((x1, y0, z1), (0, 0, -dz), (0, dy, 0)),
+            "-x": ((x0, y0, z0), (0, 0, dz), (0, dy, 0)),
+            "+z": ((x0, y0, z1), (dx, 0, 0), (0, dy, 0)),
+            "-z": ((x1, y0, z0), (-dx, 0, 0), (0, dy, 0)),
+        }
+        for name, (o, u, v) in faces.items():
+            if name in skip:
+                continue
+            nu = max(1, round(float(np.linalg.norm(u)) / step))
+            nv = max(1, round(float(np.linalg.norm(v)) / step))
+            verts, fc, _ = grid(o, u, v, nu, nv)
+            world = f.many(verts)
+            n = np.cross(np.subtract(world[nv + 1], world[0]), np.subtract(world[1], world[0])) if nu and nv else (0, 1, 0)
+            axis = int(np.argmax(np.abs(n)))
+            pick = ((2, 1), (0, 2), (0, 1))[axis]
+            if pick[1] == run:
+                pick = (pick[1], pick[0])
+            uv = [(p[pick[0]] / tile, p[pick[1]] / tile) for p in world]
+            self.b.mesh(self.g, mat, world, fc, smooth=False, uvs=[[uv[i] for i in face] for face in fc])
+
     def quad(self, mat, f, pts, density=1.0, uv=None):
         """One rectangle from four local corners, anticlockwise seen from the front."""
         self.b.quad(self.g, mat, f.many(pts), self.atlas, density, uv=uv)

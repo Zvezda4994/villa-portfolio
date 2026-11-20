@@ -69,14 +69,45 @@ button{font:inherit;color:inherit}
 
 .resume{position:fixed;inset:0;z-index:9;background:var(--bg);overflow:auto;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:max(24px,env(safe-area-inset-top,0px)) 48px}
-.resume-in{max-width:720px;margin:0 auto;display:grid;gap:22px}
-.resume header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
-.resume h1{font-family:var(--f-display);font-weight:600;font-size:2.2rem;margin:0}
-.resume section{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 20px}
-.resume section .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);padding-top:4px}
-.resume h4{margin:0;font-size:1.02rem}
-.resume p{margin:0 0 6px;color:#ddd2c2}
-@media (max-width:560px){.resume section{grid-template-columns:1fr}}
+/* the resume (src/resume.js draws it from resume.json) */
+.resume-in{max-width:780px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+.rv-head>div,.rv-sec>div,.rv-entry{min-width:0}
+.rv-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}
+.rv-head h1{font-family:var(--f-display);font-weight:600;font-size:2.4rem;line-height:1.1;margin:0 0 6px}
+.rv-contact{margin:0;color:var(--muted);font-size:.88rem}
+.rv-contact>*{white-space:nowrap}
+.rv-contact a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+.rv-contact a:hover{border-color:var(--brass)}
+.rv-dot{margin:0 8px;color:var(--line)}
+.rv-actions{display:flex;gap:8px;flex-wrap:wrap}
+a.pill{display:inline-flex;align-items:center;text-decoration:none;color:var(--ink)}
+.resume a.pill.brass{color:var(--brass-ink)}
+.rv-sec{display:grid;grid-template-columns:140px minmax(0,1fr);gap:4px 24px}
+.rv-sec h3{font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin:0;padding-top:4px}
+.rv-sec>div{display:grid;gap:18px}
+.rv-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rv-line h4{margin:0;font-size:1.04rem;font-weight:600;flex:1 1 0;min-width:min(100%,220px)}
+.rv-stack{font-weight:400;font-size:.88rem;color:var(--muted)}
+.rv-stack::before{content:"· ";color:var(--line)}
+.rv-date{font-size:.85rem;color:var(--muted);white-space:nowrap}
+.rv-sub{font-size:.9rem;color:#ddd2c2;font-style:italic}
+.rv-links{justify-content:flex-start;gap:0;font-size:.86rem}
+.resume .rv-links a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.resume .rv-links a:hover{color:var(--ink);border-color:var(--brass)}
+.rv-entry ul{margin:8px 0 0;padding-left:18px;display:grid;gap:5px;color:#ddd2c2;font-size:.93rem}
+.rv-skills{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;color:#ddd2c2;font-size:.93rem}
+.rv-skills dt{color:var(--ink);font-weight:600}
+.rv-skills dd{margin:0}
+@media (max-width:600px){
+  .rv-sec{grid-template-columns:minmax(0,1fr)}
+  .rv-contact{display:grid;gap:2px}
+  .rv-contact .rv-dot{display:none}
+  .rv-contact>*{white-space:normal;overflow-wrap:anywhere}
+  .rv-contact a{justify-self:start}
+  .rv-head h1{font-size:2rem}
+  .rv-skills{grid-template-columns:1fr;gap:2px}
+  .rv-skills dd{margin-bottom:8px}
+}
 
 .tag{position:fixed;z-index:4;left:max(16px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));
   font-size:.72rem;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 32px)}
@@ -90,6 +121,7 @@ button{font:inherit;color:inherit}
   .brand b{font-size:1.15rem}
 }
 .resume a{color:var(--brass)}
+.resume .rv-contact a{color:var(--ink)}
 .loading small{display:block;font-family:var(--f-body);font-size:.8rem;letter-spacing:.08em;margin-top:8px;text-align:center}
 /* ?ui=0 hides the interface, for taking clean pictures of the model */
 body.bare .bar,body.bare .pins,body.bare .tag,body.bare .hint,body.bare .panel,body.bare .rooms{display:none}

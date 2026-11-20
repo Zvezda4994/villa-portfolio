@@ -5,7 +5,8 @@
 
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import {ROOMS, FLOOR_NAME, RESUME} from "./rooms.js";
+import {ROOMS, FLOOR_NAME} from "./rooms.js";
+import {loadResume, resumeHTML, RESUME_PDF} from "./resume.js";
 import {loadWorld, TONE_MAPPING} from "./world.js";
 
 const $ = id => document.getElementById(id);
@@ -116,14 +117,22 @@ $("vOut").onclick = () => setView("out"); $("vG").onclick = () => setView("g"); 
 }
 $("roomsBtn").onclick = () => { const open = $("rooms").hidden; $("rooms").hidden = !open; $("roomsBtn").setAttribute("aria-expanded", open); };
 
-/* Plain resume view: the fast path for anyone skimming */
+/* Plain resume view: the fast path for anyone skimming. Built from web/resume.json
+   (see src/resume.js); it doesn't wait for the 3D, so it works even if the villa can't load. */
 {
-  let h = `<header><h1>${RESUME.name}</h1><button class="pill" id="resumeBack">Back to the house</button></header>`;
-  for (const [k, items] of RESUME.sections) h += `<section><div class="k">${k}</div><div>${items.map(([t, d]) => `<h4>${t}</h4><p>${d}</p>`).join("")}</div></section>`;
-  if (RESUME.todo) h += `<p class="todo">${RESUME.todo}</p>`;
-  $("resumeBody").innerHTML = h; $("resumeBack").onclick = () => showResume(false);
+  const actions = `<div class="rv-actions"><a class="pill brass" href="${RESUME_PDF}" download="Aditya-Singh-Resume.pdf">Download PDF</a>` +
+    `<button class="pill" id="resumeBack">Back to the house</button></div>`;
+  const back = () => { const b = $("resumeBack"); if (b) b.onclick = () => showResume(false); };
+  $("resumeBody").innerHTML = `<header class="rv-head"><div><h1>Aditya Singh</h1></div>${actions}</header>`;
+  back();
+  loadResume().then(d => { $("resumeBody").innerHTML = resumeHTML(d, actions); back(); },
+    e => { console.error(e); $("resumeBody").insertAdjacentHTML("beforeend", `<p>The resume could not be loaded. <a href="${RESUME_PDF}">Open the PDF</a> instead.</p>`); });
 }
-function showResume(on) { $("resume").hidden = !on; if (on) { $("panel").hidden = true; try { history.replaceState(null, "", "#resume"); } catch (e) {} } }
+function showResume(on) {
+  $("resume").hidden = !on;
+  if (on) { $("panel").hidden = true; $("resume").scrollTop = 0; try { history.replaceState(null, "", "#resume"); } catch (e) {} }
+  else if (location.hash === "#resume") { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+}
 $("resumeBtn").onclick = () => showResume(true);
 
 /* ---------- Pins (HTML labels that follow their 3D anchor) ---------- */
@@ -144,8 +153,10 @@ function updatePins() {
   });
 }
 
-/* ---------- Things in the scene that open a panel (the contact card at the pool) ---------- */
+/* ---------- Things in the scene that open a panel or the resume (the contact card at the pool,
+   the door under the stairs) ---------- */
 const raycaster = new THREE.Raycaster();
+const hitBox = new THREE.Box3(), tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), tmpC = new THREE.Vector3();
 const pointer = new THREE.Vector2();
 const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
 // The stop whose panel the thing under the pointer opens, if any. It only counts if
@@ -155,13 +166,20 @@ function stopUnder(e) {
   const rect = canvas.getBoundingClientRect();
   pointer.set((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2);
   raycaster.setFromCamera(pointer, camera);
+  let solid;                             // the nearest solid thing under the pointer, found once if needed
+  const blocked = d => {
+    if (solid === undefined) solid = raycaster.intersectObjects(scene.children, true).find(h => shown(h.object) && !h.object.material.transparent) || null;
+    return solid && solid.distance < d - 0.01;
+  };
   for (const r of ROOMS) {
-    if (!r.click) continue;
-    const hit = raycaster.intersectObjects(world.meshesWith(r.click).filter(shown), false)[0];
-    if (!hit) continue;
-    const first = raycaster.intersectObjects(scene.children, true).find(h => shown(h.object) && !h.object.material.transparent);
-    if (first && first.distance < hit.distance - 0.01) continue;
-    return r;
+    if (r.click) {
+      const hit = raycaster.intersectObjects(world.meshesWith(r.click).filter(shown), false)[0];
+      if (hit && !blocked(hit.distance)) return r;
+    }
+    if (r.hit) {
+      const at = raycaster.ray.intersectBox(hitBox.set(tmpA.set(...r.hit[0]), tmpB.set(...r.hit[1])), tmpC);
+      if (at && !blocked(raycaster.ray.origin.distanceTo(at))) return r;
+    }
   }
   return null;
 }
@@ -172,7 +190,8 @@ canvas.addEventListener("pointerup", e => {
   // a drag to look around isn't a click
   if (!p || Math.hypot(e.clientX - p.x, e.clientY - p.y) > 6 || performance.now() - p.t > 600) return;
   const r = stopUnder(e);
-  if (r) { showResume(false); openRoom(r.id, camera.position.distanceTo(tmp.set(...r.view[0])) > 1.2); }
+  if (r && r.opens === "resume") showResume(true);
+  else if (r) { showResume(false); openRoom(r.id, camera.position.distanceTo(tmp.set(...r.view[0])) > 1.2); }
 });
 canvas.addEventListener("pointermove", e => {
   if (e.buttons || e.pointerType !== "mouse" || performance.now() - lastHover < 100) return;

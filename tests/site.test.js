@@ -217,3 +217,20 @@ test("three.js is pinned to one exact version everywhere", () => {
   assert.equal(new Set(versions).size, 1, `three.js versions don't match: ${[...new Set(versions)].join(", ")}`);
   for (const ref of ["styles.css", "src/main.js"]) assert.ok(html.includes(ref) && statSync(join(WEB, ref)).size > 0, `index.html needs ${ref}`);
 });
+
+test("the resume data has its sections and no phone number", () => {
+  const raw = readFileSync(join(WEB, "resume.json"), "utf8");
+  const d = JSON.parse(raw);
+  assert.ok(d.name, "resume.json needs a name");
+  for (const k of ["education", "experience", "projects", "skills"]) assert.ok(Array.isArray(d[k]) && d[k].length, `resume.json needs ${k}`);
+  for (const c of d.contact) assert.match(c.url, /^(https:\/\/|mailto:)/, `contact "${c.label}" needs an https or mailto link`);
+  // the web version shows email, LinkedIn and GitHub only
+  assert.doesNotMatch(raw, /\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b/, "resume.json looks like it holds a phone number");
+});
+
+test("the Download PDF exists and is one page", () => {
+  const pdf = readFileSync(join(ASSETS, "resume.pdf"));
+  assert.ok(pdf.subarray(0, 5).toString() === "%PDF-", "assets/resume.pdf isn't a PDF; run npm run resume:pdf");
+  const pages = pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) || [];
+  assert.equal(pages.length, 1, `assets/resume.pdf has ${pages.length} pages; it should fit on one`);
+});

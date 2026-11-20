@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aditya Singh · Resume</title>
+<meta name="robots" content="noindex">
+<!-- The print copy of the resume: `npm run resume:pdf` prints this page to
+     assets/resume.pdf (the site's Download PDF). It reads the same resume.json
+     as the resume view in the site. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+  @page { size: Letter; margin: 0.34in 0.5in; }
+  :root { --ink: #1b1916; --muted: #5d574f; --rule: #c9c1b5; --accent: #8a5a2b; }
+  html { background: #fff; }
+  body { margin: 0; color: var(--ink); font: 9pt/1.28 Inter, system-ui, sans-serif; }
+  main { max-width: 7.5in; margin: 0 auto; padding: 24px 0; }
+  @media print { main { padding: 0; } }
+  a { color: inherit; text-decoration: none; }
+  h1 { font-size: 20pt; font-weight: 600; letter-spacing: -.01em; margin: 0 0 2px; }
+  .rv-head { text-align: center; margin-bottom: 8px; }
+  .rv-contact { margin: 0; color: var(--muted); font-size: 9pt; }
+  .rv-dot { margin: 0 7px; color: var(--rule); }
+  .rv-sec { margin-top: 6px; }
+  .rv-sec h3 { font-size: 8.4pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+               border-bottom: 1px solid var(--rule); padding-bottom: 2px; margin: 0 0 5px; }
+  .rv-entry { margin-bottom: 4px; break-inside: avoid; }
+  .rv-line { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .rv-line h4 { margin: 0; font-size: 9.4pt; font-weight: 600; }
+  .rv-stack { font-weight: 400; color: var(--muted); font-style: italic; }
+  .rv-stack::before { content: "| "; font-style: normal; color: var(--rule); }
+  .rv-date { white-space: nowrap; color: var(--muted); }
+  .rv-sub { font-style: italic; color: var(--muted); }
+  .rv-links { justify-content: flex-start; gap: 0; color: var(--accent); font-size: 8.5pt; }
+  ul { margin: 1px 0 0; padding-left: 14px; }
+  li { margin: 0; }
+  /* one line per group, "Tools: Git, ...", as in a printed resume */
+  .rv-skills { margin: 0; }
+  .rv-skills dt { display: inline; font-weight: 600; }
+  .rv-skills dt::after { content: ": "; }
+  .rv-skills dd { display: inline; margin: 0; }
+  .rv-skills dd::after { content: "\A"; white-space: pre; }
+</style>
+</head>
+<body>
+<main id="resume"></main>
+<script type="module">
+  import {loadResume, resumeHTML} from "./src/resume.js";
+  loadResume().then(d => { document.getElementById("resume").innerHTML = resumeHTML(d); document.body.dataset.ready = "yes"; },
+                    e => { document.getElementById("resume").textContent = "The resume could not be loaded."; console.error(e); });
+</script>
+</body>
+</html>

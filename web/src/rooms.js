@@ -16,6 +16,10 @@
 //          clicked or tapped, like the contact card on the pool deck's table
 //   room   (optional) the furnished room whose furniture this stop shows, when it
 //          isn't the stop's own id (the resume stop shows the foyer)
+//   hit    (optional) a box in the model, [[x0, y0, z0], [x1, y1, z1]] in metres, that
+//          opens `opens` when clicked or tapped, if nothing solid is in front of it
+//          (the little door under the stairs, blender/villa/house.py, stairs)
+//   opens  (optional, with hit) "resume" opens the resume view; otherwise this stop's panel
 //
 // A body line is a paragraph, or, if it starts with "<ul" (a list), placed as it is.
 // The living room is still waiting on its copy (todo).
@@ -66,7 +70,8 @@ export const ROOMS = [
   {id: "stairs", floor: "g", area: "Under the stairs", title: "Resume", at: [-2.4, 1.5, 1.6], room: "foyer",
     // in the foyer's front corner, across to the stairs, the plinth and the resume door (blender/villa/foyer.py, FOYER_CAM)
     view: [[0.4, 1.6, 7.0], [-2.6, 1.0, 1.0]], near: 0.4,
-    body: ["The full resume as a plain page, for anyone short on time."],
+    hit: [[-2.79, 0.0, 1.37], [-1.96, 1.34, 1.47]], opens: "resume",
+    body: ["The full resume as a plain page, for anyone short on time. The little door under the stairs opens it too."],
     links: [["Open resume", "#resume", 1]]},
 
   {id: "library", floor: "u", area: "Library", title: "Books and writing", at: [6.75, 5.2, 4],
@@ -103,16 +108,4 @@ export const ROOMS = [
 
 export const FLOOR_NAME = {out: "Outside", g: "Ground floor", u: "Upstairs"};
 
-// The plain resume page behind "Skip to resume". Each section is [heading, [[title, detail], ...]].
-export const RESUME = {
-  name: "Aditya",
-  sections: [
-    ["Education", [["Dalhousie University, BCS (Co-op)", "Halifax, NS · expected 2027"]]],
-    ["Projects", [
-      ["Meruem Chess Coach", "Chess trainer running Stockfish, the Maia neural net and an LLM coach entirely in the browser. <a href='https://zvezda4994.github.io/Meruem-Chess-Coach/' target='_blank' rel='noopener'>Live</a> · <a href='https://github.com/Zvezda4994/Meruem-Chess-Coach' target='_blank' rel='noopener'>Code</a>"],
-      ["CS2 pick'em model", "Win-probability model for Counter-Strike 2 match predictions."]]],
-    ["Work", [["VAREK Systems, co-founder", "AI automation agency for local businesses."], ["Turo fleet", "Operations for a four-car rental fleet."]]],
-    ["Also", [["Boxing", "Competitive boxer; coach to 30+ athletes."], ["Esports", "Dalhousie collegiate CS2 team."]]],
-  ],
-  todo: "Draft from what I know about you. Swap in your real resume content.",
-};
+// The resume itself is web/resume.json (drawn by src/resume.js).

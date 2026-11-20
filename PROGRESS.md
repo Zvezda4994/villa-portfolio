@@ -284,6 +284,28 @@ room, and other rooms' labels used to shine through the walls. Labels show only 
 Outside, Ground and Upstairs overviews, as before. The banner now reads "Work in
 progress: the aquarium centrepiece and a car for the garage are still coming."
 
+**Step 5, batch 5: the resume view** (19 Nov 2026, waiting for your OK; done before the
+aquarium mech at your request). "Skip to resume", `#resume` links and the little door under
+the stairs all open the same view:
+- `web/resume.json` holds the content (education, experience, projects, skills), taken from
+  `assets_src/resume.pdf`. Contact lines are email, LinkedIn and GitHub only, no phone number
+  (a test checks); the email is the site's (adityaviveksingh@icloud.com), not the PDF's
+  Dalhousie address. Edit the file and the site picks it up.
+- `web/src/resume.js` draws it, in the site's dark style for the view (`styles.css`, `.rv-*`)
+  and on `web/resume.html`, a plain print page.
+- "Download PDF" serves `web/assets/resume.pdf`, printed from `resume.html` by headless
+  Chrome: `npm run resume:pdf` (`tools/resume_pdf.mjs`) after any change to `resume.json`.
+  It's one Letter page (a test checks), and has no phone number since it's made from the same
+  data. The PDF in `assets_src/` is never published.
+- The door: the stairs stop has a click box over the door (`hit` and `opens` in `rooms.js`);
+  clicking it opens the resume when nothing solid is in front of it. No scene change.
+- The old draft `RESUME` in `rooms.js` is gone.
+- Your Projects edit (20 Nov 2026): CounterPick and Meruem Chess Coach at the top, with their
+  links under the title (a project's optional `links`), then the load balancer and FightIQ;
+  the JSON compiler and the Discord bot are out. three.js, Blender and ONNX Runtime are in
+  Tools. The print page sets skills inline ("Tools: ...") and slightly tighter type so the PDF
+  stays on one page.
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -777,8 +799,8 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Batches 1 to 4 are done. Next: the aquarium mech,
-   then batch 5, the resume view.** See "Step 5: the brief for the remaining rooms" below.
+5. **The remaining rooms (in progress). Batches 1 to 5 are done (5 waiting for your OK).
+   Next: the aquarium mech.** See "Step 5: the brief for the remaining rooms" below.
    - **The aquarium mech: its own session next, with your spec first.** It goes on
      the tank's floor in place of the moss-covered rock (`ROCK` in `living.py`), an
      original design, moss-covered. Nothing is built for it yet.
@@ -858,8 +880,8 @@ labels is plain type: no real logos, cover art or screenshots, except the moodbo
 images you supply.
 
 **Batches:** (1) study and games room, done; (2) kitchen and gym, done; (3) living
-room and library, done; (4) trophy room, bedroom, garage and foyer, done; **(5) the
-resume view, next**. The aquarium mech gets its own session before it, from your spec.
+room and library, done; (4) trophy room, bedroom, garage and foyer, done; (5) the resume
+view, done. The aquarium mech gets its own session, from your spec.
 
 **Batch 4's later additions, your words:** "Garage: empty bays, no cars yet, but leave space
 and lighting for one car later." Then, after review: a car under a fitted cover in the west

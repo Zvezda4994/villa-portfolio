@@ -1,0 +1,125 @@
+{
+  "_about": "The resume behind 'Skip to resume' and the door under the stairs. Edit this file; the page reads it as it opens. After editing, run `npm run resume:pdf` to remake the Download PDF (web/assets/resume.pdf) from it. Contact lines are email, LinkedIn and GitHub only: no phone number on the web. A project's optional \"links\" ({label, url}) show under its title.",
+  "name": "Aditya Singh",
+  "location": "Halifax, NS",
+  "contact": [
+    {
+      "label": "adityaviveksingh@icloud.com",
+      "url": "mailto:adityaviveksingh@icloud.com"
+    },
+    {
+      "label": "linkedin.com/in/aditya-singh",
+      "url": "https://www.linkedin.com/in/aditya-singh"
+    },
+    {
+      "label": "github.com/Zvezda4994",
+      "url": "https://github.com/Zvezda4994"
+    }
+  ],
+  "education": [
+    {
+      "school": "Dalhousie University",
+      "place": "Halifax, NS",
+      "degree": "Bachelor of Computer Science, Co-op",
+      "dates": "Expected 2027",
+      "points": [
+        "Sexton Scholar; Dean’s List (Fall 2023, Winter 2024)"
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "org": "NovaXpress Courier Services",
+      "role": "Courier & Internal Tools Developer",
+      "place": "Halifax, NS",
+      "dates": "Dec 2025 – Jun 2026",
+      "points": [
+        "Built and deployed a Python/Streamlit billing tool that prices CEVA Logistics shipments against the full contract tariff (5 zones × 5 weight brackets, minimum charges, out-of-area, 6 accessorials, wait time, fuel surcharge), cutting per-shipment pricing from ~4 minutes to under 30 seconds and saving ~10 hours/week.",
+        "Engineered a waybill PDF parser (pdfplumber, pyzbar) using region-cropped text extraction and barcode decoding to auto-fill weight, tracking number, and addresses across multi-page daily batches, with deduplication and low-confidence flagging.",
+        "Added CSV manifest ingestion with geocoded distance estimates (Nominatim, OSRM) and manual override, exporting CEVA’s original manifest with appended charge columns for invoicing 175+ shipments/week."
+      ]
+    },
+    {
+      "org": "Tidal Car Rentals",
+      "role": "Administrative Assistant",
+      "place": "Dartmouth, NS",
+      "dates": "Sep 2023 – Aug 2024",
+      "points": [
+        "Built a scheduling tool (Google Calendar API, Apps Script) coordinating 20+ vehicle calendars, reducing double-bookings from ~10% to zero.",
+        "Automated per-vehicle Google Drive folder creation and linking in Python/Apps Script, saving ~15 hours/month (~$3.2K/year in labour).",
+        "Cut company website load time by 25% for 250+ weekly visitors via image compression, plugin cleanup, and caching; handled 50+ customer inquiries/week (60+ five-star Google reviews)."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "CounterPick",
+      "stack": "Python, NumPy, pytest, mypy",
+      "dates": "Nov 2026",
+      "links": [
+        {
+          "label": "github.com/Zvezda4994/CounterPick",
+          "url": "https://github.com/Zvezda4994/CounterPick"
+        }
+      ],
+      "points": [
+        "Built a Pick’Em optimizer for CS2 Majors: a joint Bradley-Terry model fits team strengths from bookmaker odds, and a vectorized NumPy Swiss simulator runs 100,000 stages in about 1.1 seconds under Valve’s rulebook.",
+        "Searched 10,090,080 legal cards with greedy and local search to maximize the chance of 5+ correct picks, re-scoring finalists on a holdout batch; the top 5 matched a brute-force search exactly.",
+        "Validated by replaying the Austin 2025 Major, reproducing every pairing and published Buchholz score; 222 tests under strict mypy and ruff."
+      ]
+    },
+    {
+      "name": "Meruem Chess Coach",
+      "stack": "JavaScript, Stockfish (WASM), ONNX Runtime Web, Claude API",
+      "dates": "Nov 2026",
+      "links": [
+        {
+          "label": "Live site",
+          "url": "https://zvezda4994.github.io/Meruem-Chess-Coach/"
+        },
+        {
+          "label": "github.com/Zvezda4994/Meruem-Chess-Coach",
+          "url": "https://github.com/Zvezda4994/Meruem-Chess-Coach"
+        }
+      ],
+      "points": [
+        "Built a browser chess trainer that grades every move from Best to Blunder with Stockfish 17.1 in Web Workers, using Lichess’s win-probability curve.",
+        "Ran the Maia-3 neural network in the browser through ONNX Runtime to give an adaptive opponent that plays like real players at the user’s rating.",
+        "Added an opening explorer covering 3,865 named positions, board analysis (pins, forks, loose pieces), and Claude explanations grounded by a tool that runs Stockfish on any move it cites."
+      ]
+    },
+    {
+      "name": "Load Balancer & Rate Limiter",
+      "stack": "Python, TCP sockets, multithreading",
+      "dates": "Jul 2026",
+      "points": [
+        "Built a reverse-proxy load balancer on raw TCP sockets using only the standard library, with round-robin and least-connections routing, 500 ms active health checks, and transparent failover retry.",
+        "Sustained 1,671 req/s at 36 ms p99 latency with 100% success, including a run with one of three backends killed mid-test.",
+        "Implemented per-client token-bucket and sliding-window-log rate limiting; 59% of an abusive client’s burst was rejected with 429 while 20 concurrent clients kept 100% success."
+      ]
+    },
+    {
+      "name": "UFC FightIQ",
+      "stack": "Python, scikit-learn, SQLite, BeautifulSoup, Streamlit",
+      "dates": "Jan 2026",
+      "points": [
+        "Built a fight-outcome predictor on 5,000+ bouts with a custom ELO engine (finish-weighted K-factors, inactivity decay) and momentum features feeding a Random Forest classifier; 58.8% accuracy backtested over 2010–2025.",
+        "Automated data collection with a BeautifulSoup scraper into SQLite, served through an interactive Streamlit matchup dashboard."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "Languages",
+      "items": "Python, Java, JavaScript, SQL, C, HTML/CSS"
+    },
+    {
+      "label": "Frameworks & Libraries",
+      "items": "Flask, Streamlit, React, Node.js, pandas, NumPy, scikit-learn, PyTorch"
+    },
+    {
+      "label": "Tools",
+      "items": "Git, Google Cloud Platform, Google Apps Script, SQLite, BeautifulSoup, REST APIs, three.js, Blender, ONNX Runtime"
+    }
+  ]
+}

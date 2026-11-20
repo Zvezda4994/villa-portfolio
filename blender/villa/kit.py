@@ -182,6 +182,10 @@ def sweep_geom(path, r, segments=12, caps=True):
     """Points and faces of a round tube along a path. Rings are kept from twisting by
     carrying each one's frame along from the last."""
     P = np.asarray(path, float)
+    # repeated points give the tube no direction there (NaN points, which the export turns
+    # into spikes to the world's origin): keep only points that move on
+    keep = np.concatenate([[True], np.linalg.norm(np.diff(P, axis=0), axis=1) > 1e-6])
+    P = P[keep]
     n = len(P)
     radii = np.broadcast_to(np.asarray(r, float), (n,)) if np.ndim(r) == 0 else np.interp(
         np.linspace(0, 1, n), np.linspace(0, 1, len(r)), np.asarray(r, float))
@@ -278,6 +282,42 @@ def panel(kit, mat, origin, u, v, step=0.22):
     nv = max(1, int(round(float(np.linalg.norm(v)) / step)))
     verts, faces, _ = grid(origin, u, v, nu, nv)
     kit.b.mesh(kit.g, mat, verts, faces, smooth=False)
+
+
+def wall(kit, mat, origin, u, v, holes=(), step=0.15):
+    """A whole wall's lining like `panel`, as one grid with holes left in it: each hole is
+    (a0, a1, b0, b1), metres along u and along v from the origin (a door, or a headboard,
+    a frame or a cabinet standing against the wall: points buried behind those bake dark,
+    gotcha 26). The grid's lines pass through every hole's edges and the pieces share
+    their points, so it shows none of the seams that separate panels side by side do."""
+    o, u, v = np.asarray(origin, float), np.asarray(u, float), np.asarray(v, float)
+    Lu, Lv = float(np.linalg.norm(u)), float(np.linalg.norm(v))
+    eu, ev = u / Lu, v / Lv
+
+    def lines(L, cuts):
+        cuts = sorted({min(max(c, 0.0), L) for c in cuts})
+        n = max(1, int(round(L / step)))
+        out = set(cuts) | {0.0, L}
+        for i in range(1, n):
+            p = L * i / n
+            if all(abs(p - c) > 0.3 * step for c in cuts):
+                out.add(p)
+        return sorted(out)
+    As = lines(Lu, [h[0] for h in holes] + [h[1] for h in holes])
+    Bs = lines(Lv, [h[2] for h in holes] + [h[3] for h in holes])
+    nb = len(Bs)
+    faces = []
+    for i in range(len(As) - 1):
+        for j in range(nb - 1):
+            ac, bc = (As[i] + As[i + 1]) / 2, (Bs[j] + Bs[j + 1]) / 2
+            if any(a0 < ac < a1 and b0 < bc < b1 for a0, a1, b0, b1 in holes):
+                continue
+            a, c = i * nb + j, (i + 1) * nb + j
+            faces.append((a, c, c + 1, a + 1))
+    used = sorted({n for f in faces for n in f})
+    index = {n: k for k, n in enumerate(used)}
+    verts = [tuple(o + eu * As[n // nb] + ev * Bs[n % nb]) for n in used]
+    kit.b.mesh(kit.g, mat, verts, [tuple(index[n] for n in f) for f in faces], smooth=False)
 
 
 def grid(origin, u, v, nu, nv):

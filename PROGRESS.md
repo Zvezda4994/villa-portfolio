@@ -178,6 +178,83 @@ Downloads: the living room 3.2 MB, the library 3.5 MB (the spine picture
 0.99 MB of it); the moodboard's pictures about 0.6 MB in all, fetched only when the room
 opens.
 
+**Step 5, batch 4: the trophy room, the main bedroom, the garage and the foyer** (approved
+19 Nov 2026: the trophy room and garage after a second pass, the foyer after a third).
+Opening any of them on the site drops the camera inside it; the "Under the stairs" (resume)
+stop now shows the foyer (`room: "foyer"` in `rooms.js`). None has a lightmap: everything
+is lit per vertex.
+
+The trophy room, slate walls, walnut and gold (`blender/villa/trophy.py`):
+- the display wall (east): two tall glass cases on walnut bases, each lit inside (a lamp, an
+  LED strip, a museum spot) and by a spot on a black ceiling track; the sheers are gone so the
+  room opens onto the terrace;
+- the boxing case: the championship belt (an original design: red strap edged in gold, an
+  octagonal gold plate with a star, four side plates) wrapped round a dark velvet form, a
+  second belt (black, round plates) hung flat on the velvet above it, six medals;
+- the wins case (coding and esports): three medals on ribbons, a glass shelf with a silver
+  cup, a crystal award and a gold star, two medals on easels and a crystal plaque;
+- between them, the team photo's frame, empty for now (a linen board, material
+  `team_photo`), over a walnut console with the gold cup on it under its own spot;
+- a chess table by the glass (inlaid board, Poly Haven's set in plain ivory and ebony, the
+  start position, `FEN`) with two leather chairs (the library's desk chair, `desk_chair` now
+  takes materials); a leather gallery bench, a navy rug, a fig.
+- Medals are flat discs with a raised rim, a ring and an embossed star (`coin`).
+
+The main bedroom (languages), soft and minimal (`blender/villa/bedroom.py`):
+- a low pale-oak bed: white linen duvet modelled as cloth draped over the sides and foot
+  (`drape`), turned back at the top, pillows, a terracotta cushion and throw; a wide padded
+  oatmeal headboard; one nightstand with a ceramic lamp, a floor lamp, a bench at the foot,
+  a pale wool rug;
+- the world map over the headboard: an original print painted from Natural Earth's
+  public-domain coastlines (`paint_map`, plain equirectangular), three red pins at Rabat,
+  Moscow and Tokyo (`PINS`);
+- on the lounge wall, a floating shelf with the language books over a boucle reading chair
+  and a side table. The spines are `data/bedroom_books.txt` (text, then colour).
+
+The garage (Turo), a bright showroom (`blender/villa/garage.py`):
+- white walls, a pale resin floor with two bays marked out and wheel stops, long LED lines in
+  the ceiling; the west bay has the car's light rig (three lines, an LED rectangle, four
+  spots aimed at its flanks) and a wall charger;
+- a stand-in car under a fitted charcoal cover in the west bay (`car_cover`: a sedan lofted
+  from cross-sections, tyres showing under the hem). Take it out when the real car comes;
+- on the back wall: oak slats behind a 65" screen with a two-week booking calendar, and a
+  key cabinet with four keys and tags. The names are `data/garage_keys.txt` (placeholders
+  "Car 1" to "Car 4"), which sets both the tags and the calendar's rows; the bookings shown
+  are made up;
+- by the foyer door: a charcoal tool chest (sprays and a towel on top) under a wall rack of
+  four tyres, and a fire extinguisher.
+
+The foyer (`blender/villa/foyer.py`):
+- the plinth on the front door's axis, two ceiling spots already aimed where the sculpture
+  will stand; on it for now a large dark ceramic vessel (`vessel`: delete the call when the
+  sculpture comes);
+- the stairs turned round (the house's own, `house.stairs`, `config.STAIR_*`): the flight
+  now starts on the foyer floor at its open east end, by the dining room door, and climbs
+  west, 17 risers of 206 mm on 245 mm treads. Its last step is onto the landing's floor,
+  which now reaches over the alcove at the top (closed off on the foyer side); from there
+  the landing opens to the north. Before, it climbed east and its first step faced the
+  garage wall with no floor to step onto it from;
+- dressed to read as floating oak: a thick oak slab over each tread, its nose proud of the
+  riser and past the side, the risers and the side lined in charcoal round the resume door
+  (`treads`); a glass balustrade on the open side toward the room (two faces, green at its
+  edges) with a brass rail, stopping at the landing's floor where the landing's glass
+  takes over;
+- upstairs, glass with a brass rail along the stairwell's long side and across its east
+  end, posts at the corners; its west end is open, where the stairs arrive;
+- an oak console on the dark stone wall (lamp, a bowl with keys, a vase of branches, books)
+  under an original painting (`paint_painting`), a fig, a runner by the door. The strip in
+  front of the stairs is left clear for the vault.
+
+Previews: `previews/browser_trophy.jpg`, `browser_trophy_cases.jpg`, `browser_trophy_belt.jpg`,
+`browser_bedroom.jpg`, `browser_bedroom_map.jpg`, `browser_garage.jpg`,
+`browser_garage_keys.jpg`, `browser_foyer.jpg`, `browser_foyer_console.jpg`,
+`browser_stairs_top.jpg` (the upstairs landing), and Blender's renders of the bedroom
+(`bedroom`, `bedroom_map`, `bedroom_shelf`). The other three rooms' Blender renders went
+stale with the last changes and were left out; `npm run previews -- trophy garage foyer`
+(and their close-ups) makes them again.
+Downloads (as the tests count them): the trophy room 2.4 MB, the foyer 1.8 MB, the bedroom
+1.3 MB (with the map picture), the garage 0.8 MB (with its pictures).
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -208,7 +285,8 @@ change later.
   - front row: a lounge, the stair landing, the library.
 - The dark stone wall runs from the foyer out through the front and up past the
   roof. It stays as it is.
-- The foyer-to-dining doorway sits at the top end of the stairs.
+- The stairs start by the foyer-to-dining doorway, at their east end, and climb west to the
+  landing (turned round in batch 4: they used to start against the garage wall).
 - Space for the later "vault" is a lower level off the foyer, beside the stairs.
   Nothing blocks it.
 - The car will park on the setts court, angled to face the landing camera.
@@ -278,6 +356,11 @@ change later.
   `colors=` on its meshes (the brown gloves, `gym._wear`).
 - Lists the user edits (labels, titles) go in `data/`, read by the room's script at
   build time; rebuild to reprint them.
+- **A wall with things against it is one grid with holes** (`kit.wall`): doors, a headboard,
+  cases, a frame. Separate panels side by side showed seams in the browser (the bedroom's
+  first pass), and nothing should be lined behind a closed piece (gotcha 26).
+- A plant beside a partition can reach through it: `props.place(..., keep=)` drops the
+  faces that cross (the games room's philodendron, at the bedroom wall).
 - **Budget: around 4 MB per room.** That means the room's own file, the pictures
   only it uses, and its lightmap (a seated figure is counted separately, since it
   can come and go). Prefer materials other rooms already load, keep pictures at
@@ -629,6 +712,19 @@ The traps hit so far, so they don't get rediscovered.
     the longer side, so a portrait picture's text came out about eight times too big.
     It now pins the scale to the height when the picture is taller than wide (the
     library's spine bands); landscape pictures are set exactly as before.
+35. **`Kit.soft` with a radius bigger than half the box's thickness makes it thicker.** The
+    rounded box keeps its corners' radius, so a 3 mm key tag with 6 mm corners came out 12 mm
+    thick and buried its printed face. Keep `r` under half the thinnest side.
+36. **Something wrapped round a form must clear the form's rounded corners.** The belt's
+    strap passed inside its velvet form's corners at the diagonals, so most of it was buried
+    and baked black. Blender's render still showed red at its edges, which hid the cause.
+37. **The marble texture is a tiled floor's**, grout lines and all; on the plinth it read
+    as stacked blocks. Use plain colour (or a texture without joints) for solid stone.
+38. **A tube through repeated points gets NaN points, and the export turns them into spikes
+    to the world's origin.** The car cover's hem met itself at the nose and tail; a thin line
+    ran across the garage and the foyer, in the browser only. `kit.sweep_geom` now drops
+    repeated points. A long thin line in the browser that Blender doesn't show: look for a
+    mesh edge to (0, 0, 0).
 
 ## Next
 
@@ -643,6 +739,9 @@ The traps hit so far, so they don't get rediscovered.
   until then): VAREK and Turo numbers, the trophy list, contact details. The
   contact details also go on the card on the pool deck's table (`CONTACT_CARD`).
 - The aquarium's mech: your spec first (see the build order).
+- From batch 4: the four cars' names for the garage's keys and calendar
+  (`data/garage_keys.txt`), the team photo for the trophy room's frame, and the trophy list
+  (the cases' medals and awards are generic until then).
 - For later steps:
   - a choice of chess position for the dining table;
   - approval before buying anything over about $60, most likely the car model.
@@ -654,9 +753,9 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Next: batch 4, the trophy room, the main
-   bedroom, the garage and the foyer.** See "Step 5: the brief for the remaining rooms" below.
-   - **The aquarium mech: its own session after batch 4, with your spec first.** It goes on
+5. **The remaining rooms (in progress). Batches 1 to 4 are done. Next: the aquarium mech,
+   then batch 5, the resume view.** See "Step 5: the brief for the remaining rooms" below.
+   - **The aquarium mech: its own session next, with your spec first.** It goes on
      the tank's floor in place of the moss-covered rock (`ROCK` in `living.py`), an
      original design, moss-covered. Nothing is built for it yet.
 6. **Polish.** The brief's performance section now has targets and no hard
@@ -700,6 +799,11 @@ The traps hit so far, so they don't get rediscovered.
        view (`GAMES_CAM`); or keep the wide view and fill its empty right-hand wall
        and floor;
      - the PC could come off its plinth and go on the desk's left end, or on the floor.
+   - **The upstairs landing** (your note, 19 Nov 2026): give it wall linings (lit per vertex,
+     `kit.wall`, as the furnished rooms have; on the draft lightmap its walls and ceiling are
+     very blotchy) and one piece of dressing, a bench or a large artwork, so it isn't bare
+     when the camera passes through. Keep the arrival from the stairs at the stairwell's west
+     end clear.
    - Then the full-quality bake.
 7. **My character, at the end.** Redone from a proper base mesh (not generated
    from primitives), reclining on my lounger. Then the stepped-away setting
@@ -728,8 +832,18 @@ labels is plain type: no real logos, cover art or screenshots, except the moodbo
 images you supply.
 
 **Batches:** (1) study and games room, done; (2) kitchen and gym, done; (3) living
-room and library, done; **(4) trophy room, bedroom, garage and foyer, next**; (5) the
-resume view. The aquarium mech gets its own session after batch 4, from your spec.
+room and library, done; (4) trophy room, bedroom, garage and foyer, done; **(5) the
+resume view, next**. The aquarium mech gets its own session before it, from your spec.
+
+**Batch 4's later additions, your words:** "Garage: empty bays, no cars yet, but leave space
+and lighting for one car later." Then, after review: a car under a fitted cover in the west
+bay, to be replaced by the real car later; a tool chest and a wall-mounted tyre rack.
+"Foyer: the plinth stays empty for the sculpture later", then a temporary piece on it (the
+dark vessel) to swap for the sculpture; the stair made to look designed (floating oak
+treads, a visible glass balustrade). Trophy room: flat medals with a raised rim and an
+embossed face, and a fuller boxing case (the second belt). Then the stairs reversed to climb
+from the open east end toward the left wall, arriving under the stairwell, with a glass
+railing round the opening upstairs; the tyres on the rack spaced so they read as four.
 
 **What you asked for in each room** (your words, lightly trimmed):
 

@@ -417,7 +417,7 @@ def plant(k, f):
     k.lathe("metal_black", pot, [(0.0, 0.0), (0.20, 0.0), (0.21, 0.02), (0.21, h), (0.195, h), (0.195, h - 0.04), (0.0, h - 0.04)], 40)
     philo = load("potted_plant_02", only={"potted_plant_02_leaves"})
     place(k.b, G, "games_philo", philo["potted_plant_02_leaves"], f((x, h - 0.04, z)), yaw=0.9, scale=1.75,
-          origin=(0.0, 0.3, 0.0))
+          origin=(0.0, 0.3, 0.0), keep=lambda p: p[0] > XW + 0.03)     # no leaves through the wall into the bedroom
     # an uplight on the floor behind the pot, throwing the leaves' shadows up the slats
     up = f((x + 0.05, 0.05, z - 0.30))
     LAMPS.append(dict(name="plant_uplight", kind="spot", pos=up, aim=tuple(np.subtract(f((x - 0.05, 2.6, 0.05)), up)),

@@ -22,11 +22,20 @@
  },
  "model": "villa.glb",
  "rooms": {
+  "bedroom": {
+   "model": "rooms/bedroom.glb"
+  },
   "dining": {
    "model": "rooms/dining.glb"
   },
+  "foyer": {
+   "model": "rooms/foyer.glb"
+  },
   "games": {
    "model": "rooms/games.glb"
+  },
+  "garage": {
+   "model": "rooms/garage.glb"
   },
   "gym": {
    "model": "rooms/gym.glb"
@@ -45,6 +54,9 @@
   },
   "study": {
    "model": "rooms/study.glb"
+  },
+  "trophy": {
+   "model": "rooms/trophy.glb"
   }
  },
  "lightmaps": {
@@ -2479,6 +2491,786 @@
     0.007194409291082934
    ],
    "room": "library"
+  },
+  "trophy_wall": {
+   "kind": "vertex",
+   "color": [
+    0.039681909478526005,
+    0.04696420068912289,
+    0.06372379528489175
+   ],
+   "room": "trophy"
+  },
+  "trophy_ceiling": {
+   "kind": "vertex",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.8,
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "trophy"
+  },
+  "trophy_walnut": {
+   "kind": "vertex",
+   "map": "textures/walnut_veneer.ktx2",
+   "tile": 1.6,
+   "color": [
+    0.4,
+    0.32,
+    0.26
+   ],
+   "room": "trophy"
+  },
+  "trophy_walnut_v": {
+   "kind": "vertex",
+   "color": [
+    0.07323895587840543,
+    0.033104766570885055,
+    0.017389102368488736
+   ],
+   "room": "trophy"
+  },
+  "trophy_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "trophy"
+  },
+  "trophy_black": {
+   "kind": "vertex",
+   "color": [
+    0.002708978328173375,
+    0.002708978328173375,
+    0.0030959752321981426
+   ],
+   "room": "trophy"
+  },
+  "trophy_brass": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "trophy"
+  },
+  "trophy_gold": {
+   "kind": "vertex",
+   "color": [
+    0.8275708303626798,
+    0.47699978456654196,
+    0.08898152563840141
+   ],
+   "room": "trophy"
+  },
+  "trophy_silver": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.6559306827469925,
+    0.6738595407338318
+   ],
+   "room": "trophy"
+  },
+  "trophy_bronze": {
+   "kind": "vertex",
+   "color": [
+    0.44798841244188325,
+    0.17064493581555268,
+    0.0549717326875717
+   ],
+   "room": "trophy"
+  },
+  "case_velvet": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.017389102368488736,
+    0.0549717326875717
+   ],
+   "room": "trophy"
+  },
+  "case_velvet_dark": {
+   "kind": "vertex",
+   "color": [
+    0.00598105957261676,
+    0.007194409291082934,
+    0.01532520332062848
+   ],
+   "room": "trophy"
+  },
+  "case_bronze": {
+   "kind": "vertex",
+   "color": [
+    0.04696420068912289,
+    0.030074104146591292,
+    0.017389102368488736
+   ],
+   "room": "trophy"
+  },
+  "case_glass": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.7874122893956174,
+    0.7874122893956174
+   ],
+   "room": "trophy",
+   "opacity": 0.1,
+   "reflect": 0.25
+  },
+  "case_led": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.7874122893956174,
+    0.5382355236010181
+   ],
+   "room": "trophy",
+   "strength": 3.0
+  },
+  "crystal": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.8275708303626798,
+    0.8900054069935289
+   ],
+   "room": "trophy",
+   "opacity": 0.25,
+   "reflect": 0.5
+  },
+  "belt_leather": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.01960664851623822,
+    0.01341174889765847
+   ],
+   "room": "trophy"
+  },
+  "belt_enamel": {
+   "kind": "vertex",
+   "color": [
+    0.00598105957261676,
+    0.010022825574869039,
+    0.05087608817155679
+   ],
+   "room": "trophy"
+  },
+  "trophy_leather": {
+   "kind": "vertex",
+   "color": [
+    0.19599417930148813,
+    0.05925352111727415,
+    0.017389102368488736
+   ],
+   "room": "trophy"
+  },
+  "trophy_mat": {
+   "kind": "vertex",
+   "color": [
+    0.8073459089125289,
+    0.7874122893956174,
+    0.7293470915734015
+   ],
+   "room": "trophy"
+  },
+  "team_photo": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5704815954749093,
+    0.49190504085677866
+   ],
+   "room": "trophy"
+  },
+  "trophy_chess_white": {
+   "kind": "vertex",
+   "color": [
+    0.7293470915734015,
+    0.6559306827469925,
+    0.49190504085677866
+   ],
+   "room": "trophy"
+  },
+  "trophy_chess_black": {
+   "kind": "vertex",
+   "color": [
+    0.007194409291082934,
+    0.00598105957261676,
+    0.005422868676138171
+   ],
+   "room": "trophy"
+  },
+  "trophy_planter": {
+   "kind": "vertex",
+   "color": [
+    0.01532520332062848,
+    0.014349874706802563,
+    0.01341174889765847
+   ],
+   "room": "trophy"
+  },
+  "trophy_fig_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_leaves.ktx2",
+   "room": "trophy",
+   "doubleSided": true
+  },
+  "trophy_fig_stems": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_stems.ktx2",
+   "room": "trophy"
+  },
+  "bedroom_ceiling": {
+   "kind": "vertex",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.8,
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_oak": {
+   "kind": "vertex",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.4,
+   "color": [
+    0.95,
+    0.88,
+    0.8
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_headboard": {
+   "kind": "vertex",
+   "color": [
+    0.44798841244188325,
+    0.38005633644979925,
+    0.28464669032765505
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_chair": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5542217602988447,
+    0.44798841244188325
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_black": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.003935939504088967,
+    0.00440084974745434
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_brass": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "bedroom"
+  },
+  "bed_linen": {
+   "kind": "vertex",
+   "color": [
+    0.7874122893956174,
+    0.748414103499371,
+    0.6738595407338318
+   ],
+   "room": "bedroom"
+  },
+  "bed_sheet": {
+   "kind": "vertex",
+   "color": [
+    0.8480882574948619,
+    0.8275708303626798,
+    0.7677687605549981
+   ],
+   "room": "bedroom"
+  },
+  "bed_pillow": {
+   "kind": "vertex",
+   "color": [
+    0.7105664902244221,
+    0.6559306827469925,
+    0.5542217602988447
+   ],
+   "room": "bedroom"
+  },
+  "bed_accent": {
+   "kind": "vertex",
+   "color": [
+    0.34239163959260344,
+    0.10653922395082352,
+    0.04696420068912289
+   ],
+   "room": "bedroom"
+  },
+  "bed_throw": {
+   "kind": "vertex",
+   "color": [
+    0.31854677812509186,
+    0.11280478678675158,
+    0.0549717326875717
+   ],
+   "room": "bedroom"
+  },
+  "bed_ceramic": {
+   "kind": "vertex",
+   "color": [
+    0.6738595407338318,
+    0.6209158623742829,
+    0.5225215539683921
+   ],
+   "room": "bedroom"
+  },
+  "bed_shade": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6382832153523972,
+    0.34239163959260344
+   ],
+   "room": "bedroom",
+   "strength": 1.5
+  },
+  "bed_glass": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.7874122893956174,
+    0.7874122893956174
+   ],
+   "room": "bedroom",
+   "opacity": 0.14,
+   "reflect": 0.3
+  },
+  "bed_water": {
+   "kind": "glass",
+   "color": [
+    0.6038273388553378,
+    0.748414103499371,
+    0.7874122893956174
+   ],
+   "room": "bedroom",
+   "opacity": 0.25,
+   "reflect": 0.3
+  },
+  "bed_pin": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.010022825574869039,
+    0.007194409291082934
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_map": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/world_map.ktx2",
+   "room": "bedroom"
+  },
+  "bedroom_spines": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/bedroom_spines.ktx2",
+   "room": "bedroom"
+  },
+  "garage_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "garage"
+  },
+  "garage_white": {
+   "kind": "vertex",
+   "color": [
+    0.8073459089125289,
+    0.8073459089125289,
+    0.7874122893956174
+   ],
+   "room": "garage"
+  },
+  "garage_black": {
+   "kind": "vertex",
+   "color": [
+    0.0023219814241486067,
+    0.0023219814241486067,
+    0.002708978328173375
+   ],
+   "room": "garage"
+  },
+  "garage_rubber": {
+   "kind": "vertex",
+   "color": [
+    0.010022825574869039,
+    0.010022825574869039,
+    0.010816382958706206
+   ],
+   "room": "garage"
+  },
+  "garage_fob": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.003935939504088967,
+    0.00440084974745434
+   ],
+   "room": "garage"
+  },
+  "garage_red": {
+   "kind": "vertex",
+   "color": [
+    0.47699978456654196,
+    0.007194409291082934,
+    0.004896310081623859
+   ],
+   "room": "garage"
+  },
+  "garage_green": {
+   "kind": "emissive",
+   "color": [
+    0.10048150993772331,
+    1.0,
+    0.26327340845612224
+   ],
+   "room": "garage",
+   "strength": 2.0
+  },
+  "garage_cable": {
+   "kind": "vertex",
+   "color": [
+    0.004896310081623859,
+    0.004896310081623859,
+    0.005422868676138171
+   ],
+   "room": "garage"
+  },
+  "garage_led": {
+   "kind": "emissive",
+   "color": [
+    0.8688993866725532,
+    0.9331068418238677,
+    1.0
+   ],
+   "room": "garage",
+   "strength": 5.0
+  },
+  "garage_glass": {
+   "kind": "glass",
+   "color": [
+    0.7105664902244221,
+    0.7874122893956174,
+    0.7874122893956174
+   ],
+   "room": "garage",
+   "opacity": 0.1,
+   "reflect": 0.25
+  },
+  "garage_tags": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/garage_tags.ktx2",
+   "room": "garage"
+  },
+  "garage_screen": {
+   "kind": "screen",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/garage_calendar.ktx2",
+   "room": "garage",
+   "strength": 1.1
+  },
+  "car_cover": {
+   "kind": "vertex",
+   "color": [
+    0.030074104146591292,
+    0.030074104146591292,
+    0.033104766570885055
+   ],
+   "room": "garage",
+   "doubleSided": true
+  },
+  "garage_rim": {
+   "kind": "vertex",
+   "color": [
+    0.039681909478526005,
+    0.039681909478526005,
+    0.0432336359153358
+   ],
+   "room": "garage"
+  },
+  "garage_chest": {
+   "kind": "vertex",
+   "color": [
+    0.01341174889765847,
+    0.01341174889765847,
+    0.01532520332062848
+   ],
+   "room": "garage"
+  },
+  "garage_bottle_blue": {
+   "kind": "vertex",
+   "color": [
+    0.021980947079887205,
+    0.10653922395082352,
+    0.44798841244188325
+   ],
+   "room": "garage"
+  },
+  "garage_towel": {
+   "kind": "vertex",
+   "color": [
+    0.10653922395082352,
+    0.1788675039555289,
+    0.34239163959260344
+   ],
+   "room": "garage"
+  },
+  "foyer_stone": {
+   "kind": "vertex",
+   "map": "textures/granite_tile.ktx2",
+   "tile": 2.3,
+   "color": [
+    0.3,
+    0.29,
+    0.3
+   ],
+   "room": "foyer"
+  },
+  "foyer_oak": {
+   "kind": "vertex",
+   "map": "textures/oak_veneer_01.ktx2",
+   "tile": 1.4,
+   "color": [
+    0.95,
+    0.88,
+    0.8
+   ],
+   "room": "foyer"
+  },
+  "foyer_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "foyer"
+  },
+  "plinth_stone": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.4200332886842154
+   ],
+   "room": "foyer"
+  },
+  "foyer_black": {
+   "kind": "vertex",
+   "color": [
+    0.0030959752321981426,
+    0.0030959752321981426,
+    0.0035010160107980036
+   ],
+   "room": "foyer"
+  },
+  "foyer_brass": {
+   "kind": "vertex",
+   "color": [
+    0.6382832153523972,
+    0.3546920614940455,
+    0.11280478678675158
+   ],
+   "room": "foyer"
+  },
+  "foyer_glass": {
+   "kind": "glass",
+   "color": [
+    0.5704815954749093,
+    0.748414103499371,
+    0.7105664902244221
+   ],
+   "room": "foyer",
+   "opacity": 0.16,
+   "reflect": 0.45
+  },
+  "foyer_glass_edge": {
+   "kind": "vertex",
+   "color": [
+    0.19599417930148813,
+    0.3672464682101826,
+    0.29569980462568246
+   ],
+   "room": "foyer"
+  },
+  "stair_dark": {
+   "kind": "vertex",
+   "color": [
+    0.01960664851623822,
+    0.018478473287962097,
+    0.017389102368488736
+   ],
+   "room": "foyer"
+  },
+  "foyer_vessel": {
+   "kind": "vertex",
+   "color": [
+    0.011645430905844125,
+    0.010022825574869039,
+    0.00926431084760073
+   ],
+   "room": "foyer"
+  },
+  "foyer_ceramic": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.4200332886842154
+   ],
+   "room": "foyer"
+  },
+  "foyer_ceramic_dark": {
+   "kind": "vertex",
+   "color": [
+    0.017389102368488736,
+    0.01532520332062848,
+    0.01341174889765847
+   ],
+   "room": "foyer"
+  },
+  "foyer_bowl": {
+   "kind": "vertex",
+   "color": [
+    0.07323895587840543,
+    0.05925352111727415,
+    0.04696420068912289
+   ],
+   "room": "foyer"
+  },
+  "foyer_shade": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6382832153523972,
+    0.34239163959260344
+   ],
+   "room": "foyer",
+   "strength": 1.5
+  },
+  "foyer_branch": {
+   "kind": "vertex",
+   "color": [
+    0.09462962659456918,
+    0.05087608817155679,
+    0.024515013703524748
+   ],
+   "room": "foyer"
+  },
+  "foyer_pot": {
+   "kind": "vertex",
+   "color": [
+    0.6738595407338318,
+    0.6038273388553378,
+    0.47699978456654196
+   ],
+   "room": "foyer"
+  },
+  "foyer_canvas_edge": {
+   "kind": "vertex",
+   "color": [
+    0.6038273388553378,
+    0.5382355236010181,
+    0.44798841244188325
+   ],
+   "room": "foyer"
+  },
+  "foyer_painting": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/foyer_painting.ktx2",
+   "room": "foyer"
+  },
+  "foyer_fig_leaves": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_leaves.ktx2",
+   "room": "foyer",
+   "doubleSided": true
+  },
+  "foyer_fig_stems": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/fig_stems.ktx2",
+   "room": "foyer"
   }
  },
  "cameras": {
@@ -2832,13 +3624,182 @@
     7.1
    ],
    "fov": 52.0
+  },
+  "trophy": {
+   "pos": [
+    4.6,
+    5.05,
+    -3.0
+   ],
+   "target": [
+    11.7,
+    4.7,
+    -4.6
+   ],
+   "fov": 55.0
+  },
+  "trophy_cases": {
+   "pos": [
+    9.45,
+    5.0,
+    -5.3
+   ],
+   "target": [
+    11.7,
+    4.95,
+    -5.95
+   ],
+   "fov": 50.0
+  },
+  "trophy_belt": {
+   "pos": [
+    10.387999999999998,
+    4.86,
+    -6.25
+   ],
+   "target": [
+    11.437999999999999,
+    4.83,
+    -6.15
+   ],
+   "fov": 40.0
+  },
+  "trophy_chess": {
+   "pos": [
+    7.95,
+    4.95,
+    -5.15
+   ],
+   "target": [
+    9.35,
+    4.25,
+    -6.65
+   ],
+   "fov": 50.0
+  },
+  "bedroom": {
+   "pos": [
+    -10.55,
+    5.05,
+    -6.55
+   ],
+   "target": [
+    -5.6,
+    4.55,
+    -1.2
+   ],
+   "fov": 55.0
+  },
+  "bedroom_map": {
+   "pos": [
+    -7.275,
+    5.12,
+    -3.3000000000000003
+   ],
+   "target": [
+    -5.075,
+    5.12,
+    -3.6
+   ],
+   "fov": 50.0
+  },
+  "bedroom_shelf": {
+   "pos": [
+    -6.25,
+    4.8,
+    -0.55
+   ],
+   "target": [
+    -6.3,
+    4.45,
+    1.925
+   ],
+   "fov": 50.0
+  },
+  "garage": {
+   "pos": [
+    -8.15,
+    1.6,
+    7.2
+   ],
+   "target": [
+    -8.7,
+    1.12,
+    0.0
+   ],
+   "fov": 55.0
+  },
+  "garage_keys": {
+   "pos": [
+    -10.52,
+    1.52,
+    1.0
+   ],
+   "target": [
+    -10.6,
+    1.5,
+    0.075
+   ],
+   "fov": 40.0
+  },
+  "garage_screen": {
+   "pos": [
+    -6.69,
+    1.62,
+    2.15
+   ],
+   "target": [
+    -6.69,
+    1.62,
+    0.075
+   ],
+   "fov": 40.0
+  },
+  "foyer": {
+   "pos": [
+    0.4,
+    1.6,
+    7.0
+   ],
+   "target": [
+    -2.6,
+    1.0,
+    1.0
+   ],
+   "fov": 55.0
+  },
+  "foyer_console": {
+   "pos": [
+    -1.25,
+    1.55,
+    4.7
+   ],
+   "target": [
+    1.0,
+    1.3,
+    3.1
+   ],
+   "fov": 52.0
+  },
+  "stairs_top": {
+   "pos": [
+    0.3,
+    5.1,
+    5.4
+   ],
+   "target": [
+    -3.7,
+    4.05,
+    0.9
+   ],
+   "fov": 55.0
   }
  },
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303997,
-  "sky pool": 339924,
-  "sky front": 389705,
+  "sky environment": 303998,
+  "sky pool": 339775,
+  "sky front": 389652,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -2850,6 +3811,7 @@
   "texture sandy_gravel_02": 1240623,
   "texture walnut_veneer": 292320,
   "texture terrain_mask": 68102,
+  "texture bedroom_spines": 42582,
   "texture cabinet": 308474,
   "texture chess_black": 316435,
   "texture chess_white": 322607,
@@ -2857,8 +3819,11 @@
   "texture contact_card": 322942,
   "texture fig_leaves": 66354,
   "texture fig_stems": 84183,
+  "texture foyer_painting": 146003,
   "texture game_spines": 18220,
   "texture games_print": 273332,
+  "texture garage_calendar": 346355,
+  "texture garage_tags": 21401,
   "texture gym_board": 64144,
   "texture gym_timer": 7640,
   "texture horse_head": 83148,
@@ -2882,27 +3847,32 @@
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "texture whiteboard": 157289,
-  "model": 2381008,
+  "texture world_map": 311004,
+  "model": 2377316,
+  "room bedroom": 667408,
   "room dining": 2009996,
-  "room games": 599596,
+  "room foyer": 937624,
+  "room games": 585596,
+  "room garage": 496924,
   "room gym": 707912,
   "room kitchen": 1321444,
   "room library": 1710032,
   "room living": 2428348,
   "room pool": 1214128,
   "room study": 1188908,
-  "lightmap ext": 313649,
-  "lightmap ext (small)": 309657,
-  "lightmap gnd": 252195,
-  "lightmap gnd (small)": 248403,
-  "lightmap upr": 242347,
-  "lightmap upr (small)": 238747,
-  "lightmap terrain": 289598,
-  "lightmap terrain (small)": 285694,
-  "lightmap din": 78390,
-  "lightmap pol": 65492,
-  "lightmap stu": 57530,
-  "lightmap gam": 50331,
-  "lightmap kit": 46793
+  "room trophy": 1801472,
+  "lightmap ext": 312994,
+  "lightmap ext (small)": 309026,
+  "lightmap gnd": 193994,
+  "lightmap gnd (small)": 190442,
+  "lightmap upr": 197058,
+  "lightmap upr (small)": 193706,
+  "lightmap terrain": 289751,
+  "lightmap terrain (small)": 285855,
+  "lightmap din": 78581,
+  "lightmap pol": 65193,
+  "lightmap stu": 59701,
+  "lightmap gam": 46611,
+  "lightmap kit": 51263
  }
 }

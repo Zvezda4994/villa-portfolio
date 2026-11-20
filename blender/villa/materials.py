@@ -359,6 +359,110 @@ MATS = {
     "hourglass_glass": dict(kind="glass", room="library", color=(0.85, 0.88, 0.86), opacity=0.14, reflect=0.3),
     "hourglass_sand": dict(kind="vertex", room="library", color=(0.82, 0.70, 0.50)),
     "whisky":      dict(kind="vertex", room="library", color=(0.55, 0.30, 0.08)),
+
+    # --- trophy room (trophy.py): slate walls, walnut, glass cases, gold ---
+    "trophy_wall": dict(kind="vertex", room="trophy", color=(0.22, 0.24, 0.28)),
+    "trophy_ceiling": dict(kind="vertex", room="trophy", tex="oak_veneer_01", tile=1.8, tint=(1.0, 1.0, 1.0)),
+    "trophy_walnut": dict(kind="vertex", room="trophy", tex="walnut_veneer", tile=1.6, tint=(0.40, 0.32, 0.26)),
+    "trophy_walnut_v": dict(kind="vertex", room="trophy", color=(0.30, 0.20, 0.14)),
+    # painted per vertex: the rug, the chessboard's squares, the medals' ribbons
+    "trophy_albedo": dict(kind="vertex", room="trophy", albedo=True, color=(1, 1, 1)),
+    "trophy_black": dict(kind="vertex", room="trophy", color=(0.035, 0.035, 0.04)),
+    "trophy_brass": dict(kind="vertex", room="trophy", color=(0.82, 0.63, 0.37)),
+    # metals kept light: the site shows only diffuse light (see the study's lamp brass)
+    "trophy_gold": dict(kind="vertex", room="trophy", color=(0.92, 0.72, 0.33)),
+    "trophy_silver": dict(kind="vertex", room="trophy", color=(0.82, 0.83, 0.84)),
+    "trophy_bronze": dict(kind="vertex", room="trophy", color=(0.70, 0.45, 0.26)),
+    "case_velvet": dict(kind="vertex", room="trophy", color=(0.11, 0.14, 0.26)),
+    "case_velvet_dark": dict(kind="vertex", room="trophy", color=(0.07, 0.08, 0.13)),
+    "case_bronze": dict(kind="vertex", room="trophy", color=(0.24, 0.19, 0.14)),
+    "case_glass":  dict(kind="glass", room="trophy", color=(0.86, 0.90, 0.90), opacity=0.10, reflect=0.25),
+    "case_led":    dict(kind="emissive", room="trophy", color=(1.0, 0.90, 0.76), strength=3.0),
+    "crystal":     dict(kind="glass", room="trophy", color=(0.86, 0.92, 0.95), opacity=0.25, reflect=0.5),
+    "belt_leather": dict(kind="vertex", room="trophy", color=(0.80, 0.15, 0.12)),
+    "belt_enamel": dict(kind="vertex", room="trophy", color=(0.07, 0.10, 0.25)),
+    "trophy_leather": dict(kind="vertex", room="trophy", color=(0.48, 0.27, 0.14)),
+    "trophy_mat":  dict(kind="vertex", room="trophy", color=(0.91, 0.90, 0.87)),
+    # where the team photo will go: a plain linen board for now. To show the photo, give it
+    # an "img" (a picture made into build/textures, as the painting is) and rebuild.
+    "team_photo":  dict(kind="vertex", room="trophy", color=(0.80, 0.78, 0.73)),
+    "trophy_chess_white": dict(kind="vertex", room="trophy", color=(0.87, 0.83, 0.73)),
+    "trophy_chess_black": dict(kind="vertex", room="trophy", color=(0.08, 0.07, 0.065)),
+    "trophy_planter": dict(kind="vertex", room="trophy", color=(0.13, 0.125, 0.12)),
+    # the fig in the corner (Poly Haven's potted_plant_01), as in the living room
+    "trophy_fig_leaves": dict(kind="vertex", room="trophy", img="fig_leaves", size=256, double_sided=True,
+                              src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "trophy_fig_stems": dict(kind="vertex", room="trophy", img="fig_stems", size=256,
+                             src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
+
+    # --- main bedroom (bedroom.py): white linen, pale oak, oatmeal ---
+    "bedroom_ceiling": dict(kind="vertex", room="bedroom", tex="oak_veneer_01", tile=1.8, tint=(1.0, 1.0, 1.0)),
+    "bedroom_oak": dict(kind="vertex", room="bedroom", tex="oak_veneer_01", tile=1.4, tint=(0.95, 0.88, 0.80)),
+    # painted per vertex: the rug and the titled books' covers
+    "bedroom_albedo": dict(kind="vertex", room="bedroom", albedo=True, color=(1, 1, 1)),
+    "bedroom_headboard": dict(kind="vertex", room="bedroom", color=(0.70, 0.65, 0.57)),
+    "bedroom_chair": dict(kind="vertex", room="bedroom", color=(0.80, 0.77, 0.70)),
+    "bedroom_black": dict(kind="vertex", room="bedroom", color=(0.05, 0.05, 0.055)),
+    "bedroom_brass": dict(kind="vertex", room="bedroom", color=(0.82, 0.63, 0.37)),
+    "bed_linen":   dict(kind="vertex", room="bedroom", color=(0.90, 0.88, 0.84)),
+    "bed_sheet":   dict(kind="vertex", room="bedroom", color=(0.93, 0.92, 0.89)),
+    "bed_pillow":  dict(kind="vertex", room="bedroom", color=(0.86, 0.83, 0.77)),
+    "bed_accent":  dict(kind="vertex", room="bedroom", color=(0.62, 0.36, 0.24)),
+    "bed_throw":   dict(kind="vertex", room="bedroom", color=(0.60, 0.37, 0.26)),
+    "bed_ceramic": dict(kind="vertex", room="bedroom", color=(0.84, 0.81, 0.75)),
+    "bed_shade":   dict(kind="emissive", room="bedroom", color=(1.0, 0.82, 0.62), strength=1.5),
+    "bed_glass":   dict(kind="glass", room="bedroom", color=(0.86, 0.90, 0.90), opacity=0.14, reflect=0.3),
+    "bed_water":   dict(kind="glass", room="bedroom", color=(0.80, 0.88, 0.90), opacity=0.25, reflect=0.3),
+    "bed_pin":     dict(kind="vertex", room="bedroom", color=(0.80, 0.10, 0.08)),
+    # the world map (bedroom.paint_map, from Natural Earth's coastlines) and the titled spines
+    "bedroom_map": dict(kind="vertex", room="bedroom", img="world_map", color=(1, 1, 1)),
+    "bedroom_spines": dict(kind="vertex", room="bedroom", img="bedroom_spines", color=(1, 1, 1)),
+
+    # --- garage (garage.py): white walls, a pale resin floor, bright LED lines ---
+    "garage_albedo": dict(kind="vertex", room="garage", albedo=True, color=(1, 1, 1)),
+    "garage_white": dict(kind="vertex", room="garage", color=(0.91, 0.91, 0.90)),
+    "garage_black": dict(kind="vertex", room="garage", color=(0.03, 0.03, 0.035)),
+    "garage_rubber": dict(kind="vertex", room="garage", color=(0.10, 0.10, 0.105)),
+    "garage_fob":  dict(kind="vertex", room="garage", color=(0.05, 0.05, 0.055)),
+    "garage_red":  dict(kind="vertex", room="garage", color=(0.72, 0.08, 0.06)),
+    "garage_green": dict(kind="emissive", room="garage", color=(0.35, 1.0, 0.55), strength=2.0),
+    "garage_cable": dict(kind="vertex", room="garage", color=(0.06, 0.06, 0.065)),
+    "garage_led":  dict(kind="emissive", room="garage", color=(0.94, 0.97, 1.0), strength=5.0),
+    "garage_glass": dict(kind="glass", room="garage", color=(0.86, 0.90, 0.90), opacity=0.10, reflect=0.25),
+    "garage_tags": dict(kind="vertex", room="garage", img="garage_tags", color=(1, 1, 1)),
+    "garage_screen": dict(kind="screen", room="garage", img="garage_calendar", color=(1, 1, 1), strength=1.1),
+    # the covered car standing in for the real one, and the tool chest
+    "car_cover":   dict(kind="vertex", room="garage", color=(0.19, 0.19, 0.20), double_sided=True),
+    "garage_rim":  dict(kind="vertex", room="garage", color=(0.22, 0.22, 0.23)),
+    "garage_chest": dict(kind="vertex", room="garage", color=(0.12, 0.12, 0.13)),
+    "garage_bottle_blue": dict(kind="vertex", room="garage", color=(0.16, 0.36, 0.70)),
+    "garage_towel": dict(kind="vertex", room="garage", color=(0.36, 0.46, 0.62)),
+
+    # --- foyer (foyer.py): the dark stone wall, pale stone, oak and brass ---
+    "foyer_stone": dict(kind="vertex", room="foyer", tex="granite_tile", tile=2.3, tint=(0.30, 0.29, 0.30)),
+    "foyer_oak":   dict(kind="vertex", room="foyer", tex="oak_veneer_01", tile=1.4, tint=(0.95, 0.88, 0.80)),
+    "foyer_albedo": dict(kind="vertex", room="foyer", albedo=True, color=(1, 1, 1)),
+    # the plinth's pale stone, plain (the marble texture is a tiled floor's: it showed grout lines)
+    "plinth_stone": dict(kind="vertex", room="foyer", color=(0.80, 0.76, 0.68)),
+    "foyer_black": dict(kind="vertex", room="foyer", color=(0.04, 0.04, 0.045)),
+    "foyer_brass": dict(kind="vertex", room="foyer", color=(0.82, 0.63, 0.37)),
+    "foyer_glass": dict(kind="glass", room="foyer", color=(0.78, 0.88, 0.86), opacity=0.16, reflect=0.45),
+    "foyer_glass_edge": dict(kind="vertex", room="foyer", color=(0.48, 0.64, 0.58)),
+    "stair_dark":  dict(kind="vertex", room="foyer", color=(0.15, 0.145, 0.14)),
+    "foyer_vessel": dict(kind="vertex", room="foyer", color=(0.11, 0.10, 0.095)),
+    "foyer_ceramic": dict(kind="vertex", room="foyer", color=(0.80, 0.76, 0.68)),
+    "foyer_ceramic_dark": dict(kind="vertex", room="foyer", color=(0.14, 0.13, 0.12)),
+    "foyer_bowl":  dict(kind="vertex", room="foyer", color=(0.30, 0.27, 0.24)),
+    "foyer_shade": dict(kind="emissive", room="foyer", color=(1.0, 0.82, 0.62), strength=1.5),
+    "foyer_branch": dict(kind="vertex", room="foyer", color=(0.34, 0.25, 0.17)),
+    "foyer_pot":   dict(kind="vertex", room="foyer", color=(0.84, 0.80, 0.72)),
+    "foyer_canvas_edge": dict(kind="vertex", room="foyer", color=(0.80, 0.76, 0.70)),
+    "foyer_painting": dict(kind="vertex", room="foyer", img="foyer_painting", color=(1, 1, 1)),
+    # the fig by the study door (Poly Haven's potted_plant_01), as in the living room
+    "foyer_fig_leaves": dict(kind="vertex", room="foyer", img="fig_leaves", size=256, double_sided=True,
+                             src="potted_plant_01/textures/potted_plant_01_leaves_diff_1k.jpg", color=(1, 1, 1)),
+    "foyer_fig_stems": dict(kind="vertex", room="foyer", img="fig_stems", size=256,
+                            src="potted_plant_01/textures/potted_plant_01_pot_diff_1k.jpg", color=(1, 1, 1)),
 }
 
 # Every Poly Haven texture the scene needs, without repeats. fetch_assets.py reads this.

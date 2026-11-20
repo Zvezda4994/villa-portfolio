@@ -1,0 +1,8 @@
+# The garage's four keys, left to right in the key cabinet. Each name is printed on its
+# key's tag and heads its row on the booking calendar on the wall screen. Placeholders
+# until you swap in the cars (keep them short, about 12 characters). Rebuild the scene to
+# reprint them (npm run build, or npm run scene, then bake:draft and export).
+Car 1
+Car 2
+Car 3
+Car 4

@@ -74,7 +74,7 @@ let current = null, opening = null;      // opening: the room's own loading (fur
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
   current = r;
-  if (world) opening = world.openRoom(r.id);
+  if (world) opening = world.openRoom(r.room || r.id);
   const otherFloor = r.floor !== view;
   if (otherFloor) setView(r.floor, false);
   // Rooms with a close-up (the chessboard) let the camera come in near and drop

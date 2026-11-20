@@ -26,10 +26,10 @@ SZ0, SZ1 = C.STAIR_Z
 DOOR = 2.3            # head height of inside doorways
 
 # Furnished rooms whose sheer curtains have gone (the games room has a blackout
-# blind instead), and rooms whose ceiling downlights are switched off (the games
-# room is lit by its screens, the gym by its hanging LED bars). Their fittings are
-# still there, just not glowing.
-NO_SHEERS = {"games"}
+# blind instead; the trophy room opens onto the terrace), and rooms whose ceiling
+# downlights are switched off (the games room is lit by its screens, the gym by its
+# hanging LED bars). Their fittings are still there, just not glowing.
+NO_SHEERS = {"games", "trophy"}
 LIGHTS_OFF = {"games", "gym"}
 
 # Rooms: name -> (group, x range, z range, floor material). Also used to place lights.
@@ -181,20 +181,24 @@ def ground_floor(b):
 
 
 def stairs(b):
-    """A solid block stair: white sides and risers, oak treads. The little door
-    in its side is the way into the resume."""
+    """A solid block stair: white sides and risers, oak treads. It starts on the foyer floor
+    at its east end and climbs west; the last step up is onto the landing's floor, which
+    covers the alcove under the top. The alcove is closed off on the foyer side. The little
+    door in the stair's side is the way into the resume."""
     g = "ground"
     rise = F2 / C.STAIR_RISERS
-    steps = C.STAIR_RISERS - 1
-    for i in range(steps):
-        x0, x1 = SX0 + i * C.STAIR_TREAD, SX0 + (i + 1) * C.STAIR_TREAD
-        top = (i + 1) * rise
+    T = C.STAIR_TREAD
+    for i in range(C.STAIR_RISERS - 1):                 # i = 0 is the bottom step
+        x1 = SX1 - i * T
+        x0, top = x1 - T, (i + 1) * rise
         b.floor(g, "oak", "gnd", (x0, x1), (SZ0, SZ1), top, rot=True)
-        b.quad(g, "plaster", [(x0, top - rise, SZ0), (x0, top - rise, SZ1), (x0, top, SZ1), (x0, top, SZ0)], "gnd")   # riser
+        b.quad(g, "plaster", [(x1, top - rise, SZ1), (x1, top - rise, SZ0), (x1, top, SZ0), (x1, top, SZ1)], "gnd")   # riser, facing east
         b.quad(g, "plaster", [(x0, 0, SZ1), (x1, 0, SZ1), (x1, top, SZ1), (x0, top, SZ1)], "gnd")                    # side
         b.solids.append((x0, x1, 0, top, SZ0, SZ1))
-    top = steps * rise
-    b.quad(g, "plaster", [(SX1, 0, SZ1), (SX1, 0, SZ0), (SX1, top, SZ0), (SX1, top, SZ1)], "gnd")                    # tall end
+    # the alcove under the top, closed on the foyer side
+    xw = -5 + P / 2
+    b.quad(g, "plaster", [(xw, 0, SZ1), (SX0, 0, SZ1), (SX0, H1, SZ1), (xw, H1, SZ1)], "gnd")
+    b.solids.append((xw, SX0, 0, H1, SZ0, SZ1))
     # the small door
     dx0, dx1, dh = -2.75, -2.0, 1.3
     b.box(g, "oak", (dx0, dx1), (0, dh), (SZ1, SZ1 + 0.03), atlas="gnd", skip=("-y", "-z"), solid=False, cull=False, rot=True)
@@ -238,10 +242,17 @@ def upper_slab(b):
                 b.box(g, "concrete", (x0, x1), (H1, F2), (z0, z1), atlas="ext",
                       over={"+y": dict(mat=top, density=0.7), "-y": dict(mat="oak", rot=True)})
 
-    # glass balustrades: round the stairwell and round the terrace
+    # glass balustrades: round the stairwell (its long side and its east end; its west end is
+    # where the stairs arrive) and round the terrace
     rail = F2 + 1.0
     b.quad(g, "glass", [(SX0, F2, SZ1), (SX1, F2, SZ1), (SX1, rail, SZ1), (SX0, rail, SZ1)])
-    b.box(g, "brass", (SX0, SX1), (rail, rail + 0.03), (SZ1 - 0.02, SZ1 + 0.02), solid=False, cull=False)
+    b.box(g, "brass", (SX0 - 0.02, SX1 + 0.02), (rail, rail + 0.03), (SZ1 - 0.02, SZ1 + 0.02), solid=False, cull=False)
+    b.quad(g, "glass", [(SX1, F2, SZ1), (SX1, F2, SZ0), (SX1, rail, SZ0), (SX1, rail, SZ1)])
+    b.box(g, "brass", (SX1 - 0.02, SX1 + 0.02), (rail, rail + 0.03), (SZ0, SZ1), solid=False, cull=False)
+    for x in (SX0, SX1):                                     # posts at the corners, and a brass shoe along the glass
+        b.box(g, "brass", (x - 0.02, x + 0.02), (F2, rail), (SZ1 - 0.02, SZ1 + 0.02), solid=False, cull=False)
+    b.box(g, "frame", (SX0, SX1), (F2, F2 + 0.05), (SZ1 - 0.015, SZ1 + 0.015), solid=False, cull=False)
+    b.box(g, "frame", (SX1 - 0.015, SX1 + 0.015), (F2, F2 + 0.05), (SZ0, SZ1), solid=False, cull=False)
     rail = F2 + 1.05
     x0, x1, z0 = TX0 + 0.06, LX - 0.06, TZ + 0.06
     b.quad(g, "glass", [(x1, F2, z0), (x0, F2, z0), (x0, rail, z0), (x1, rail, z0)])

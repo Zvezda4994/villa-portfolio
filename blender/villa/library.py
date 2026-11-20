@@ -561,20 +561,20 @@ def desk(k):
     k.soft("library_brass", f, (0.0, top - t - apron / 2, 0.042), (0.08, 0.012, 0.012), 0.004, n=1)
 
 
-def desk_chair(k, f):
+def desk_chair(k, f, leather="library_leather", wood="library_walnut_v", brass="library_brass"):
     """An upholstered desk chair in the reading chair's leather, facing the desk (+z):
     a deep seat, dished where you sit, its front edge rolled over; a padded back that
     wraps round the sitter, swells at the small of the back and leans back a little,
     with a raised welt round its edge; padded arms on curved walnut arms; and four
-    tapered walnut legs, splayed slightly, with brass caps."""
+    tapered walnut legs, splayed slightly, with brass caps. (The trophy room's chess
+    table has a pair, in its own materials.)"""
     from .kit import cushion, rot
-    leather, wood = "library_leather", "library_walnut_v"
     seat = 0.47
 
     def place(mat, verts, faces, centre, tilt=0.0, pivot=(0, 0, 0)):
         T = rot(x=tilt)
         pv, c = np.asarray(pivot, float), np.asarray(centre, float)
-        k.b.mesh(G, mat, [f(pv + T @ (c + np.asarray(v) - pv)) for v in verts], faces)
+        k.b.mesh(k.g, mat, [f(pv + T @ (c + np.asarray(v) - pv)) for v in verts], faces)
 
     # the legs, tapering to brass caps, and a walnut rail under the seat
     for sx in (-1, 1):
@@ -582,7 +582,7 @@ def desk_chair(k, f):
             top = (sx * 0.205, seat - 0.075, sz * 0.195)
             foot = (sx * 0.235, 0.022, sz * (0.225 if sz > 0 else 0.245))
             k.tube(wood, f(foot), f(top), 0.012, segments=12, r1=0.020)
-            k.lathe("library_brass", Frame(f((foot[0], 0.0, foot[2]))), [(0.0, 0.0), (0.0125, 0.0), (0.0125, 0.024), (0.0, 0.024)], 14)
+            k.lathe(brass, Frame(f((foot[0], 0.0, foot[2]))), [(0.0, 0.0), (0.0125, 0.0), (0.0125, 0.024), (0.0, 0.024)], 14)
     k.soft(wood, f, (0.0, seat - 0.095, 0.0), (0.47, 0.055, 0.45), 0.014, n=2)
 
     # the seat: deep, dished in the middle, the front rolled down over the rail

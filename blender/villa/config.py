@@ -37,12 +37,16 @@ BLADE_X = (1.0, 1.5)
 BLADE_Z_END = 11.0
 BLADE_TOP = 7.7
 
-# Stairs: a straight flight along the back wall of the foyer, rising toward +x.
-STAIR_X0 = -4.85
-STAIR_RISERS = 18
-STAIR_TREAD = 0.27
+# Stairs: a straight flight along the back wall of the foyer. It starts on the foyer
+# floor at its open east end (STAIR_X1, by the door to the dining room) and climbs west
+# toward the garage wall; its last step is up onto the landing's floor, which reaches
+# over the alcove at the top (west of STAIR_X0), and from there the landing opens to
+# the north. The stairwell upstairs is the flight's length, STAIR_X0 to STAIR_X1.
+STAIR_RISERS = 17                                          # 206 mm each
+STAIR_TREAD = 0.245
 STAIR_Z = (PART / 2, PART / 2 + 1.30)
-STAIR_X1 = STAIR_X0 + STAIR_TREAD * (STAIR_RISERS - 1)   # where it meets the upper floor
+STAIR_X1 = -0.23                                           # the bottom step's nose
+STAIR_X0 = STAIR_X1 - STAIR_TREAD * (STAIR_RISERS - 1)     # the top, where it meets the landing (-4.15)
 
 # Pool (water surface outline) and the deck around it.
 POOL_X = (-1.5, 9.5)
@@ -134,6 +138,12 @@ FONTS = {
     "CrimsonText-SemiBold.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/crimsontext/CrimsonText-SemiBold.ttf",
     "UnifrakturMaguntia-Book.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/unifrakturmaguntia/UnifrakturMaguntia-Book.ttf",
 }
+
+# Coastlines for the bedroom's world map: Natural Earth's 1:110m land, public domain
+# (credited in CREDITS.md), downloaded by fetch_assets.py into assets_src/geo/.
+SRC_GEO = ROOT / "assets_src" / "geo"
+WORLD_LAND = dict(file="ne_110m_land.geojson",
+                  url="https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson")
 
 # The living room's moodboard: your pictures go in assets_src/moodboard/ (never
 # committed); `npm run moodboard` (and every scene build) shrinks them into

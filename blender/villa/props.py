@@ -93,13 +93,15 @@ def load(model_id, only=None, skip=(), thin=None):
     return out
 
 
-def place(b, group, mat, piece, pos, yaw=0.0, scale=1.0, origin=None, tilt=0.0):
+def place(b, group, mat, piece, pos, yaw=0.0, scale=1.0, origin=None, tilt=0.0, keep=None):
     """Add a copy of `piece` to the scene.
 
     origin   the point of the piece that lands on `pos` (default: its base)
     yaw      turn about the vertical, in radians; 0 keeps the model's own facing,
              and a turn of a moves its +z side toward (sin a, 0, cos a)
     tilt     lean toward +z, in radians, before the turn (for something set down at an angle)
+    keep     optional test of a placed point; faces with any point failing it are left out
+             (a plant's leaves that would reach through a wall into the next room)
     """
     ox, oy, oz = origin or piece.base()
     c, s = math.cos(yaw), math.sin(yaw)
@@ -110,4 +112,9 @@ def place(b, group, mat, piece, pos, yaw=0.0, scale=1.0, origin=None, tilt=0.0):
         x, y, z = (x - ox) * scale, (y - oy) * scale, (z - oz) * scale
         y, z = y * ct - z * st, y * st + z * ct
         verts.append((px + x * c + z * s, py + y, pz - x * s + z * c))
-    b.mesh(group, mat, verts, piece.faces, smooth=True, uvs=piece.uvs)
+    faces, uvs = piece.faces, piece.uvs
+    if keep:
+        ok = [all(keep(verts[i]) for i in face) for face in faces]
+        faces = [f for f, k in zip(faces, ok) if k]
+        uvs = [u for u, k in zip(uvs, ok) if k]
+    b.mesh(group, mat, verts, faces, smooth=True, uvs=uvs)

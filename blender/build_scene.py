@@ -15,8 +15,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bpy  # noqa: E402
 
 from villa import config as C  # noqa: E402
+from villa.bedroom import build_bedroom  # noqa: E402
 from villa.dining import build_dining  # noqa: E402
 from villa.exterior import build_exterior  # noqa: E402
+from villa.foyer import build_foyer  # noqa: E402
+from villa.garage import build_garage  # noqa: E402
 from villa.games import build_games  # noqa: E402
 from villa.gym import build_gym  # noqa: E402
 from villa.kitchen import build_kitchen  # noqa: E402
@@ -30,6 +33,7 @@ from villa.plants import build_plants  # noqa: E402
 from villa.pool import build_pool, paint_pictures as paint_pool_pictures  # noqa: E402
 from villa.study import build_study  # noqa: E402
 from villa.terrain import build_hills, build_mask, build_sand  # noqa: E402
+from villa.trophy import build_trophy  # noqa: E402
 from villa.textures import prepare_all, prepare_pictures  # noqa: E402
 
 
@@ -48,6 +52,10 @@ def main():
     build_gym(b)                      # and the timer's face
     build_living(b)                   # and the TV's screen, the tank's backdrop, and the moodboard
     build_library(b)                  # and the titled spines (data/library_books.txt)
+    build_trophy(b)
+    build_bedroom(b)                  # and the world map and the shelf's spines (data/bedroom_books.txt)
+    build_garage(b)                   # and the key tags and the booking calendar (data/garage_keys.txt)
+    build_foyer(b)                    # and the painting over the console
     paint_pool_pictures()             # the contact card and the sake label
     materials = build_materials()
 

@@ -14,6 +14,8 @@
 //          modelled to travel with that camera (the visitor's martini) show there
 //   click  (optional) materials in the model that open this stop's panel when
 //          clicked or tapped, like the contact card on the pool deck's table
+//   room   (optional) the furnished room whose furniture this stop shows, when it
+//          isn't the stop's own id (the resume stop shows the foyer)
 //
 // The copy is still draft. Rooms marked todo are waiting on real numbers and lists.
 
@@ -37,7 +39,9 @@ export const ROOMS = [
     body: ["Co-founder of an AI automation agency for local Halifax businesses: voice agents and workflow automation built on Synthflow."],
     todo: "Add two client case studies with one number each (calls handled, hours saved)."},
 
-  {id: "garage", floor: "g", area: "The garage", title: "Turo fleet", at: [-8.5, 1.7, 4], view: [[-8.5, 8.5, 12], [-8.5, 0.8, 4]],
+  {id: "garage", floor: "g", area: "The garage", title: "Turo fleet", at: [-8.5, 1.7, 4],
+    // inside the garage door, between the bays, looking at the keys and the screen (blender/villa/garage.py, GARAGE_CAM)
+    view: [[-8.15, 1.6, 7.2], [-8.7, 1.12, 0]], near: 0.4,
     body: ["I run a four-car rental fleet on Turo with my dad: pricing, scheduling, guest communication and maintenance."],
     todo: "Add utilisation or revenue figures, and any tooling you built for it."},
 
@@ -60,7 +64,9 @@ export const ROOMS = [
     body: ["What I build with day to day."],
     todo: "List languages, frameworks and tools you can defend in an interview."},
 
-  {id: "stairs", floor: "g", area: "Under the stairs", title: "Resume", at: [-2.4, 1.5, 1.6], view: [[-2.4, 5.5, 8.5], [-2.4, 0.8, 1.4]],
+  {id: "stairs", floor: "g", area: "Under the stairs", title: "Resume", at: [-2.4, 1.5, 1.6], room: "foyer",
+    // in the foyer's front corner, across to the stairs, the plinth and the resume door (blender/villa/foyer.py, FOYER_CAM)
+    view: [[0.4, 1.6, 7.0], [-2.6, 1.0, 1.0]], near: 0.4,
     body: ["The full resume as a plain page, for anyone short on time."],
     links: [["Open resume", "#resume", 1]]},
 
@@ -70,7 +76,9 @@ export const ROOMS = [
     body: ["The books I rate, and my own writing. I'm working on a book; excerpts and notes will live here."],
     todo: "Add the reading list, and a short excerpt once you're happy to share one."},
 
-  {id: "trophy", floor: "u", area: "Trophy room", title: "Wins", at: [8, 5.2, -4], view: [[8, 12, 4], [8, 4.2, -4]],
+  {id: "trophy", floor: "u", area: "Trophy room", title: "Wins", at: [8, 5.2, -4],
+    // inside the games room door, looking at the display wall, the terrace on the left (blender/villa/trophy.py, TROPHY_CAM)
+    view: [[4.6, 5.05, -3], [11.7, 4.7, -4.6]], near: 0.4,
     body: ["Wins in coding, boxing and esports."],
     todo: "Add the trophy list: what, when, and one line on each."},
 
@@ -80,7 +88,9 @@ export const ROOMS = [
     body: ["I compete on Dalhousie's collegiate esports team in Counter-Strike 2, and built a win-probability model for pick'em predictions."],
     todo: "Link the model's repo and give its accuracy against a baseline."},
 
-  {id: "bedroom", floor: "u", area: "Main bedroom", title: "Languages", at: [-8.5, 5.2, -3], view: [[-8.5, 12.5, 5.5], [-8.5, 4.2, -3]],
+  {id: "bedroom", floor: "u", area: "Main bedroom", title: "Languages", at: [-8.5, 5.2, -3],
+    // from the corner by the glass, across the bed to the headboard, the map on the right (blender/villa/bedroom.py, BEDROOM_CAM)
+    view: [[-10.55, 5.05, -6.55], [-5.6, 4.45, -1.2]], near: 0.4,
     body: ["Currently learning Darija, Russian and Japanese."],
     todo: "Optional. Keep it if you can hold a short conversation in at least one."},
 

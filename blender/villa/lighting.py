@@ -185,8 +185,8 @@ def setup_lamps(collection):
 
 def furnished_rooms():
     """The modules of the furnished rooms that have their own lamps and ceiling light."""
-    from . import dining, games, gym, kitchen, library, living, study
-    return [dining, study, games, kitchen, gym, living, library]
+    from . import bedroom, dining, foyer, games, garage, gym, kitchen, library, living, study, trophy
+    return [dining, study, games, kitchen, gym, living, library, trophy, bedroom, garage, foyer]
 
 
 def furnished_lamps():
@@ -229,14 +229,18 @@ def add_camera(collection, name, pos, target, fov=45.0):
     return ob
 
 
+from .bedroom import BEDROOM_CAM, MAP_CAM as BEDROOM_MAP_CAM, SHELF_CAM as BEDROOM_SHELF_CAM  # noqa: E402
 from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
+from .foyer import CONSOLE_CAM as FOYER_CONSOLE_CAM, FOYER_CAM  # noqa: E402
 from .games import DESK_CAM as GAMES_DESK_CAM, GAMES_CAM, SHELF_CAM  # noqa: E402
+from .garage import GARAGE_CAM, KEYS_CAM as GARAGE_KEYS_CAM, SCREEN_CAM as GARAGE_SCREEN_CAM  # noqa: E402
 from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_WIDE_CAM  # noqa: E402
 from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
 from .library import DESK_CAM as LIBRARY_DESK_CAM, LIBRARY_CAM, SPINES_CAM, SPINES_CAM_B  # noqa: E402
 from .living import LIVING_CAM, MOODBOARD_CAM, TANK_CAM, TV_CAM  # noqa: E402
 from .pool import MOMENT_CAM  # noqa: E402
 from .study import DESK_CAM, STUDY_CAM  # noqa: E402
+from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, CHESS_CAM as TROPHY_CHESS_CAM, TROPHY_CAM  # noqa: E402
 
 # The views rendered for review after each build step. The website can jump to
 # any of them with ?shot=name.
@@ -268,6 +272,21 @@ PREVIEW_CAMERAS = {
     "library_spines": SPINES_CAM,
     "library_spines_b": SPINES_CAM_B,
     "library_desk": LIBRARY_DESK_CAM,
+    "trophy": TROPHY_CAM,
+    "trophy_cases": TROPHY_CASES_CAM,
+    "trophy_belt": TROPHY_BELT_CAM,
+    "trophy_chess": TROPHY_CHESS_CAM,
+    "bedroom": BEDROOM_CAM,
+    "bedroom_map": BEDROOM_MAP_CAM,
+    "bedroom_shelf": BEDROOM_SHELF_CAM,
+    "garage": GARAGE_CAM,
+    "garage_keys": GARAGE_KEYS_CAM,
+    "garage_screen": GARAGE_SCREEN_CAM,
+    "foyer": FOYER_CAM,
+    "foyer_console": FOYER_CONSOLE_CAM,
+    # the upstairs landing: from by the library door, across to the stairwell's railing and
+    # the top of the stairs at its far end
+    "stairs_top": dict(pos=(0.30, C.F2 + 1.60, 5.40), target=(-3.70, C.F2 + 0.55, 0.90), fov=55.0),
 }
 
 

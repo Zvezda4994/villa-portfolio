@@ -1,7 +1,8 @@
-"""Download the source textures, models and fonts the scene uses into assets_src/.
+"""Download the source textures, models, fonts and map data the scene uses into assets_src/.
 
 The textures and models are CC0 assets from Poly Haven; the fonts are from the
-Google Fonts collection, under the SIL Open Font License (see CREDITS.md). None
+Google Fonts collection, under the SIL Open Font License; the coastlines for the
+bedroom's world map are Natural Earth's, public domain (see CREDITS.md). None
 of them are kept in the repo, so run this once after cloning:
 
     python blender/fetch_assets.py
@@ -15,7 +16,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from villa.config import FONTS, SRC_FONTS, SRC_MODELS, SRC_TEX   # noqa: E402
+from villa.config import FONTS, SRC_FONTS, SRC_GEO, SRC_MODELS, SRC_TEX, WORLD_LAND   # noqa: E402
 from villa.materials import TEXTURE_IDS       # noqa: E402
 from villa.props import MODEL_IDS             # noqa: E402
 
@@ -81,10 +82,26 @@ def fetch_fonts():
         print(f"fetched  {name}  ({len(data) // 1024} KB)")
 
 
+def fetch_geo():
+    """Natural Earth's land outlines at 1:110m, for the bedroom's world map."""
+    SRC_GEO.mkdir(parents=True, exist_ok=True)
+    dest = SRC_GEO / WORLD_LAND["file"]
+    if dest.exists() and dest.stat().st_size > 10_000:
+        print(f"have     {dest.name}")
+        return
+    data = get(WORLD_LAND["url"])
+    land = json.loads(data)
+    if land.get("type") != "FeatureCollection" or not land.get("features"):
+        raise SystemExit(f"{dest.name}: the download is not GeoJSON land outlines, check the link")
+    dest.write_bytes(data)
+    print(f"fetched  {dest.name}  ({len(data) // 1024} KB, {len(land['features'])} shapes)")
+
+
 def main():
     fetch_textures()
     fetch_models()
     fetch_fonts()
+    fetch_geo()
 
 
 if __name__ == "__main__":

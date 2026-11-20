@@ -284,7 +284,7 @@ room, and other rooms' labels used to shine through the walls. Labels show only 
 Outside, Ground and Upstairs overviews, as before. The banner now reads "Work in
 progress: the aquarium centrepiece and a car for the garage are still coming."
 
-**Step 5, batch 5: the resume view** (19 Nov 2026, waiting for your OK; done before the
+**Step 5, batch 5: the resume view** (approved 20 Nov 2026; done before the
 aquarium mech at your request). "Skip to resume", `#resume` links and the little door under
 the stairs all open the same view:
 - `web/resume.json` holds the content (education, experience, projects, skills), taken from
@@ -799,7 +799,7 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Batches 1 to 5 are done (5 waiting for your OK).
+5. **The remaining rooms (in progress). Batches 1 to 5 are done.
    Next: the aquarium mech.** See "Step 5: the brief for the remaining rooms" below.
    - **The aquarium mech: its own session next, with your spec first.** It goes on
      the tank's floor in place of the moss-covered rock (`ROCK` in `living.py`), an

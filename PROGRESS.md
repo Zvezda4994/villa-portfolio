@@ -279,9 +279,9 @@ list rather than a paragraph (`main.js`). In the scene:
 New review cameras: `trophy_jersey` and `pool_card`.
 
 **Labels inside a room** (19 Nov 2026): once the camera is inside the house below the
-current floor's ceiling (`inside` in `main.js`), only the label of the room last opened
-(`here`) shows, so other rooms' labels no longer shine through the walls. The Outside, Ground
-and Upstairs overviews show their floor's labels as before. The banner now reads "Work in
+current floor's ceiling (`inside` in `main.js`), no labels show at all: the panel names the
+room, and other rooms' labels used to shine through the walls. Labels show only in the
+Outside, Ground and Upstairs overviews, as before. The banner now reads "Work in
 progress: the aquarium centrepiece and a car for the garage are still coming."
 
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are

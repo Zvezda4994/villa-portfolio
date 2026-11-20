@@ -71,9 +71,10 @@ function flyTo(pos, target, ms = 1300, via = null) {
     via: via && new THREE.Vector3(...via), start: performance.now(), ms: reduce ? 1 : ms};
 }
 let current = null, opening = null;      // opening: the room's own loading (furniture, moodboard pictures)
+let here = null;                         // the last room opened; its label stays while the camera is inside, panel closed or not
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
-  current = r;
+  current = here = r;
   if (world) opening = world.openRoom(r.room || r.id);
   const otherFloor = r.floor !== view;
   if (otherFloor) setView(r.floor, false);
@@ -135,7 +136,9 @@ function updatePins() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   ROOMS.forEach((r, i) => {
     const el = pinEls[i];
-    const show = view === "out" ? r.floor === "out" : r.floor === view;
+    // inside a room only its own label shows, so none of the others shine through the walls;
+    // the Outside, Ground and Upstairs overviews show their floor's labels as before
+    const show = inside ? r === here : (view === "out" ? r.floor === "out" : r.floor === view);
     tmp.set(...r.at).project(camera);
     if (!show || tmp.z > 1 || tmp.x < -1.05 || tmp.x > 1.05 || tmp.y < -1.05 || tmp.y > 1.05) { el.hidden = true; return; }
     el.hidden = false; el.style.left = ((tmp.x + 1) / 2 * w) + "px"; el.style.top = ((1 - tmp.y) / 2 * h) + "px";

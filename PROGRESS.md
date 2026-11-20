@@ -278,6 +278,12 @@ list rather than a paragraph (`main.js`). In the scene:
   plain "Car 1" to "Car 4" rows (`CALENDAR_ROWS`).
 New review cameras: `trophy_jersey` and `pool_card`.
 
+**Labels inside a room** (19 Nov 2026): once the camera is inside the house below the
+current floor's ceiling (`inside` in `main.js`), only the label of the room last opened
+(`here`) shows, so other rooms' labels no longer shine through the walls. The Outside, Ground
+and Upstairs overviews show their floor's labels as before. The banner now reads "Work in
+progress: the aquarium centrepiece and a car for the garage are still coming."
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -822,6 +828,8 @@ The traps hit so far, so they don't get rediscovered.
      very blotchy) and one piece of dressing, a bench or a large artwork, so it isn't bare
      when the camera passes through. Keep the arrival from the stairs at the stairwell's west
      end clear.
+   - Remove the "Work in progress" banner at the bottom of the page (`.tag` in
+     `web/index.html`) entirely (your note, 19 Nov 2026).
    - Then the full-quality bake.
 7. **My character, at the end.** Redone from a proper base mesh (not generated
    from primitives), reclining on my lounger. Then the stepped-away setting

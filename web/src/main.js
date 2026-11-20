@@ -92,7 +92,7 @@ function openRoom(id, fly = true) {
 function renderPanel(r) {
   const i = ROOMS.indexOf(r);
   let h = `<div class="eyebrow">${r.area} · ${FLOOR_NAME[r.floor]}</div><h2>${r.title}</h2>`;
-  h += r.body.map(p => `<p>${p}</p>`).join("");
+  h += r.body.map(p => p.startsWith("<ul") ? p : `<p>${p}</p>`).join("");
   if (r.links) h += `<div class="links">${r.links.map(([t, u, internal, ghost]) => `<a href="${u}" ${internal ? `data-go="${u.slice(1)}"` : `target="_blank" rel="noopener"`} class="${ghost ? "ghost" : ""}">${t}</a>`).join("")}</div>`;
   // Credits for any figure seated in this room; they come and go with the figure itself.
   for (const f of Object.values(world?.manifest.figures || {})) {

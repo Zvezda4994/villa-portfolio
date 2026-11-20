@@ -1,8 +1,9 @@
 """The garage (Turo), furnished: a clean, bright showroom with two bays. The west bay has
 a showroom light rig over it and a car under a fitted charcoal cover, standing in for the
 real car until it arrives (`car_cover`: take it out then). By the door to the foyer, a tool
-chest under a wall rack of tyres. On the back wall: a key
-cabinet with four labelled keys, and a wall screen with a simple booking calendar.
+chest under a wall rack of tyres. On the back wall: a key cabinet with the four cars' key
+fobs, each modelled on its car's real fob (no logos or badges), with a plain label under
+each hook, and a wall screen with a simple booking calendar.
 
 Plan, looking down, seen from the driveway (the kitchen wall at the top, so +x is on
 the right):
@@ -19,8 +20,8 @@ the right):
      +----[============= garage door, smoked glass ===============]---------+
                                                                           (z = 8)
 
-The keys' names (data/garage_keys.txt) are printed on their tags and head the rows of
-the calendar. Everything is lit per vertex, the walls, the ceiling and the floor laid
+The fobs and their labels come from data/garage_keys.txt; the calendar's rows are plain
+"Car 1" to "Car 4" (CALENDAR_ROWS). Everything is lit per vertex, the walls, the ceiling and the floor laid
 over the house's own, so the room stays clean from a quick draft bake; it has no
 lightmap.
 """
@@ -37,6 +38,7 @@ from .textures import picture_path, save_png
 
 ROOM, G = "garage", "ground"
 KEYS_FILE = C.ROOT / "data" / "garage_keys.txt"
+CALENDAR_ROWS = ["Car 1", "Car 2", "Car 3", "Car 4"]
 
 # The room's inside faces.
 XW = -C.HALF_W + C.WALL           # the west wall (-11.7)
@@ -71,9 +73,9 @@ SCREEN_CAM = dict(pos=(-6.69, 1.62, 2.15), target=(-6.69, 1.62, 0.075), fov=40.0
 
 def build_garage(b):
     LAMPS.clear()
-    names = read_keys()
-    paint_tags(names)
-    paint_calendar(names)
+    keys = read_keys()
+    paint_labels([label for _, label in keys])
+    paint_calendar(CALENDAR_ROWS)
     k = Kit(b, G, None)                  # no lightmap: everything here is lit per vertex
     with b.room(ROOM):
         walls(k)
@@ -81,7 +83,7 @@ def build_garage(b):
         ceiling(Kit(b, "upper", None))
         wheel_stops(k)
         drain(k)
-        key_cabinet(k, names)
+        key_cabinet(k, keys)
         slats(k)
         screen(k)
         charger(k)
@@ -92,11 +94,20 @@ def build_garage(b):
 
 
 def read_keys():
-    names = [ln.strip() for ln in KEYS_FILE.read_text(encoding="utf-8").splitlines()
-             if ln.strip() and not ln.strip().startswith("#")]
-    if len(names) != 4:
-        raise ValueError(f"data/garage_keys.txt should list four keys, not {len(names)}")
-    return names
+    """The four keys, left to right: (fob shape, label lines)."""
+    keys = []
+    for ln in KEYS_FILE.read_text(encoding="utf-8").splitlines():
+        ln = ln.strip()
+        if not ln or ln.startswith("#"):
+            continue
+        shape, _, label = ln.partition(":")
+        shape = shape.strip()
+        if shape not in FOBS:
+            raise ValueError(f"data/garage_keys.txt: unknown fob {shape!r}; the fobs are {', '.join(FOBS)}")
+        keys.append((shape, [part.strip() for part in label.split("|")]))
+    if len(keys) != 4:
+        raise ValueError(f"data/garage_keys.txt should list four keys, not {len(keys)}")
+    return keys
 
 
 # ---- the room ------------------------------------------------------------------------------------
@@ -236,10 +247,10 @@ def back_frame(x):
     return Frame((x, 0.0, ZN + LINING), 0.0)
 
 
-def key_cabinet(k, names):
+def key_cabinet(k, keys):
     """A white lacquered key cabinet with a glass door in a thin black frame. Inside, on
-    an oak back, four brass hooks, each with a key: a ring, a black fob and a white tag
-    with its name."""
+    an oak back, four brass hooks, each with a ring and its car's fob, and a small white
+    label under each hook naming the car."""
     f = back_frame(KEYS_X)
     W, Hc, D, yc = CABINET["w"], CABINET["h"], CABINET["d"], CABINET["y"]
     x0, x1, y0, y1 = -W / 2, W / 2, yc - Hc / 2, yc + Hc / 2
@@ -260,7 +271,7 @@ def key_cabinet(k, names):
     # a small brass plate over the hooks, and the oak rail they're on
     k.block("oak_light", f, (x0 + t, yc + 0.02, 0.012), (x1 - t, yc + 0.08, 0.03), step=0.05, skip=("-z",))
     rng = np.random.default_rng(9)
-    for i, name in enumerate(names):
+    for i, (shape, _) in enumerate(keys):
         hx = -0.195 + 0.13 * i
         hy = yc + 0.04
         # the hook: out from the rail, turned up at its tip
@@ -271,12 +282,12 @@ def key_cabinet(k, names):
         k.sweep("steel_brushed", [f((rc[0] + rr * math.sin(a), rc[1] + rr * math.cos(a), rc[2])) for a in np.linspace(0, 2 * math.pi, 25)],
                 0.0016, 8, caps=False)
         bottom = rc[1] - rr
-        # the fob behind, swung a little to the right, and the tag in front
-        sw = rng.uniform(-4, 4)
-        k.soft("garage_fob", Frame(f((hx + 0.012, bottom - 0.032, 0.046)), f.yaw), (0.0, 0.0, 0.0), (0.030, 0.058, 0.014), 0.007,
-               n=3, turn=sw)
-        k.soft("garage_fob", Frame(f((hx + 0.012, bottom - 0.004, 0.046)), f.yaw), (0.0, 0.0, 0.0), (0.012, 0.012, 0.010), 0.003, n=1)
-        tag(k, f, (hx - 0.010, bottom - 0.003, 0.058), i)
+        # the fob, on a small steel loop through the ring, turned a little on it
+        g = Frame(f((hx, bottom - 0.004, rc[2])), f.yaw + rng.uniform(-6, 6))
+        k.sweep("steel_brushed", [g((0.0, 0.0035 + 0.0045 * math.cos(a), 0.0045 * math.sin(a))) for a in np.linspace(0, 2 * math.pi, 17)],
+                0.0011, 6, caps=False)
+        FOBS[shape](k, Frame(g((0.0, -0.0045, 0.0)), g.yaw))
+        label(k, f, (hx, LABEL_Y - CABINET["y"] + yc, 0.012), i)
     # the cabinet's own little light, inside its top
     LAMPS.append(dict(name="key_cabinet_light", pos=f((0.0, y1 - t - 0.01, D * 0.6)), size=(W - 0.08, D - 0.03), watts=2.5,
                       aim=(0.0, -1.0, 0.0), colour=(1.0, 0.92, 0.82)))
@@ -284,19 +295,161 @@ def key_cabinet(k, names):
                              (x1 - t - 0.02, y1 - t - 0.001, D * 0.85), (x0 + t + 0.02, y1 - t - 0.001, D * 0.85)])
 
 
-TAG = (0.080, 0.048)              # a key tag's width and height
+LABEL = (0.112, 0.028)            # a hook's label: width and height (the same shape as its picture)
+LABEL_Y = 1.35                    # its middle's height, under the hanging fobs
 
 
-def tag(k, f, top, i):
-    """A white key tag hanging from its top middle at `top`, its name printed on the front
-    (cell i of the tags' picture)."""
-    w, h = TAG
-    x, y, z = top
-    k.soft("garage_white", f, (x, y - h / 2, z - 0.0015), (w, h, 0.003), 0.0014, n=2)
-    v, fc, uv = grid((x - w / 2 + 0.003, y - h + 0.003, z + 0.0004), (w - 0.006, 0, 0), (0, h - 0.006, 0), 4, 3)
+def label(k, f, centre, i):
+    """A small white label on the cabinet's oak back, its car printed on it (cell i of the
+    labels' picture)."""
+    w, h = LABEL
+    x, y, z = centre
+    k.soft("garage_white", f, (x, y, z + 0.0010), (w, h, 0.0020), 0.0006, n=1)
+    # the printed face stands 1 mm proud of the plate: any closer and the two flicker
+    v, fc, uv = grid((x - w / 2 + 0.002, y - h / 2 + 0.002, z + 0.0030), (w - 0.004, 0, 0), (0, h - 0.004, 0), 4, 2)
     u0, u1 = i / 4, (i + 1) / 4
     uv = [[(u0 + (u1 - u0) * a, b_) for a, b_ in face] for face in uv]
     k.mesh("garage_tags", f, v, fc, smooth=False, uvs=uv)
+
+
+# ---- the fobs -------------------------------------------------------------------------------------
+# Each is built in a frame whose origin is the top of the fob, hanging straight down (-y), its
+# face out into the room (+z). Shapes after the cars' real fobs, with every logo and badge left
+# off. Sizes in metres.
+def _outline_rr(w, h, r, n=5):
+    """A rounded rectangle's outline, its top edge at y = 0, anticlockwise from the front."""
+    pts = []
+    for cx, cy, a0 in ((w / 2 - r, -h + r, -90), (w / 2 - r, -r, 0), (-w / 2 + r, -r, 90), (-w / 2 + r, -h + r, 180)):
+        for j in range(n + 1):
+            a = math.radians(a0 + 90 * j / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+def _outline_oval(w, h, e=2.6, n=36):
+    """A rounded oval (a superellipse, exponent e), its top at y = 0, anticlockwise."""
+    pts = []
+    for j in range(n):
+        a = 2 * math.pi * j / n - math.pi / 2
+        c, s_ = math.cos(a), math.sin(a)
+        pts.append((w / 2 * math.copysign(abs(c) ** (2 / e), c), -h / 2 + h / 2 * math.copysign(abs(s_) ** (2 / e), s_)))
+    return pts
+
+
+def _outline_shield(w, h, n=10):
+    """A shield, anticlockwise: a straight top with softened corners, straight sides for
+    the upper half, then curving in to a point at the bottom."""
+    side = 0.52 * h                      # how far down the sides run straight
+    r = 0.07 * w
+    right = []                           # from the point up the right side
+    for j in range(n + 1):
+        t = 1 - j / n
+        a, c, b = (w / 2, -side), (w / 2, -side - 0.40 * (h - side)), (0.0, -h)
+        right.append(((1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0],
+                      (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]))
+    pts = right[:]
+    for j in range(4):                   # the top right corner
+        a = math.radians(0 + 90 * j / 3)
+        pts.append((w / 2 - r + r * math.cos(a), -r + r * math.sin(a)))
+    for j in range(4):                   # the top left corner
+        a = math.radians(90 + 90 * j / 3)
+        pts.append((-w / 2 + r + r * math.cos(a), -r + r * math.sin(a)))
+    pts += [(-x, y) for x, y in reversed(right[1:])]
+    return pts
+
+
+def _slab(k, g, outline, rings, front, back):
+    """Extrude an outline into a solid: `rings` are (scale about the outline's middle, z,
+    material of the band from the previous ring to this one), back to front; the back and
+    front faces are fans in their own materials. Faces are turned to point outward."""
+    P = np.asarray(outline, float)
+    mid = P.mean(axis=0)
+    n = len(P)
+    lay = [[(mid[0] + (x - mid[0]) * sc, mid[1] + (y - mid[1]) * sc, z) for x, y in P] for sc, z, _ in rings]
+    zc = 0.5 * (rings[0][1] + rings[-1][1])
+    centre = np.array([mid[0], mid[1], zc])
+
+    def out(verts, faces):
+        fixed = []
+        for q in faces:
+            p = [np.asarray(verts[i], float) for i in q]
+            nrm = np.cross(p[1] - p[0], p[2] - p[0])
+            if np.linalg.norm(nrm) < 1e-14 and len(p) > 3:
+                nrm = np.cross(p[2] - p[0], p[3] - p[0])
+            fixed.append(q if np.dot(nrm, sum(p) / len(p) - centre) >= 0 else q[::-1])
+        return fixed
+    for (sc, z, mat), a, b in zip(rings[1:], lay[:-1], lay[1:]):
+        verts = a + b
+        faces = [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+        k.mesh(mat, g, verts, out(verts, faces), smooth=True)
+    # the back and the front: concentric rings in to a middle point, so the light baked at
+    # the points shades across them evenly instead of in a fan
+    for ring, mat in ((lay[0], back), (lay[-1], front)):
+        z = ring[0][2]
+        steps = [1.0, 0.72, 0.44, 0.18]
+        verts = [(mid[0] + (x - mid[0]) * f_, mid[1] + (y - mid[1]) * f_, z) for f_ in steps for x, y, _ in ring]
+        faces = [(a * n + i, a * n + (i + 1) % n, (a + 1) * n + (i + 1) % n, (a + 1) * n + i)
+                 for a in range(len(steps) - 1) for i in range(n)]
+        c = len(verts)
+        verts.append((mid[0], mid[1], z))
+        last = (len(steps) - 1) * n
+        faces += [(last + i, last + (i + 1) % n, c) for i in range(n)]
+        k.mesh(mat, g, verts, out(verts, faces), smooth=False)
+
+
+def fob_bmw(k, g):
+    """The M5's fob: a slim gloss-black slab with rounded corners, a polished band round
+    its sides and three buttons down its face."""
+    w, h, t = 0.038, 0.072, 0.0125
+    o = _outline_rr(w, h, 0.011)
+    _slab(k, g, o, [(0.93, -t / 2, None), (1.0, -t / 2 + 0.0015, "garage_fob"), (1.0, -0.0022, "garage_fob"),
+                    (1.0, 0.0022, "steel_brushed"), (1.0, t / 2 - 0.0015, "garage_fob"), (0.93, t / 2, "garage_fob")],
+          "garage_fob", "garage_fob")
+    for y in (-0.024, -0.037, -0.050):
+        k.soft("garage_rim", g, (0.0, y, t / 2 - 0.0002), (0.016, 0.0085, 0.0016), 0.0035, n=2)
+
+
+def fob_aston(k, g):
+    """The Vanquish's key: a long, slim block of dark glass held in a polished steel cage,
+    with a steel cap at its top and two buttons on its right side."""
+    w, h, t = 0.030, 0.082, 0.016
+    o = _outline_rr(w, h, 0.006)
+    _slab(k, g, o, [(0.94, -t / 2, None), (1.0, -t / 2 + 0.0018, "steel_brushed"), (1.0, t / 2 - 0.0028, "steel_brushed"),
+                    (0.97, t / 2 - 0.0012, "garage_fob_glass"), (0.90, t / 2, "garage_fob_glass")],
+          "garage_fob_glass", "steel_brushed")
+    k.soft("steel_brushed", g, (0.0, -0.006, 0.0), (w + 0.0012, 0.012, t + 0.0012), 0.0035, n=2)
+    for y in (-0.030, -0.044):
+        k.soft("garage_rim", g, (w / 2 + 0.0004, y, 0.0), (0.0024, 0.009, 0.0065), 0.001, n=1)
+
+
+def fob_porsche_gt(k, g):
+    """The Carrera GT's key: a rounded black head with two buttons on its face, and a fixed
+    steel blade below it."""
+    w, h, t = 0.034, 0.046, 0.014
+    o = _outline_oval(w, h)
+    _slab(k, g, o, [(0.84, -t / 2, None), (1.0, -t / 2 + 0.0035, "garage_fob"), (1.0, t / 2 - 0.0035, "garage_fob"),
+                    (0.84, t / 2, "garage_fob")], "garage_fob", "garage_fob")
+    for y in (-0.017, -0.029):
+        k.soft("garage_rim", g, (0.0, y, t / 2 + 0.0002), (0.010, 0.0075, 0.0016), 0.003, n=2)
+    # the blade: a flat steel bar with an angled tip, out of a short collar
+    k.soft("garage_fob", g, (0.0, -h - 0.002, 0.0), (0.014, 0.008, 0.0075), 0.0025, n=2)
+    bw, bl, bt = 0.0085, 0.058, 0.0026
+    blade = [(bw / 2, 0.0), (-bw / 2, 0.0), (-bw / 2, -bl + 0.004), (0.0, -bl), (bw / 2, -bl + 0.009)]
+    b = Frame(g((0.0, -h - 0.005, 0.0)), g.yaw)
+    _slab(k, b, blade, [(1.0, -bt / 2, None), (1.0, bt / 2, "steel_brushed")], "steel_brushed", "steel_brushed")
+    k.soft("garage_rim", b, (0.0, -0.028, bt / 2), (0.0022, 0.040, 0.0006), 0.0003, n=1)
+
+
+def fob_ferrari(k, g):
+    """The 296 GTB's key, shaped like a shield: red, a polished bezel round its plain face."""
+    w, h, t = 0.036, 0.050, 0.013
+    o = _outline_shield(w, h)
+    _slab(k, g, o, [(0.90, -t / 2, None), (1.0, -t / 2 + 0.0025, "garage_red"), (1.0, t / 2 - 0.0028, "garage_red"),
+                    (0.97, t / 2 - 0.0010, "steel_brushed"), (0.90, t / 2, "steel_brushed")],
+          "garage_red", "garage_red")
+
+
+FOBS = {"bmw": fob_bmw, "aston": fob_aston, "porsche_gt": fob_porsche_gt, "ferrari": fob_ferrari}
 
 
 # ---- the screen ----------------------------------------------------------------------------------
@@ -361,24 +514,21 @@ def extinguisher(k):
 
 
 # ---- pictures -------------------------------------------------------------------------------------
-def paint_tags(names, cell=(256, 152)):
-    """The four keys' tags side by side: white, a punched hole near the top, the name in
-    plain black type, fitted to the tag."""
+def paint_labels(labels, cell=(512, 128)):
+    """The four hooks' labels side by side: white, the car in plain black type, the make
+    over the model when the line in data/garage_keys.txt splits them with "|"."""
     from .labels import text_mask
     cw, ch = cell
     w, h = cw * 4, ch
     img = np.ones((h, w, 3)) * np.array([0.95, 0.95, 0.94])
     lines = []
-    for i, name in enumerate(names):
-        size = min(0.46, 2.1 / max(4, len(name)))
-        lines.append((name, (i + 0.5) / 4, 0.17, size, "CENTER", 1.05))
+    for i, parts in enumerate(labels):
+        rows = [(0.56, 0.37), (0.11, 0.37)] if len(parts) > 1 else [(0.30, 0.46)]
+        for text, (y, size) in zip(parts[:2], rows):
+            size = min(size, 0.92 * cw / (0.56 * ch * max(1, len(text))))     # fitted to the label
+            lines.append((text, (i + 0.5) / 4, y, size, "CENTER", 1.05))
     mask = text_mask((w, h), lines)
     img = img * (1 - mask[..., None]) + np.array([0.06, 0.06, 0.07]) * mask[..., None]
-    yy, xx = np.mgrid[0:h, 0:w]
-    for i in range(4):
-        hole = np.hypot(xx - (i + 0.5) * cw, yy - ch * 0.80) < ch * 0.075
-        img[hole] = np.array([0.55, 0.55, 0.55])
-        img[:, i * cw:i * cw + 2] = img[:, (i + 1) * cw - 2:(i + 1) * cw] = 0.85
     save_png(picture_path("garage_tags"), np.clip(img, 0, 1).astype(np.float32))
 
 

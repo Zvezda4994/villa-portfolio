@@ -360,6 +360,18 @@ def side_table(b):
 # them and the tall bottle is furthest away.
 CARD_AT, GLASSES_AT, BOTTLE_AT, CUP_AT = (-0.07, -0.08), (-0.08, 0.12), (0.10, 0.10), (0.13, -0.11)
 CARD = dict(width=0.21, height=0.13)        # the picture is 768 x 480, the same shape
+
+
+def _card_cam():
+    """A review camera close on the contact card, from the visitor's side of the table."""
+    spot = np.array(Frame(pair_point(*TABLE["at"]), PAIR_YAW)((CARD_AT[0], TABLE["top"], CARD_AT[1])))
+    centre = spot + np.array([0.0, 0.06, 0.0])
+    d = np.asarray(MOMENT_CAM["pos"], float) - centre
+    pos = centre + d / np.linalg.norm(d) * 0.42
+    return dict(pos=tuple(float(v) for v in pos), target=tuple(float(v) for v in centre), fov=40.0)
+
+
+CARD_CAM = _card_cam()
 # An isshobin, the tall 1.8 litre sake bottle: (radius, height) from the base up
 SAKE_PROFILE = [(0.0, 0.0), (0.048, 0.0), (0.0515, 0.004), (0.0525, 0.014), (0.0525, 0.262), (0.0505, 0.282),
                 (0.0440, 0.300), (0.0340, 0.316), (0.0240, 0.330), (0.0175, 0.345), (0.0158, 0.360),

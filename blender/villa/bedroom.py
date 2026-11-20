@@ -1,6 +1,6 @@
 """The main bedroom (languages), furnished: soft and minimal. A low oak bed in white
-linen against a wide upholstered headboard, the world map with three pins (Morocco,
-Russia, Japan) over it, a nightstand with a lamp, a floor lamp, a pale wool rug and a
+linen against a wide upholstered headboard, the world map with two pins (Moscow
+and Tokyo) over it, a nightstand with a lamp, a floor lamp, a pale wool rug and a
 bench at the foot of the bed; on the wall to the lounge, a shelf of books over a
 reading chair.
 
@@ -63,7 +63,7 @@ RUG = dict(x=(-8.80, -6.10), z=(-5.30, -1.90), t=0.012)
 SHELF_X = -6.30                   # the shelf's middle along the lounge wall
 MAP = dict(w=1.62, h=0.64, y=1.96, fr=0.028)  # over the headboard, on the bed's middle
 LAT = (-58.0, 84.0)               # the map's latitude range (it's a plain equirectangular projection)
-PINS = [("Morocco", 34.02, -6.84), ("Russia", 55.76, 37.62), ("Japan", 35.68, 139.69)]     # at the capitals
+PINS = [("Russia", 55.76, 37.62), ("Japan", 35.68, 139.69)]     # at the capitals, Moscow and Tokyo
 SHELF = dict(y=1.30, w=1.40, d=0.22, t=0.035)
 CHAIR = dict(pos=(-6.72, 1.18), yaw=166.0)
 SIDE_TABLE = (-5.86, 1.42)
@@ -376,8 +376,8 @@ def map_point(lat, lon):
 
 
 def world_map(k, f):
-    """The world map in a slim oak frame over the headboard, and three red pins pushed
-    into it."""
+    """The world map in a slim oak frame over the headboard, and red pins pushed into it
+    (PINS)."""
     w, h, yc, fr = MAP["w"], MAP["h"], MAP["y"], MAP["fr"]
     x0, x1, y0, y1 = -w / 2 - fr, w / 2 + fr, yc - h / 2 - fr, yc + h / 2 + fr
     d = 0.035

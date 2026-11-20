@@ -106,11 +106,11 @@ author: Amor Towles
 spine: navy
 A Gentleman in Moscow
 
-author:
+author: Nick Lavery
 spine: grey
 Objective: Secure
 
-author:
+author: Lynne M. Black Jr.
 spine: olive
 Whiskey Tango Foxtrot
 

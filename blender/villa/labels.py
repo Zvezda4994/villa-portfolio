@@ -116,7 +116,7 @@ def _paper(shape, base, rng, fibres=0.0):
 
 def paint_card(size=(768, 480)):
     """The contact card: cream stock, a fine terracotta rule, the name, then the
-    contact lines. The text comes from config.CONTACT_CARD (placeholders for now)."""
+    contact lines. The text comes from config.CONTACT_CARD."""
     rng = np.random.default_rng(5)
     w, h = size
     spec = C.CONTACT_CARD

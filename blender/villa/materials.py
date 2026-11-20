@@ -383,9 +383,8 @@ MATS = {
     "belt_enamel": dict(kind="vertex", room="trophy", color=(0.07, 0.10, 0.25)),
     "trophy_leather": dict(kind="vertex", room="trophy", color=(0.48, 0.27, 0.14)),
     "trophy_mat":  dict(kind="vertex", room="trophy", color=(0.91, 0.90, 0.87)),
-    # where the team photo will go: a plain linen board for now. To show the photo, give it
-    # an "img" (a picture made into build/textures, as the painting is) and rebuild.
-    "team_photo":  dict(kind="vertex", room="trophy", color=(0.80, 0.78, 0.73)),
+    "trophy_jersey": dict(kind="vertex", room="trophy", color=(0.15, 0.15, 0.165)),        # the framed team jersey
+    "trophy_jersey_gold": dict(kind="vertex", room="trophy", color=(0.90, 0.68, 0.16)),
     "trophy_chess_white": dict(kind="vertex", room="trophy", color=(0.87, 0.83, 0.73)),
     "trophy_chess_black": dict(kind="vertex", room="trophy", color=(0.08, 0.07, 0.065)),
     "trophy_planter": dict(kind="vertex", room="trophy", color=(0.13, 0.125, 0.12)),
@@ -424,12 +423,13 @@ MATS = {
     "garage_black": dict(kind="vertex", room="garage", color=(0.03, 0.03, 0.035)),
     "garage_rubber": dict(kind="vertex", room="garage", color=(0.10, 0.10, 0.105)),
     "garage_fob":  dict(kind="vertex", room="garage", color=(0.05, 0.05, 0.055)),
+    "garage_fob_glass": dict(kind="vertex", room="garage", color=(0.11, 0.13, 0.15)),     # the Vanquish key's smoked glass
     "garage_red":  dict(kind="vertex", room="garage", color=(0.72, 0.08, 0.06)),
     "garage_green": dict(kind="emissive", room="garage", color=(0.35, 1.0, 0.55), strength=2.0),
     "garage_cable": dict(kind="vertex", room="garage", color=(0.06, 0.06, 0.065)),
     "garage_led":  dict(kind="emissive", room="garage", color=(0.94, 0.97, 1.0), strength=5.0),
     "garage_glass": dict(kind="glass", room="garage", color=(0.86, 0.90, 0.90), opacity=0.10, reflect=0.25),
-    "garage_tags": dict(kind="vertex", room="garage", img="garage_tags", color=(1, 1, 1)),
+    "garage_tags": dict(kind="vertex", room="garage", img="garage_tags", color=(1, 1, 1)),        # the hooks' labels
     "garage_screen": dict(kind="screen", room="garage", img="garage_calendar", color=(1, 1, 1), strength=1.1),
     # the covered car standing in for the real one, and the tool chest
     "car_cover":   dict(kind="vertex", room="garage", color=(0.19, 0.19, 0.20), double_sided=True),

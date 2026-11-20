@@ -238,9 +238,9 @@ from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_
 from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
 from .library import DESK_CAM as LIBRARY_DESK_CAM, LIBRARY_CAM, SPINES_CAM, SPINES_CAM_B  # noqa: E402
 from .living import LIVING_CAM, MOODBOARD_CAM, TANK_CAM, TV_CAM  # noqa: E402
-from .pool import MOMENT_CAM  # noqa: E402
+from .pool import CARD_CAM, MOMENT_CAM  # noqa: E402
 from .study import DESK_CAM, STUDY_CAM  # noqa: E402
-from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, CHESS_CAM as TROPHY_CHESS_CAM, TROPHY_CAM  # noqa: E402
+from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, CHESS_CAM as TROPHY_CHESS_CAM, JERSEY_CAM as TROPHY_JERSEY_CAM, TROPHY_CAM  # noqa: E402
 
 # The views rendered for review after each build step. The website can jump to
 # any of them with ?shot=name.
@@ -252,6 +252,7 @@ PREVIEW_CAMERAS = {
     "chess": CHESS_CAM,
     "deck": dict(pos=(-7.0, 4.2, -10.0), target=(2.0, 0.0, -17.8), fov=50.0),
     "pool_moment": MOMENT_CAM,
+    "pool_card": CARD_CAM,
     "study": STUDY_CAM,
     "study_desk": DESK_CAM,
     "games": GAMES_CAM,
@@ -276,6 +277,7 @@ PREVIEW_CAMERAS = {
     "trophy_cases": TROPHY_CASES_CAM,
     "trophy_belt": TROPHY_BELT_CAM,
     "trophy_chess": TROPHY_CHESS_CAM,
+    "trophy_jersey": TROPHY_JERSEY_CAM,
     "bedroom": BEDROOM_CAM,
     "bedroom_map": BEDROOM_MAP_CAM,
     "bedroom_shelf": BEDROOM_SHELF_CAM,

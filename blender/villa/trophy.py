@@ -1,6 +1,6 @@
 """The trophy room (wins in coding, boxing and esports), furnished: a display wall of
-spotlit glass cases, a championship belt and medals, the cup, an empty frame waiting for
-the team photo, and a chess table by the glass onto the terrace.
+spotlit glass cases, a championship belt and medals, the cup, a framed team jersey, and a
+chess table by the glass onto the terrace.
 
 Plan, looking down, seen from the driveway (the library wall at the top, so +x is on
 the right):
@@ -10,7 +10,7 @@ the right):
    g |                                                        (fig)  |
    a |                                               [ case: wins ]  |  e
    m |                                                                |  a
-   e door         [~~~~~~~~~~ rug ~~~~~~~~~~]  photo over [ console ] |  s
+   e door         [~~~~~~~~~~ rug ~~~~~~~~~~] jersey over [ console ] |  s
    s |                       [bench]           the cup                |  t
      |                                                                |
      |                     (chair)[chess](chair)   [ case: boxing ]  |
@@ -22,8 +22,8 @@ inside and by a spot from the ceiling track. The boxing case holds the belt, wra
 round a dark velvet form, a second belt hung flat on the velvet above it, medals hung
 either side and two more on stands; the
 other holds the coding and esports wins (medals on ribbons, a silver cup, a crystal
-award). Between them, the team photo's frame (empty for now, a plain linen board) over
-a walnut console with the cup on it.
+award). Between them, the team jersey in a deep black shadow-box frame (plain black
+with gold trim, no logos) over a walnut console with the cup on it.
 
 Everything is lit per vertex, the walls and the ceiling lined over the house's own, so
 the room stays clean from a quick draft bake; it has no lightmap.
@@ -53,8 +53,8 @@ LINING = 0.012                    # the walls' linings stand off the house's (go
 
 CASE = dict(w=1.20, d=0.48, base=0.86, top=2.36, cap=0.12)
 CASE_Z = {"boxing": -6.15, "wins": -1.95}       # the two cases' middles along the east wall
-WALL_Z = -4.05                                  # the photo, the console and the cup between them
-PHOTO = dict(w=1.40, h=0.98, y=1.95, fr=0.035, mat=0.12)
+WALL_Z = -4.05                                  # the jersey, the console and the cup between them
+PHOTO = dict(w=1.40, h=0.98, y=1.95, fr=0.035, d=0.075)      # the jersey's shadow-box frame
 CONSOLE = dict(L=1.80, D=0.42, H=0.74)
 CHESS = dict(x=9.20, z=-6.55, top=0.74, size=0.72)
 SQUARE = 0.058                    # the chess set's own square size (as in the dining room)
@@ -77,6 +77,7 @@ CASES_CAM = dict(pos=(9.45, F2 + 1.50, -5.30), target=(11.70, F2 + 1.45, -5.95),
 BELT_CAM = dict(pos=(XE - LINING - 1.30, F2 + 1.36, CASE_Z["boxing"] - 0.10),
                 target=(XE - LINING - 0.25, F2 + 1.33, CASE_Z["boxing"]), fov=40.0)
 CHESS_CAM = dict(pos=(7.95, F2 + 1.45, -5.15), target=(9.35, F2 + 0.75, -6.65), fov=50.0)
+JERSEY_CAM = dict(pos=(XE - LINING - 2.10, F2 + 1.80, WALL_Z), target=(XE - LINING, F2 + 1.80, WALL_Z), fov=45.0)
 
 
 def build_trophy(b):
@@ -94,7 +95,7 @@ def build_trophy(b):
         wins(k, case_frame(CASE_Z["wins"]))
         console(k)
         cup(k)
-        photo_frame(k)
+        jersey_frame(k)
         bench(k)
         chess_table(k)
         fig(k)
@@ -111,7 +112,7 @@ def walls(k):
     top = CASE["top"] + CASE["cap"]
     zb, zw = CASE_Z["boxing"], CASE_Z["wins"]
     w2, c2 = CASE["w"] / 2, CONSOLE["L"] / 2
-    # the display wall (facing -x): one grid, with holes behind the cases, the console and the photo
+    # the display wall (facing -x): one grid, with holes behind the cases, the console and the jersey
     py0, py1 = PHOTO["y"] - PHOTO["h"] / 2, PHOTO["y"] + PHOTO["h"] / 2
     holes = [(zb - w2 - ZB, zb + w2 - ZB, 0.0, top), (zw - w2 - ZB, zw + w2 - ZB, 0.0, top),
              (WALL_Z - c2 - ZB, WALL_Z + c2 - ZB, 0.0, CONSOLE["H"]),
@@ -503,13 +504,13 @@ def wins(k, f):
     k.box("crystal", g, (-0.09, 0.03, -0.012), (0.09, 0.15, 0.012))
 
 
-# ---- the console, the cup and the photo -------------------------------------------------------
+# ---- the console, the cup and the jersey ------------------------------------------------------
 def wall_frame():
     return Frame((XE - LINING, F2, WALL_Z), -90.0)
 
 
 def console(k):
-    """A low walnut console under the photo: three doors with hairline gaps over a black
+    """A low walnut console under the jersey: three doors with hairline gaps over a black
     recessed plinth; the cup in the middle, books and a brass sphere on one side, a small
     silver bowl on the other."""
     from .study import book_flat
@@ -564,25 +565,145 @@ def cup(k):
     LAMPS.append(dict(name="cup_spot", kind="spot", pos=spot, aim=tuple(np.subtract(aim, spot)), watts=26.0, cone=22.0))
 
 
-def photo_frame(k):
-    """The team photo's frame over the console: a black moulding round a wide white mat,
-    with a plain linen board where the photo will go (material `team_photo`)."""
+# The jersey laid flat, sleeves out, as it's pinned in a frame: half its outline, hem to
+# collar, x out from the middle, y up from the hem (metres). Mirrored for the other half.
+JERSEY_HALF = [(0.0, 0.0), (0.268, 0.0), (0.276, 0.470), (0.425, 0.405), (0.462, 0.545), (0.205, 0.722),
+               (0.088, 0.758), (0.074, 0.733), (0.052, 0.713), (0.026, 0.703), (0.0, 0.700)]
+JERSEY_LIFT = 0.012               # how far the fabric stands off the board in the middle
+
+
+def jersey_outline():
+    right = JERSEY_HALF[1:-1]
+    return [(0.0, 0.0)] + right + [(0.0, 0.700)] + [(-x, y) for x, y in reversed(right)]
+
+
+def _inside(p, poly):
+    x, y = p
+    hit = False
+    for (x0, y0), (x1, y1) in zip(poly, poly[1:] + poly[:1]):
+        if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+            hit = not hit
+    return hit
+
+
+def _edge_dist(p, poly):
+    p = np.asarray(p, float)
+    best = 1e9
+    for a, b in zip(poly, poly[1:] + poly[:1]):
+        a, b = np.asarray(a, float), np.asarray(b, float)
+        t = np.clip(np.dot(p - a, b - a) / max(1e-12, np.dot(b - a, b - a)), 0, 1)
+        best = min(best, float(np.linalg.norm(p - (a + t * (b - a)))))
+    return best
+
+
+def _ear_clip(poly):
+    """Triangles filling a simple polygon (anticlockwise)."""
+    idx = list(range(len(poly)))
+    P = [np.asarray(q, float) for q in poly]
+    tris = []
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    guard = 0
+    while len(idx) > 3 and guard < 10000:
+        guard += 1
+        for j in range(len(idx)):
+            i0, i1, i2 = idx[j - 1], idx[j], idx[(j + 1) % len(idx)]
+            a, b, c = P[i0], P[i1], P[i2]
+            if cross(a, b, c) <= 1e-12:
+                continue
+            if any(cross(a, b, P[m]) >= 0 and cross(b, c, P[m]) >= 0 and cross(c, a, P[m]) >= 0
+                   for m in idx if m not in (i0, i1, i2)):
+                continue
+            tris.append((i0, i1, i2))
+            idx.pop(j)
+            break
+    tris.append(tuple(idx))
+    return tris
+
+
+def jersey_frame(k):
+    """The team jersey in a deep shadow-box frame over the console: a black moulding round a
+    white board, the jersey pinned flat on it with its sleeves out, plain black with a gold
+    collar, gold cuffs and gold side panels, and no logos or lettering. The fabric is lifted
+    a little off the board in the middle so it reads as cloth."""
     f = wall_frame()
     w, h, yc = PHOTO["w"], PHOTO["h"], PHOTO["y"]
     x0, x1, y0, y1 = -w / 2, w / 2, yc - h / 2, yc + h / 2
-    fr, d = PHOTO["fr"], 0.04
+    fr, d = PHOTO["fr"], PHOTO["d"]
     for lo, hi in (((x0, y0, 0.004), (x0 + fr, y1, d)), ((x1 - fr, y0, 0.004), (x1, y1, d)),
                    ((x0 + fr, y0, 0.004), (x1 - fr, y0 + fr, d)), ((x0 + fr, y1 - fr, 0.004), (x1 - fr, y1, d))):
-        k.block("trophy_black", f, lo, hi, step=0.08, skip=("-z",))
+        k.block("trophy_black", f, lo, hi, step=0.06, skip=("-z",))
+    board = 0.010
     a0, a1, b0, b1 = x0 + fr, x1 - fr, y0 + fr, y1 - fr
-    m = PHOTO["mat"]
-    p0, p1, q0, q1 = a0 + m, a1 - m, b0 + m, b1 - m
-    z = d - 0.012
-    for sa, sb, ta, tb in ((a0, a1, b0, q0), (a0, a1, q1, b1), (a0, p0, q0, q1), (p1, a1, q0, q1)):
-        v, fc, _ = grid((sa, ta, z), (sb - sa, 0, 0), (0, tb - ta, 0), max(1, round((sb - sa) / 0.05)), max(1, round((tb - ta) / 0.05)))
-        k.mesh("trophy_mat", f, v, fc, smooth=False)
-    v, fc, uv = grid((p0, q0, z - 0.003), (p1 - p0, 0, 0), (0, q1 - q0, 0), max(2, round((p1 - p0) / 0.05)), max(2, round((q1 - q0) / 0.05)))
-    k.mesh("team_photo", f, v, fc, smooth=False, uvs=uv)
+    v, fc, _ = grid((a0, b0, board), (a1 - a0, 0, 0), (0, b1 - b0, 0), max(2, round((a1 - a0) / 0.025)), max(2, round((b1 - b0) / 0.025)))
+    k.mesh("trophy_mat", f, v, fc, smooth=False)
+
+    poly = jersey_outline()
+    hem = yc - 0.395                         # the jersey's hem, so it sits a touch high in the frame
+
+    def lift(x, y):
+        return board + 0.003 + JERSEY_LIFT * min(1.0, _edge_dist((x, y), poly) / 0.09) ** 0.7
+
+    def place(x, y, extra=0.0):
+        return (x, hem + y, lift(x, y) + extra)
+    # the body: the outline cut into triangles, each split finely so the light on it stays smooth
+    verts, faces = [], []
+    for tri in _ear_clip(poly):
+        A, B, Cc = (np.asarray(poly[i], float) for i in tri)
+        n = max(1, int(math.ceil(max(np.linalg.norm(B - A), np.linalg.norm(Cc - B), np.linalg.norm(A - Cc)) / 0.035)))
+        base = len(verts)
+        index = {}
+        for i in range(n + 1):
+            for j in range(n + 1 - i):
+                q = A + (B - A) * i / n + (Cc - A) * j / n
+                index[(i, j)] = len(verts)
+                verts.append(place(*q))
+        for i in range(n):
+            for j in range(n - i):
+                faces.append((index[(i, j)], index[(i + 1, j)], index[(i, j + 1)]))
+                if j < n - i - 1:
+                    faces.append((index[(i + 1, j)], index[(i + 1, j + 1)], index[(i, j + 1)]))
+    k.mesh("trophy_jersey", f, verts, facing(verts, faces, lambda c: (0.0, 0.0, 1.0)), smooth=True)
+
+    # the gold trim: bands along paths on the cloth, a hair proud of it
+    def band(path, width, off=0.0, n=3):
+        pts = [np.asarray(q, float) for q in path]
+        vv, ff = [], []
+        for i, q in enumerate(pts):
+            t = pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]
+            t /= np.linalg.norm(t)
+            nrm = np.array([-t[1], t[0]])
+            for j in range(n + 1):
+                e = q + nrm * (off + width * (j / n - 0.5))
+                vv.append(place(e[0], e[1], 0.0008))
+        for i in range(len(pts) - 1):
+            for j in range(n):
+                a = i * (n + 1) + j
+                ff.append((a, a + n + 1, a + n + 2, a + 1))
+        k.mesh("trophy_jersey_gold", f, vv, facing(vv, ff, lambda c: (0.0, 0.0, 1.0)), smooth=True)
+
+    def follow(a, b, inset, steps=8):
+        """Points along the edge from a to b, moved `inset` into the cloth."""
+        a, b = np.asarray(a, float), np.asarray(b, float)
+        t = (b - a) / np.linalg.norm(b - a)
+        nrm = np.array([-t[1], t[0]])
+        cen = np.array([0.0, 0.4])
+        if np.dot(nrm, cen - (a + b) / 2) < 0:
+            nrm = -nrm
+        return [tuple(a + (b - a) * s_ + nrm * inset) for s_ in np.linspace(0, 1, steps)]
+    R = dict(enumerate(JERSEY_HALF))
+    # the collar, round the neck from one shoulder to the other
+    neck = [R[6], R[7], R[8], R[9], R[10]]
+    collar = [(-x, y) for x, y in neck[:-1]] + [(x, y) for x, y in reversed(neck)]
+    band([(x, y - 0.012) for x, y in collar], 0.022)
+    for sx in (1, -1):
+        # the cuffs, just inside each sleeve's end
+        cuff = follow((sx * R[3][0], R[3][1]), (sx * R[4][0], R[4][1]), 0.018)
+        band(cuff, 0.026)
+        # a panel down each side, from the armpit to the hem
+        side = follow((sx * R[2][0], R[2][1] - 0.02), (sx * R[1][0], R[1][1] + 0.03), 0.026, steps=12)
+        band(side, 0.036)
 
 
 # ---- the bench, the chess table, the fig ------------------------------------------------------

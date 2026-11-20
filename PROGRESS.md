@@ -206,8 +206,8 @@ The main bedroom (languages), soft and minimal (`blender/villa/bedroom.py`):
   oatmeal headboard; one nightstand with a ceramic lamp, a floor lamp, a bench at the foot,
   a pale wool rug;
 - the world map over the headboard: an original print painted from Natural Earth's
-  public-domain coastlines (`paint_map`, plain equirectangular), three red pins at Rabat,
-  Moscow and Tokyo (`PINS`);
+  public-domain coastlines (`paint_map`, plain equirectangular), red pins at Moscow and
+  Tokyo (`PINS`; Rabat's came off in the content pass);
 - on the lounge wall, a floating shelf with the language books over a boucle reading chair
   and a side table. The spines are `data/bedroom_books.txt` (text, then colour).
 
@@ -254,6 +254,29 @@ stale with the last changes and were left out; `npm run previews -- trophy garag
 (and their close-ups) makes them again.
 Downloads (as the tests count them): the trophy room 2.4 MB, the foyer 1.8 MB, the bedroom
 1.3 MB (with the map picture), the garage 0.8 MB (with its pictures).
+
+**Content pass: the panel copy and the props that go with it** (19 Nov 2026, done between
+batch 4 and the aquarium mech; batch 5, the resume view, is still to come). Your copy, in
+your words, is in `web/src/rooms.js` for the study (VAREK), the garage (Turo, its title now
+"Turo"), the gym, the kitchen (languages, frameworks and libraries, tools), the library, the
+trophy room (a list), the games room (now "CS2 and CounterPick", with the repo link), the
+bedroom and the pool (email, LinkedIn and GitHub as links). The dining room is unchanged; the
+living room still has its own todo. A body line starting with `<ul` goes into the panel as a
+list rather than a paragraph (`main.js`). In the scene:
+- the contact card shows "Aditya Singh" and the three contact lines (`config.CONTACT_CARD`);
+- the trophy room's empty photo frame is now a deep shadow box with a team jersey pinned in it
+  (`jersey_frame`): plain charcoal-black, gold collar, cuffs and side panels, no logos or
+  lettering. Its outline is `JERSEY_HALF`. The cases' medals are still generic;
+- the bedroom: Darija is off the shelf and the panel, and the map has two pins, Moscow and
+  Tokyo;
+- the library: Objective: Secure carries Nick Lavery, Whiskey Tango Foxtrot Lynne M. Black Jr.;
+- the garage: the tagged keys are now four modelled fobs, each after its car's real fob with
+  every logo and badge left off (`FOBS`: the M5's black slab with a polished band and three
+  buttons, the Vanquish's smoked-glass block in a steel cage, the Carrera GT's rounded head
+  with a fixed blade, the 296 GTB's red shield), each under a small white label naming the car.
+  `data/garage_keys.txt` now gives each key's fob shape and label; the booking calendar keeps
+  plain "Car 1" to "Car 4" rows (`CALENDAR_ROWS`).
+New review cameras: `trophy_jersey` and `pool_card`.
 
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
@@ -735,13 +758,8 @@ The traps hit so far, so they don't get rediscovered.
   `npm run figure` (steps above).
 - The car (step 2): pick a model and an engine sound from the options shown,
   whenever you want to pick it back up.
-- Panel copy, which you're supplying separately (leave the panel text as it is
-  until then): VAREK and Turo numbers, the trophy list, contact details. The
-  contact details also go on the card on the pool deck's table (`CONTACT_CARD`).
 - The aquarium's mech: your spec first (see the build order).
-- From batch 4: the four cars' names for the garage's keys and calendar
-  (`data/garage_keys.txt`), the team photo for the trophy room's frame, and the trophy list
-  (the cases' medals and awards are generic until then).
+- The living room's panel copy (it still shows its todo).
 - For later steps:
   - a choice of chess position for the dining table;
   - approval before buying anything over about $60, most likely the car model.

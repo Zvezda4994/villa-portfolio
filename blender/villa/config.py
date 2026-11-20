@@ -122,11 +122,11 @@ CHESS_CAPTURED = "pP"
 FIGURE = None
 
 # ---- The contact card on the pool deck's side table --------------------------------
-# Placeholders until the real details are in. Change these and rebuild the scene
+# Change these and rebuild the scene
 # (npm run scene, then bake and export) to reprint the card.
 CONTACT_CARD = dict(
-    name="Name",
-    lines=["email", "LinkedIn", "GitHub"],
+    name="Aditya Singh",
+    lines=["adityaviveksingh@icloud.com", "linkedin.com/in/aditya-singh", "github.com/Zvezda4994"],
 )
 
 # Extra typefaces for painted lettering, all SIL Open Font License, from the Google

@@ -1,8 +1,10 @@
-# The garage's four keys, left to right in the key cabinet. Each name is printed on its
-# key's tag and heads its row on the booking calendar on the wall screen. Placeholders
-# until you swap in the cars (keep them short, about 12 characters). Rebuild the scene to
-# reprint them (npm run build, or npm run scene, then bake:draft and export).
-Car 1
-Car 2
-Car 3
-Car 4
+# The garage's four keys, left to right in the key cabinet. Each line is the fob's shape,
+# a colon, then the label printed under its hook: the make, "|", then the model (the
+# make goes on the top line). The shapes are modelled in blender/villa/garage.py (FOBS):
+# bmw, aston, porsche_gt, ferrari. The booking calendar on the wall screen keeps plain
+# rows, "Car 1" to "Car 4". Rebuild the scene to reprint them (npm run build, or
+# npm run scene, then bake:draft and export).
+bmw: BMW | M5
+aston: Aston Martin | Vanquish
+porsche_gt: Porsche | Carrera GT
+ferrari: Ferrari | 296 GTB

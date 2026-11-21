@@ -85,13 +85,15 @@ function bakedShader(shader) {
 
 // Sand with gravel borders: a second texture mixed in wherever a mask says so.
 // The mask is laid out like the sand's lightmap, so it uses the same coordinates.
-function gravelShader(blend) {
+// `uniforms` is kept on the material so a sharper gravel picture can be swapped in later.
+function gravelShader(blend, uniforms) {
+  Object.assign(uniforms, {
+    uGravelMap: {value: blend.map}, uGravelMask: {value: blend.mask},
+    uGravelScale: {value: blend.scale}, uGravelTint: {value: blend.tint},
+  });
   return shader => {
     bakedShader(shader);
-    Object.assign(shader.uniforms, {
-      uGravelMap: {value: blend.map}, uGravelMask: {value: blend.mask},
-      uGravelScale: {value: blend.scale}, uGravelTint: {value: blend.tint},
-    });
+    Object.assign(shader.uniforms, uniforms);
     shader.fragmentShader = "uniform sampler2D uGravelMap;\nuniform sampler2D uGravelMask;\nuniform float uGravelScale;\nuniform vec3 uGravelTint;\n" +
       shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
   {
@@ -126,6 +128,16 @@ function rippleTexture(size = 128) {
   return tex;
 }
 
+// The order things load in:
+//   1. the landing set: the house, the skies, the small lightmaps and the colour pictures
+//      (the biggest ones as 512 px copies). The 3D can draw once these are in.
+//   2. then one queue, one or two downloads at a time, in this order of preference:
+//      a room the visitor opened; the sharp lightmaps; rooms the visitor is likely to
+//      open next (hovered
+//      labels, the open room's neighbours); the full-size colour pictures; then every
+//      other room, so the floor views show furnished rooms (skipped when the browser
+//      asks to save data).
+// onProgress(fraction) reports step 1, by bytes: the 3D takes over from the still at 100%.
 export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const manifest = await (await fetch(ASSETS + "manifest.json")).json();
   const ktx2 = new KTX2Loader().setTranscoderPath(TRANSCODER).detectSupport(renderer);
@@ -133,14 +145,45 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const hdr = new RGBELoader();
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
-  let done = 0, total = 0;
-  const track = promise => { total++; return promise.then(v => { onProgress(++done, total); return v; }); };
+  // ---- progress, by bytes: each file's size from the manifest until the server says ----
+  const bytesOf = file => {
+    const b = manifest.bytes || {}, stem = file.split("/").pop().replace(/\.\w+$/, "");
+    if (file === manifest.model) return b.model;
+    for (const [k, v] of Object.entries(manifest.sky)) if (v === file) return b["sky " + k];
+    for (const [k, lm] of Object.entries(manifest.lightmaps)) {
+      if (lm.file === file) return b["lightmap " + k];
+      if (lm.small === file) return b["lightmap " + k + " (small)"];
+    }
+    return b["texture " + stem] ?? b["texture " + stem.replace(/_lo$/, "") + " (small)"];
+  };
+  const counted = new Map();                   // file -> [loaded, total]
+  const report = () => {
+    let got = 0, all = 0;
+    for (const [l, t] of counted.values()) { got += Math.min(l, t); all += t; }
+    onProgress(all ? got / all : 0);
+  };
+  const count = file => { counted.set(file, [0, bytesOf(file) || 3e5]); };
+  const progressFor = file => e => {
+    const c = counted.get(file); if (!c) return;
+    if (e.lengthComputable && e.total) c[1] = e.total;
+    c[0] = e.loaded; report();
+  };
+  const fetchTracked = (loader, file) => {
+    const p = loader.loadAsync(ASSETS + file, progressFor(file));
+    return p.then(v => { const c = counted.get(file); if (c) { c[0] = c[1]; report(); } return v; });
+  };
 
   // ---- start every download needed for the first view at once ----
   // (furniture is left for later: materials and lightmaps marked with a room
   // are fetched together with that room, once the first view is up)
+  const smallMaps = manifest.smallMaps || {};  // full-size picture -> its 512 px copy, for the biggest ones
   const colourMaps = {};
-  const want = file => { if (file && !colourMaps[file]) colourMaps[file] = track(ktx2.loadAsync(ASSETS + file)); };
+  const want = file => {
+    if (!file || colourMaps[file]) return;
+    const first = smallMaps[file] || file;
+    count(first);
+    colourMaps[file] = fetchTracked(ktx2, first);
+  };
   for (const m of Object.values(manifest.materials)) {
     if (m.room) continue;
     want(m.map);
@@ -148,15 +191,16 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   }
   const smallLight = {};
   for (const [name, lm] of Object.entries(manifest.lightmaps)) {
-    if (!lm.room) smallLight[name] = track(ktx2.loadAsync(ASSETS + lm.small));
+    if (!lm.room) { count(lm.small); smallLight[name] = fetchTracked(ktx2, lm.small); }
   }
   // Panoramas taken from above each body of water, so it reflects what is really around it.
   const probeNames = Object.keys(manifest.sky).filter(k => k !== "background" && k !== "environment");
+  for (const f of [manifest.model, ...Object.values(manifest.sky)]) count(f);
   const [gltf, skyTex, envTex, ...probeTex] = await Promise.all([
-    track(gltfLoader.loadAsync(ASSETS + manifest.model)),
-    track(hdr.loadAsync(ASSETS + manifest.sky.background)),
-    track(hdr.loadAsync(ASSETS + manifest.sky.environment)),
-    ...probeNames.map(k => track(hdr.loadAsync(ASSETS + manifest.sky[k]))),
+    fetchTracked(gltfLoader, manifest.model),
+    fetchTracked(hdr, manifest.sky.background),
+    fetchTracked(hdr, manifest.sky.environment),
+    ...probeNames.map(k => fetchTracked(hdr, manifest.sky[k])),
   ]);
 
   // ---- sky, reflections, haze ----
@@ -212,10 +256,11 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         envMap: reflections, envMapIntensity: REFLECT[atlas] ?? (manifest.lightmaps[atlas]?.room ? INDOOR_REFLECT : 1),
       });
       if (m.blend) {
+        mat.userData.uniforms = {};
         mat.onBeforeCompile = gravelShader({
           map: maps[m.blend.map], mask: maps[m.blend.mask], scale: m.tile / m.blend.tile,
           tint: new THREE.Vector3(...m.blend.color),
-        });
+        }, mat.userData.uniforms);
         mat.customProgramCacheKey = () => "baked-gravel";
       } else {
         mat.onBeforeCompile = bakedShader;
@@ -302,7 +347,9 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   // frame wherever the visitor looks.
   const moment = new THREE.PerspectiveCamera();
   let carriedReady = false;
-  function carry(camera, on) {
+  // frame (optional): {x, y} moves them across and up or down the view by those factors, for a
+  // frame of another shape than the 16:9 they were modelled for (main.js, an upright phone)
+  function carry(camera, on, frame = null) {
     if (on && !carriedReady && carried.length && manifest.cameras.pool_moment) {
       const c = manifest.cameras.pool_moment;
       moment.position.set(...c.pos);
@@ -314,30 +361,52 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         const local = toCamera.clone().multiply(o.matrixWorld);
         camera.add(o);
         local.decompose(o.position, o.quaternion, o.scale);
+        o.userData.home = o.position.clone();
+        // where the object's middle sits in the camera's frame, which is what `frame` moves
+        o.geometry.computeBoundingBox();
+        o.userData.middle = o.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(local);
       }
       carriedReady = true;
     }
-    for (const o of carried) o.visible = on && carriedReady;
+    for (const o of carried) {
+      o.visible = on && carriedReady;
+      if (carriedReady) {
+        const {home, middle} = o.userData;
+        o.position.set(home.x + middle.x * ((frame ? frame.x : 1) - 1), home.y + middle.y * ((frame ? frame.y : 1) - 1), home.z);
+      }
+    }
   }
   addModel(gltf.scene);
 
-  // ---- then fetch the sharp lightmaps in the background, outdoors first ----
-  const sharp = (async () => {
-    for (const name of ["ext", "terrain", "gnd", "upr"]) {
-      const lm = manifest.lightmaps[name];
-      if (!lm) continue;
+  // ---- the sharp lightmaps, all four at once ----
+  async function loadSharpLight() {
+    await Promise.all(Object.entries(manifest.lightmaps).filter(([, lm]) => !lm.room).map(async ([name, lm]) => {
       try {
-        const tex = await ktx2.loadAsync(ASSETS + lm.file);
+        const tex = await fetchTracked(ktx2, lm.file);
         tex.channel = 1;
         const old = lightmaps[name];
         for (const mat of bakedByAtlas[name] || []) mat.lightMap = tex;
         lightmaps[name] = tex;
         old.dispose();
       } catch (e) { console.warn("Could not load the sharp lightmap for", name, e); }
-    }
-  })();
+    }));
+  }
+  // ---- the full-size copy of a picture that loaded small first ----
+  async function loadSharpMap(file) {
+    try {
+      const tex = await ktx2.loadAsync(ASSETS + file);
+      const old = maps[file];
+      useMap(file, tex);
+      for (const mat of made.values()) {
+        if (mat.map === old) mat.map = tex;
+        const u = mat.userData.uniforms;
+        if (u && u.uGravelMap.value === old) u.uGravelMap.value = tex;
+      }
+      old.dispose();
+    } catch (e) { console.warn("Could not load the full-size", file, e); }
+  }
 
-  // ---- then the furnished rooms, one at a time: pictures, lightmap, furniture ----
+  // ---- the furnished rooms: pictures, lightmap, furniture ----
   async function loadRoom(name) {
     const room = manifest.rooms[name];
     const files = new Set(Object.values(manifest.materials).filter(m => m.room === name && m.map).map(m => m.map));
@@ -355,22 +424,48 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     addModel(roomGltf.scene);
     for (const g of figureGltfs) addModel(g.scene);
   }
-  // One promise per room, settled once its furniture is in (or has failed to load).
-  // A room the visitor opens jumps the queue.
-  const queue = Object.keys(manifest.rooms || {});
-  const roomDone = {}, roomReady = {};
-  for (const name of queue) roomReady[name] = new Promise(r => { roomDone[name] = r; });
-  let wanted = null;
-  const rooms = (async () => {
-    await sharp;
-    while (queue.length) {
-      const i = Math.max(0, queue.indexOf(wanted));
-      const [name] = queue.splice(i, 1);
-      try { await loadRoom(name); } catch (e) { console.warn("Could not load the", name, "furniture", e); }
-      roomDone[name]();
+  // ---- the queue ----
+  // One job per room, plus one for the sharp lightmaps and one for the full-size pictures.
+  // Each settles once its files are in (or have failed to load). Two run at a time.
+  const jobs = new Map();                       // key -> {run, done, promise, started}
+  const job = (key, run) => {
+    let done; const promise = new Promise(r => { done = r; });
+    jobs.set(key, {run, done, promise, started: false});
+    return promise;
+  };
+  const sharp = job("light", loadSharpLight);
+  // one job per full-size picture, so none holds up a room the visitor opens for long
+  const sharpMaps = Promise.all(Object.keys(smallMaps).filter(f => maps[f]).map(f => job("map:" + f, () => loadSharpMap(f))));
+  const roomNames = Object.keys(manifest.rooms || {});
+  const roomReady = {};
+  for (const name of roomNames) roomReady[name] = job("room:" + name, () => loadRoom(name).catch(e => console.warn("Could not load the", name, "furniture", e)));
+  let wanted = null, likely = [];                // the room opened, and rooms likely to be opened next
+  const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+  const waiting = key => { const j = jobs.get(key); return j && !j.started ? key : null; };
+  const mapJobs = [...jobs.keys()].filter(k => k.startsWith("map:"));
+  function next() {
+    return (wanted && waiting("room:" + wanted)) || waiting("light") ||
+      likely.map(n => waiting("room:" + n)).find(Boolean) || mapJobs.map(waiting).find(Boolean) ||
+      (saveData ? null : roomNames.map(n => waiting("room:" + n)).find(Boolean));
+  }
+  const sleepers = [];
+  async function worker() {
+    for (;;) {
+      const key = next();
+      if (!key) {                                 // nothing to do now; a hover or an opened room may add some
+        if ([...jobs.values()].every(j => j.started)) return;
+        await new Promise(r => sleepers.push(r));
+        continue;
+      }
+      const j = jobs.get(key); j.started = true;
+      try { await j.run(); } catch (e) { console.warn("Could not load", key, e); } finally { j.done(); }
     }
-    ktx2.dispose();
-  })();
+  }
+  const poke = () => { for (const wake of sleepers.splice(0)) wake(); };
+  // (started a moment later, so a room opened on the still is first in line)
+  setTimeout(() => { worker(); worker(); }, 0);
+  const rooms = Promise.all(Object.values(roomReady));
+  Promise.all([rooms, sharp, sharpMaps]).then(() => ktx2.dispose());
 
   // ---- the living room's moodboard ----
   // Its frames (materials marked "moodboard" in the manifest, each with its picture's
@@ -437,16 +532,26 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   }
 
   return {
-    manifest, groups, sharp, rooms,
+    manifest, groups, sharp, sharpMaps, rooms,
     // The page says which groups are showing, so furniture that arrives later matches.
     setVisible(group, on) { visibleNow[group] = on; groups[group].forEach(o => { o.visible = on; }); },
     carry,
     hasCarried: () => carried.length > 0,
     // The visitor opened this room: load its furniture next, and pick its moodboard's pictures.
     openRoom(name) {
-      if (queue.includes(name)) wanted = name;
+      if (roomReady[name]) { wanted = name; poke(); }
       return shuffleMoodboard(name);
     },
+    // Rooms the visitor is likely to open next (a hovered label, the open room's neighbours):
+    // they load before the rest. The newest hint goes first.
+    prefetch(names) {
+      const known = names.filter(n => roomReady[n]);
+      if (!known.length) return;
+      likely = [...known, ...likely.filter(n => !known.includes(n))].slice(0, 8);
+      poke();
+    },
+    // settles once a room's furniture is in (at once for a name that isn't a furnished room)
+    roomReady: name => roomReady[name] || Promise.resolve(),
     // every mesh drawn with any of these materials (empty until its room has loaded)
     meshesWith: names => names.flatMap(n => byMaterial.get(n) || []),
     update(seconds) {

@@ -19,14 +19,16 @@ function allFiles(dir) {
 }
 
 // Every file needed before the landing view can show. Furniture (anything
-// marked with a room) is fetched afterwards, so it doesn't count here.
+// marked with a room) is fetched afterwards, so it doesn't count here, and the
+// biggest pictures load as 512 px copies first (manifest "smallMaps").
 function firstViewFiles() {
+  const small = manifest.smallMaps || {};
   const files = [manifest.model, ...Object.values(manifest.sky)];
   for (const lm of Object.values(manifest.lightmaps)) if (!lm.room) files.push(lm.small);
   for (const m of Object.values(manifest.materials)) {
     if (m.room) continue;
-    if (m.map) files.push(m.map);
-    if (m.blend) files.push(m.blend.map, m.blend.mask);
+    if (m.map) files.push(small[m.map] || m.map);
+    if (m.blend) files.push(small[m.blend.map] || m.blend.map, m.blend.mask);
   }
   return [...new Set(files)];
 }
@@ -41,7 +43,7 @@ function roomFiles() {
 }
 
 test("every file the manifest names exists", () => {
-  const files = [...firstViewFiles(), ...roomFiles(), ...Object.values(manifest.lightmaps).map(lm => lm.file)];
+  const files = [...firstViewFiles(), ...roomFiles(), ...Object.values(manifest.lightmaps).map(lm => lm.file), ...Object.keys(manifest.smallMaps || {})];
   for (const f of files) assert.ok(size(f) > 0, `${f} is empty or missing`);
 });
 
@@ -67,8 +69,8 @@ test("furnished rooms only name lightmaps and pictures that belong to them", () 
 // room over each target so a small change doesn't block a deploy.
 const LANDING_LIMIT = 11 * MB;
 const ROOM_LIMIT = 4.5 * MB;
-// Rooms known to be over, and what they may use until the step 6 performance work.
-const ROOM_ALLOWANCE = {dining: 6.5 * MB};
+// Rooms known to be over, and what they may use (none since step 6).
+const ROOM_ALLOWANCE = {};
 
 test("the landing view stays near its 10 MB target", () => {
   const first = firstViewFiles().reduce((n, f) => n + size(f), 0);
@@ -85,6 +87,15 @@ test("each room's own download stays near its 4 MB target", () => {
     const bytes = [...files].reduce((n, f) => n + size(f), 0);
     const limit = ROOM_ALLOWANCE[name] ?? ROOM_LIMIT;
     assert.ok(bytes < limit, `the ${name} room downloads ${(bytes / MB).toFixed(1)} MB; the target is about 4 MB`);
+  }
+});
+
+test("the 512 px copies are the same pictures, smaller", () => {
+  for (const [full, small] of Object.entries(manifest.smallMaps || {})) {
+    const a = readFileSync(join(ASSETS, full)), b = readFileSync(join(ASSETS, small));
+    assert.equal(b.readUInt32LE(20), 512, `${small} should be 512 px wide`);
+    assert.ok(a.readUInt32LE(20) > 512, `${full} needs no small copy`);
+    assert.equal(a.readUInt32LE(28 + 0), b.readUInt32LE(28 + 0));
   }
 });
 
@@ -233,4 +244,40 @@ test("the Download PDF exists and is one page", () => {
   assert.ok(pdf.subarray(0, 5).toString() === "%PDF-", "assets/resume.pdf isn't a PDF; run npm run resume:pdf");
   const pages = pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) || [];
   assert.equal(pages.length, 1, `assets/resume.pdf has ${pages.length} pages; it should fit on one`);
+});
+
+// The stills shown while the 3D loads (npm run stills): the landing shot and one per stop,
+// in every size src/still.js names, and the link preview.
+test("every still and the link preview exist", async () => {
+  const {ROOMS} = await import(pathToFileURL(join(WEB, "src", "rooms.js")).href);
+  const {stillFiles, STILL} = await import(pathToFileURL(join(WEB, "src", "still.js")).href);
+  for (const id of ["landing", ...ROOMS.map(r => r.id)]) {
+    const f = stillFiles(id);
+    for (const [kind, names] of [["wide", f.wide], ["square", f.square], ["tall", f.tall]]) {
+      names.forEach((name, i) => {
+        const b = readFileSync(join(ASSETS, "stills", name));
+        assert.equal(b.toString("latin1", 0, 4) + b.toString("latin1", 8, 12), "RIFFWEBP", `${name} isn't a WebP`);
+        const w = f.sizes[kind][i];
+        assert.ok(b.length < (id === "landing" ? 450e3 : 400e3), `${name} is ${(b.length / 1e3).toFixed(0)} KB`);
+        // VP8 (lossy) keeps its size 26 bytes in; check the shape matches what the page assumes
+        if (b.toString("latin1", 12, 16) === "VP8 ") {
+          const W = b.readUInt16LE(26) & 0x3fff, H = b.readUInt16LE(28) & 0x3fff;
+          assert.equal(W, w, `${name} should be ${w} px wide`);
+          assert.equal(H, kind === "wide" ? Math.round(w / STILL.aspect) : kind === "tall" ? Math.round(w / STILL.portrait.aspect) : w, `${name} has the wrong height`);
+        }
+      });
+    }
+  }
+  const thumbs = JSON.parse(readFileSync(join(ASSETS, "stills", "thumbs.json"), "utf8"));
+  for (const id of ["landing", ...ROOMS.map(r => r.id)]) assert.ok(thumbs[id]?.wide && thumbs[id]?.tall, `thumbs.json has no thumbnails for ${id}`);
+  const html = readFileSync(join(WEB, "index.html"), "utf8");
+  const l = stillFiles("landing");
+  for (const name of [...l.wide, ...l.square, ...l.tall]) assert.ok(html.includes("assets/stills/" + name), `index.html should offer ${name}`);
+  const og = readFileSync(join(WEB, "og.jpg"));
+  assert.equal(og[0], 0xff); assert.equal(og[1], 0xd8);
+  assert.ok(og.length < 400e3, `og.jpg is ${(og.length / 1e3).toFixed(0)} KB; link previews want it small`);
+  for (const tag of ["og:title", "og:description", "og:image", "og:image:width", "og:image:height", "twitter:card"]) {
+    assert.match(html, new RegExp(`(property|name)="${tag}"`), `index.html needs ${tag}`);
+  }
+  assert.match(html, /og:image" content="https:\/\/[^"]+\/og\.jpg"/, "og:image must be a full https address");
 });

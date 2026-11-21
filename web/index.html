@@ -3,17 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aditya · Memory palace</title>
-<meta name="description" content="Aditya's portfolio as a desert villa you can explore. Each room holds one part of his work.">
+<title>Aditya Singh · Memory Palace</title>
+<meta name="description" content="Aditya Singh's portfolio as a desert villa you can walk through: each room holds one part of his work.">
 <meta name="theme-color" content="#17130f">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Inter:wght@400;500;600&display=swap">
+<!-- the link preview (LinkedIn, iMessage, Slack...): og.jpg is the landing shot, made by npm run stills -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Aditya Singh">
+<meta property="og:title" content="Aditya Singh · Memory Palace">
+<meta property="og:description" content="Aditya Singh's portfolio as a desert villa you can walk through: each room holds one part of his work.">
+<meta property="og:url" content="https://zvezda4994.github.io/villa-portfolio/">
+<meta property="og:image" content="https://zvezda4994.github.io/villa-portfolio/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A modern desert villa at golden hour, with palms and a stone forecourt">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aditya Singh · Memory Palace">
+<meta name="twitter:description" content="Aditya Singh's portfolio as a desert villa you can walk through: each room holds one part of his work.">
+<meta name="twitter:image" content="https://zvezda4994.github.io/villa-portfolio/og.jpg">
+<link rel="canonical" href="https://zvezda4994.github.io/villa-portfolio/">
 <link rel="stylesheet" href="styles.css">
+<!-- the fonts don't hold up the first picture: the page shows in system fonts and swaps them in -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 </head>
 <body>
 
 <canvas id="scene" aria-label="3D model of a desert villa. Each room holds part of the portfolio; use the Rooms menu for a list."></canvas>
-<div class="loading" id="loading"><div>Building the villa…<small id="loadingNote"></small></div></div>
+<!-- A picture of the landing shot, shown at once while the 3D loads behind it (src/still.js). It is drawn
+     from the 3D camera's exact view, a little larger than the window so it can be dragged. -->
+<div class="still" id="still"><picture><source media="(max-aspect-ratio: 4/5)" srcset="assets/stills/landing-tall-720.webp 720w, assets/stills/landing-tall-1080.webp 1080w" sizes="110vw"><source media="(max-aspect-ratio: 1/1)" srcset="assets/stills/landing-sq-900.webp 900w, assets/stills/landing-sq-1400.webp 1400w" sizes="110vh"><img srcset="assets/stills/landing-1280.webp 1280w, assets/stills/landing-2048.webp 2048w, assets/stills/landing-2880.webp 2880w" sizes="264vh" src="assets/stills/landing-2048.webp" alt="" draggable="false" fetchpriority="high" onload="performance.mark('still')"></picture></div>
 
 <div class="bar">
   <div class="brand"><b>Aditya</b><span>Memory palace</span></div>
@@ -24,19 +44,20 @@
       <button id="vU" aria-pressed="false">Upstairs</button>
     </div>
     <button class="pill" id="roomsBtn" aria-expanded="false">Rooms</button>
-    <button class="pill brass" id="resumeBtn">Skip to resume</button>
+    <button class="pill brass" id="resumeBtn"><span class="long">Skip to resume</span><span class="short">Resume</span></button>
   </div>
 </div>
 
 <div class="pins" id="pins"></div>
 <nav class="rooms" id="rooms" hidden aria-label="Rooms"></nav>
 <aside class="panel" id="panel" hidden aria-live="polite">
+  <button class="grab" id="panelGrab" aria-label="Fold the panel down" aria-expanded="true"></button>
   <button class="x" id="panelX" aria-label="Close">×</button>
   <div class="panel-in" id="panelBody"></div>
   <div class="panel-nav"><button id="prevRoom">← Previous</button><button id="nextRoom">Next →</button></div>
 </aside>
-<div class="tag">Work in progress: a car for the garage is still coming.</div>
-<div class="hint" id="hint">Drag to look around · scroll to zoom · click a label</div>
+<div class="hint" id="hint" hidden>Drag to look around · scroll to zoom · click a label</div>
+<div class="progress" id="progress" hidden role="status"><i id="progressBar"></i><span id="progressText">Loading the 3D house</span></div>
 
 <div class="resume" id="resume" hidden>
   <div class="resume-in" id="resumeBody"></div>
@@ -44,8 +65,20 @@
 
 <!-- three.js comes from a CDN at a fixed version. No build step: the files in this folder are the site. -->
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
-<script type="module" src="src/main.js"></script>
+<!-- The page's script (and three.js with it) starts once the still has arrived, so on a slow
+     connection the still doesn't share the line with them. -->
+<script>
+(function () {
+  var img = document.querySelector("#still img"), started = false;
+  function start() {
+    if (started) return; started = true;
+    var s = document.createElement("script"); s.type = "module"; s.src = "src/main.js"; document.body.appendChild(s);
+  }
+  if (img.complete || /[?&](shot|save|capture|ui)=/.test(location.search)) start();
+  else { img.addEventListener("load", start); img.addEventListener("error", start); setTimeout(start, 2500); }
+})();
+</script>
 </body>
 </html>

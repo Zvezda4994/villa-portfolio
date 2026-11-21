@@ -351,6 +351,59 @@ after an original mech built from primitives read as too blocky:
   `living.glb` 2.93 MB and the detail picture 0.65 MB. A 512 px detail picture
   (`DETAIL_SIZE` in `mech_source.py`) would bring it to about 4.0 MB, a little softer.
 
+**Step 6: polish** (21 Nov 2026, waiting for your review; the full bake is a separate session).
+
+*Loading.* A still of the landing shot shows at once and the 3D fades in behind it
+(`web/src/still.js`, `handOver` in `main.js`):
+- The stills are drawn by the site's own renderer in headless Chrome from the exact 3D
+  cameras (`npm run stills`, `tools/stills.mjs`, `capture` in `main.js`): the landing shot
+  and one per stop, wide (2.4:1, three sizes for the landing), square and tall, as WebP in
+  `web/assets/stills/`, plus tiny blurred copies in `thumbs.json`. Drawn 10% bigger than the
+  view each way, a still shown at 110% of the window, centred, lines up exactly with the 3D
+  at any window shape; the margin is what a drag pans into. Re-run after any bake or export.
+- The landing still is in `index.html`, so it needs no script. The page's script (and
+  three.js) starts once the still has arrived, so the still doesn't share the line with them.
+  The Google Fonts no longer hold up the first paint.
+- On the still: labels sit where they will be in 3D (and move with a drag), panels and the
+  Rooms menu work, and opening a stop shows its blurred thumbnail at once, then its still.
+  Dragging pans the still a little and shows "Loading the 3D house · n%" (by bytes). The 3D
+  takes over once the house is built (and an opened room's furniture is in), at that stop's
+  camera; the drag isn't replayed. If the 3D fails, the still stays, with a note.
+- Review links (`?shot=`, `?save=`, `?ui=0`) skip the still, as before.
+
+*Phones.* At 640 px and narrower the bar is two rows (name, Rooms, Resume; then the view
+switch across), labels have a 44 px tap area and are kept whole on screen, and the panel is a
+sheet along the bottom with a handle that folds it down to its title. Narrower than 4:5 the
+camera keeps a fixed sideways view (36.6°) and grows taller, so a phone held upright sees the
+house and the rooms' close-ups across (`cameraFov` in `still.js`); the martini is placed for
+that frame (`UPRIGHT` in `main.js`). On a phone the view slides up (or left, held sideways) by
+half of what the panel covers, so the chessboard stays in sight (`shiftView`). Checked at
+390 x 844 and 844 x 390: nothing scrolls sideways.
+
+*Link preview.* `web/og.jpg` (1200 x 630, from the landing still) with og: and twitter: tags,
+title "Aditya Singh · Memory Palace". The page title is the same now.
+
+*Performance*, measured on throttled "Fast 4G" with a cold cache (`npm run loadtime`):
+- Before (the live site): a blank loading screen for 12.2 s.
+- Now: the still at 0.74 to 0.84 s on a desktop and 0.6 to 0.7 s on a phone; labels and
+  panels from about 1.6 s; the 3D takes over at about 10.2 s, after 8.8 MB.
+- The landing set is 7.8 MB, down from 10.6: the three biggest ground textures load as
+  512 px copies first (manifest `smallMaps`, gotcha 43) and full size a few seconds later.
+- One download queue (`world.js`): a room the visitor opens first, then the sharp lightmaps,
+  then rooms likely next (a hovered label or menu entry, and the open stop's neighbours,
+  `NEIGHBOURS` in `rooms.js`), the full-size textures, then every other room (not when the
+  browser asks to save data).
+- The dining room is 4.1 MB, from 5.2 (the chessboard at 512 px, the chess pieces at 256).
+
+*Notes.* The games room's label opens the desk view (`DESK_CAM`, drawn back to frame the same
+at the site's 45°); the PC stands on the floor left of the desk, on the rug (widened), with no
+plinth. The upstairs landing (`blender/villa/landing.py`, its own `rooms/landing.glb` loaded in
+the background) has plaster linings lit per vertex on the lounge and games room walls (down the
+stairwell to the foyer's ceiling), the dark stone wall lined in its granite, a plaster ceiling
+with its fittings, and one large original painting on the lounge wall (`paint_painting`, a
+colour field: dusk blue over terracotta over sand) under its own spot, between the stairs'
+arrival and the lounge door. The work-in-progress banner is gone.
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -462,9 +515,10 @@ change later.
   can come and go). Prefer materials other rooms already load, keep pictures at
   512 px or less, and thin dense models. `npm test` checks it: new rooms fail
   above 4.5 MB.
-- **The dining room is over, at 5.1 MB** (about 5.9 MB once its lightmap gets the
-  full bake): `dining.glb` 1.85 MB, the chessboard picture 0.94 MB, the rest small.
-  The test lets it through at up to 6.5 MB until step 6 brings it down.
+- **A picture can be capped at export.** A material's `size` caps its picture: the export
+  halves it (in linear light, the same as a mip level) until it fits. The chessboard is
+  painted at 1024 and shipped at 512, the chess pieces' pictures at 256 (step 6). That
+  brought the dining room from 5.2 MB to 4.1 MB; no room has an allowance over 4.5 MB now.
 
 **The dining room**
 
@@ -832,6 +886,26 @@ The traps hit so far, so they don't get rediscovered.
     and katana grip are cut out by position, and it is posed by weights to a hand-placed
     skeleton. Check a new pose from the side as well as the front; at 1.4 m tall the tank's
     1.07 m depth is the hard limit, and the front glass decides how far it can come forward.
+42. **The stills go stale with every bake or export.** They're pictures of the 3D, so after
+    anything that changes how the house looks, run `npm run stills` (about 15 seconds), or the
+    3D will visibly change as it fades in over the still. The full bake especially.
+43. **A smaller KTX2 needs no encoder.** Every mip level is stored on its own, so a 512 px copy
+    of a 1024 px texture is the same file minus its top level (`ktx2.write_smaller`, pure
+    Python). It's byte for byte what encoding the picture at 512 would give.
+44. **Headless Chrome draws WebGL on the real GPU** here with `--enable-gpu --use-angle=d3d11`
+    (`tools/cdp.mjs`); without them it falls back to software. Node 22+ has fetch and
+    WebSocket built in, so the DevTools protocol needs no packages.
+45. **The local server is HTTP/1.1: six connections per host.** On a throttled load the house's
+    ~25 downloads queue there, and a room's still asked for meanwhile waits behind them
+    (GitHub Pages is HTTP/2, so less so). Hence the tiny blurred thumbnails in
+    `stills/thumbs.json`, fetched as the page starts.
+46. **The sharp lightmaps are the same 512 px files as the small ones in a draft bake**, and
+    several megabytes each after the full bake. The still hands over to the 3D without
+    waiting for them; they arrive a few seconds later, as before step 6.
+47. **On an upright phone the camera's field of view changes with the window's shape**
+    (`still.cameraFov`). Anything placed for a 16:9 frame (the visitor's martini) has to be
+    placed for the upright frame too (`UPRIGHT` in `main.js`), the same for every phone so the
+    tall still matches.
 
 ## Next
 
@@ -854,56 +928,15 @@ The traps hit so far, so they don't get rediscovered.
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
 5. **The remaining rooms: done** (batches 1 to 5 and the aquarium mech, 21 Nov 2026).
-6. **Polish (next).** The brief's performance section now has targets and no hard
-   total size limit. Step 6 builds them:
-   - **A still of the landing shot within about 1 second.** It's a full-quality
-     render from the exact landing camera; the live 3D fades in over it from the
-     same camera. On a slow connection (about 150 KB/s in testing) the live site
-     took about 90 seconds to show anything, so this matters most.
-   - **The landing view interactive in about 10 MB or less** (10.8 MB now). Load
-     512 px colour textures before the 1024 px ones, and look again at the
-     cobblestone, sand and marble textures, the three largest.
-   - **Each room's own download around 4 MB.**
-     - Materials shared between rooms load once and are reused. Today a room
-       material's picture is tied to one room; walnut veneer, for one, should
-       become shared.
-     - Repeated objects are instanced (the eight chairs, later the books and
-       bottles). Their light is baked per vertex and differs per copy, so
-       instancing needs that light kept per instance (or a shared average).
-       Decide which in step 6.
-     - Bring the dining room under budget (see "Furnishing a room"), and the living room
-       back to about 4 MB (it is 4.35 MB with the mech; the detail picture at 512 px would do it).
-   - **A still for every room**, rendered from its camera (`PREVIEW_CAMERAS`
-     already has the dining one), shown while that room loads.
-   - **Prefetching.** Start loading a room when the visitor hovers over its label,
-     and the neighbouring rooms while they're in one. This needs a room-to-room
-     neighbour list.
-   - **Phones get lower-resolution textures** (a second, smaller set of pictures
-     and lightmaps); desktops get the full set.
-   - **While the still is showing and the 3D isn't ready:**
-     - Labels sit on the still at their exact 3D positions, projected with the
-       still's own camera.
-     - Clicking a label opens its panel and swaps in that room's still. The 3D
-       appears at that room's camera when it's ready.
-     - The Rooms menu and Skip to resume work at once; they need no 3D.
-     - Dragging pans the still slightly and shows the loading percentage. The
-       drag isn't replayed when the 3D arrives.
-   - Phone layout and link previews. On a phone held upright the pool moment's
-     martini sits outside the narrow frame; place it from the screen's shape there.
-   - The pool room's lightmap (`pol`) gets the full bake with everything else.
-   - **Games room, two things to consider** (your notes, 19 Nov 2026):
-     - the room's label could open the desk view (`games_desk`) instead of the wide
-       view (`GAMES_CAM`); or keep the wide view and fill its empty right-hand wall
-       and floor;
-     - the PC could come off its plinth and go on the desk's left end, or on the floor.
-   - **The upstairs landing** (your note, 19 Nov 2026): give it wall linings (lit per vertex,
-     `kit.wall`, as the furnished rooms have; on the draft lightmap its walls and ceiling are
-     very blotchy) and one piece of dressing, a bench or a large artwork, so it isn't bare
-     when the camera passes through. Keep the arrival from the stairs at the stairwell's west
-     end clear.
-   - Remove the "Work in progress" banner at the bottom of the page (`.tag` in
-     `web/index.html`) entirely (your note, 19 Nov 2026).
-   - Then the full-quality bake.
+6. **Polish: done, waiting for your review** (21 Nov 2026; see "Step 6" under Done). Left
+   for the session after your OK:
+   - **The full-quality bake** (`npm run bake`, about 17 minutes), then `npm run export`, then
+     `npm run stills` (gotcha 42), then `npm run loadtime` to see the landing's numbers with
+     2048 px lightmaps. Commit draft lightmaps only until then (your rule).
+   - Not done in step 6, from the earlier notes, for later if wanted: a lower-resolution set of
+     textures and lightmaps for phones; shared materials loading once (walnut veneer is
+     fetched with each room that uses it); instancing the dining chairs; the living room is
+     still 4.35 MB (a 512 px mech detail picture would bring it to about 4.0).
 7. **My character, at the end.** Redone from a proper base mesh (not generated
    from primitives), reclining on my lounger. Then the stepped-away setting
    comes off it: the sunglasses go back on, the towel and loafers stay or go as

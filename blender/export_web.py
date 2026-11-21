@@ -26,7 +26,7 @@ import numpy as np  # noqa: E402
 from villa import config as C  # noqa: E402
 from villa.geo import to_blender  # noqa: E402
 from villa.hdr import check_round_trip, write_hdr  # noqa: E402
-from villa.ktx2 import write_ktx2  # noqa: E402
+from villa.ktx2 import write_ktx2, write_smaller  # noqa: E402
 from villa.lighting import PREVIEW_CAMERAS, setup_render  # noqa: E402
 from villa.materials import MATS, TEXTURE_IDS, srgb_to_linear  # noqa: E402
 from villa.exterior import RPOOL_X, RPOOL_Z  # noqa: E402
@@ -98,26 +98,61 @@ def _export(path):
         export_meshopt_compression_enable=True)
 
 
+# The landing view loads its biggest colour textures as 512 px copies first and the
+# full size afterwards (manifest "smallMaps"), so the 3D can replace the still sooner.
+SMALL_PX = 512
+
+
+def _halve_to(rgb, px):
+    """Average 2 x 2 blocks until the picture is no bigger than px (the same as a mip level)."""
+    from villa.textures import to_linear, to_srgb
+    if max(rgb.shape[:2]) <= px:
+        return rgb
+    lin = to_linear(np.asarray(rgb, dtype=np.float64))
+    while max(lin.shape[:2]) > px:
+        h, w = lin.shape[:2]
+        lin = lin.reshape(h // 2, 2, w // 2, 2, -1).mean(axis=(1, 3))
+    return to_srgb(lin).astype(np.float32)
+
+
 def export_textures():
     out = C.ASSETS / "textures"
-    sizes = {}
+    sizes, small = {}, {}
+    written = set()
+    first_view = {m["tex"] for m in MATS.values() if "tex" in m and "room" not in m} |                  {m["blend"]["tex"] for m in MATS.values() if "blend" in m and "room" not in m}
     for tex_id in TEXTURE_IDS:
         rgb = load_pixels(prepared(tex_id))[..., :3]
         sizes[tex_id] = write_ktx2(out / f"{tex_id}.ktx2", rgb, srgb=True)
+        written.add(tex_id)
+        if tex_id in first_view:
+            n = write_smaller(out / f"{tex_id}.ktx2", out / f"{tex_id}_lo.ktx2", SMALL_PX)
+            if n:
+                sizes[f"{tex_id} (small)"] = n
+                small[f"textures/{tex_id}.ktx2"] = f"textures/{tex_id}_lo.ktx2"
+                written.add(f"{tex_id}_lo")
     # Masks are data, not colour, so they are stored without the sRGB curve.
     for mask in sorted({m["blend"]["mask"] for m in MATS.values() if "blend" in m}):
         rgb = load_pixels(mask_path(mask))[..., :3]
         sizes[mask] = write_ktx2(out / f"{mask}.ktx2", rgb, srgb=False)
-    # Furniture pictures: models' own colour maps, the rug, the painting, the chessboard.
+        written.add(mask)
+    # Furniture pictures: models' own colour maps, the rug, the painting, the chessboard,
+    # each no bigger than its material's "size" if it gives one.
+    caps = {}
+    for m in MATS.values():
+        if "img" in m and "size" in m:
+            caps[m["img"]] = min(caps.get(m["img"], 1 << 16), m["size"])
     for name in sorted({m["img"] for m in MATS.values() if "img" in m}):
         rgb = load_pixels(picture_path(name))[..., :3]
+        if name in caps:
+            rgb = _halve_to(rgb, caps[name])
         sizes[name] = write_ktx2(out / f"{name}.ktx2", rgb, srgb=True)
+        written.add(name)
     # Drop textures nothing uses any more, so they don't get deployed.
     for old in out.glob("*.ktx2"):
-        if old.stem not in sizes:
+        if old.stem not in written:
             old.unlink()
             print(f"[export] removed unused {old.name}")
-    return sizes
+    return sizes, small
 
 
 # ---- sky panoramas ---------------------------------------------------------
@@ -261,7 +296,7 @@ def export_sky(model):
 
 
 # ---- manifest ----------------------------------------------------------------
-def write_manifest(fog, sizes, sky_paths, rooms):
+def write_manifest(fog, sizes, sky_paths, rooms, small_maps):
     materials = {}
     for name, m in MATS.items():
         entry = dict(kind=m["kind"])
@@ -310,6 +345,7 @@ def write_manifest(fog, sizes, sky_paths, rooms):
         rooms=rooms,
         lightmaps=lightmaps,
         materials=materials,
+        smallMaps=small_maps,
         cameras={k: dict(pos=list(v["pos"]), target=list(v["target"]), fov=v["fov"]) for k, v in PREVIEW_CAMERAS.items()},
         credits=_credits(),
         bytes=sizes,
@@ -339,7 +375,8 @@ def main():
     sizes = {}
     fog, sky_sizes, sky_paths = export_sky(model)          # before the GLB export, which strips UVs
     sizes.update({f"sky {k}": v for k, v in sky_sizes.items()})
-    sizes.update({f"texture {k}": v for k, v in export_textures().items()})
+    tex_sizes, small_maps = export_textures()
+    sizes.update({f"texture {k}": v for k, v in tex_sizes.items()})
     house = [ob for ob in model.objects if not ob.get("room")]
     sizes["model"] = export_glb(house, C.ASSETS / "villa.glb").stat().st_size
     # Each furnished room in a file of its own, in the order they are loaded
@@ -353,7 +390,7 @@ def main():
         if old.stem not in rooms:
             old.unlink()
             print(f"[export] removed unused {old.name}")
-    manifest = write_manifest(fog, sizes, sky_paths, rooms)
+    manifest = write_manifest(fog, sizes, sky_paths, rooms, small_maps)
     # The figure at the dining table, if one is set (config.FIGURE); otherwise any old one is removed.
     manifest = export_figure(C.ASSETS / "manifest.json")
 

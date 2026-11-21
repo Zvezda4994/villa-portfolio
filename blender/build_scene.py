@@ -21,6 +21,7 @@ from villa.exterior import build_exterior  # noqa: E402
 from villa.foyer import build_foyer  # noqa: E402
 from villa.garage import build_garage  # noqa: E402
 from villa.games import build_games  # noqa: E402
+from villa.landing import build_landing  # noqa: E402
 from villa.gym import build_gym  # noqa: E402
 from villa.kitchen import build_kitchen  # noqa: E402
 from villa.library import build_library  # noqa: E402
@@ -56,6 +57,7 @@ def main():
     build_bedroom(b)                  # and the world map and the shelf's spines (data/bedroom_books.txt)
     build_garage(b)                   # and the key tags and the booking calendar (data/garage_keys.txt)
     build_foyer(b)                    # and the painting over the console
+    build_landing(b)                  # and the upstairs landing's painting
     paint_pool_pictures()             # the contact card and the sake label
     materials = build_materials()
 

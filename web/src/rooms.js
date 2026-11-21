@@ -83,8 +83,9 @@ export const ROOMS = [
     body: ["<ul><li>Sexton Scholar, Dalhousie.</li><li>Dean’s List, Fall 2023 and Winter 2024.</li><li>SGFI Youth, boxing, gold.</li><li>SAF Junior National Capital Championship, boxing, silver.</li><li>CCL playoffs with Dalhousie CS2, Spring 2026.</li></ul>"]},
 
   {id: "games", floor: "u", area: "Games room", title: "CS2 and CounterPick", at: [-0.5, 5.2, -4],
-    // from beside the sofa, across the room to the setup (blender/villa/games.py, GAMES_CAM)
-    view: [[1.625, 5.12, -2.1], [-4.325, 4.42, -4.65]], near: 0.4,
+    // behind the chair, looking at the screens, the PC on the floor at the left: games.py's DESK_CAM
+    // ("games_desk"), drawn back along its line to frame the same at the site's 45° (it's 55°)
+    view: [[-1.27, 5.04, -2.35], [-4.725, 4.6, -4.3]], near: 0.4,
     body: ["CounterPick is a Pick’Em optimizer for CS2 Majors. It turns betting odds into team strengths with a Bradley-Terry fit, simulates each Swiss stage 100,000 times under Valve’s rulebook (about a second in NumPy), and searches all 10 million legal cards for the one most likely to get at least 5 of 10 right. The simulator reproduces every pairing of the Austin 2025 Major. Built for the PGL Singapore Major; results go up as the event runs.",
       "I also play on Dalhousie’s CS2 team. We made the CCL playoffs in Spring 2026."],
     links: [["github.com/Zvezda4994/CounterPick", "https://github.com/Zvezda4994/CounterPick"]]},
@@ -105,5 +106,25 @@ export const ROOMS = [
 ];
 
 export const FLOOR_NAME = {out: "Outside", g: "Ground floor", u: "Upstairs"};
+
+// Where a visitor is likely to go from each stop: the next stop on the tour first, then
+// the rooms through its doors. While a stop is open these load ahead of the rest. A name
+// that isn't a stop is a furnished part of the house with no stop of its own (the
+// upstairs landing, blender/villa/landing.py).
+export const NEIGHBOURS = {
+  driveway: ["dining", "stairs", "garage", "study"],
+  dining: ["study", "kitchen", "living", "stairs", "pool"],
+  study: ["garage", "gym", "living", "stairs"],
+  garage: ["gym", "kitchen", "stairs"],
+  gym: ["living", "study"],
+  living: ["kitchen", "gym", "study", "dining", "pool"],
+  kitchen: ["stairs", "dining", "garage"],
+  stairs: ["library", "landing", "dining", "games", "garage"],
+  library: ["trophy", "landing", "games", "stairs"],
+  trophy: ["games", "library", "landing", "pool"],
+  games: ["bedroom", "landing", "trophy", "library"],
+  bedroom: ["pool", "games", "landing", "library"],
+  pool: ["driveway", "living", "dining", "trophy"],
+};
 
 // The resume itself is web/resume.json (drawn by src/resume.js).

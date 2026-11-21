@@ -109,21 +109,80 @@ a.pill{display:inline-flex;align-items:center;text-decoration:none;color:var(--i
   .rv-skills dd{margin-bottom:8px}
 }
 
-.tag{position:fixed;z-index:4;left:max(16px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));
-  font-size:.72rem;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 32px)}
 .hint{position:fixed;z-index:4;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom,0px));font-size:.78rem;color:var(--muted);
   background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:6px 14px;white-space:nowrap}
-.loading{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:var(--bg);font-family:var(--f-display);font-size:1.4rem;color:var(--muted)}
+/* the still (src/still.js): the landing shot's picture, 110% of the window's height and centred,
+   which lines it up with the 3D camera's view at any window shape */
+.still{position:fixed;inset:0;z-index:1;overflow:hidden;background:var(--bg);touch-action:none;cursor:grab;transition:opacity .8s ease}
+.still.dragging{cursor:grabbing}
+.still.gone{opacity:0;pointer-events:none}
+.still picture{display:contents}
+.still img{position:absolute;left:50%;top:50%;height:110%;width:auto;max-width:none;transform:translate(-50%,-50%);
+  user-select:none;-webkit-user-select:none;-webkit-user-drag:none;pointer-events:none;transition:opacity .5s ease}
+.still picture.in img{opacity:0}
+.still picture.thumb img{filter:blur(14px)}
+/* wider than the still (past 2.64:1): fill the width instead; labels are then a little off */
+@media (min-aspect-ratio:264/100){.still img{height:auto;width:100%}}
+/* upright phones: the camera keeps its sideways view, so the tall still is sized by the width */
+@media (max-aspect-ratio:4/5){.still img{height:auto;width:110%}}
+.progress{position:fixed;z-index:4;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom,0px));overflow:hidden;
+  font-size:.8rem;font-weight:500;color:var(--ink);background:var(--glass-2);border:1px solid var(--line);border-radius:999px;padding:7px 16px;white-space:nowrap;
+  backdrop-filter:blur(8px);font-variant-numeric:tabular-nums}
+.progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(207,169,104,.22);transition:width .3s}
+.progress span{position:relative}
+.progress.failed{white-space:normal;text-align:center;max-width:calc(100% - 32px);width:max-content;border-radius:12px}
+.pill .short{display:none}
+.grab{display:none}
+/* touch screens: a label's tap area reaches 8 px past it (44 px tall in all) */
+@media (pointer:coarse){
+  .pin{padding:5px 11px 5px 7px;font-size:.8rem}
+  .pin::after{content:"";position:absolute;inset:-8px -4px}
+}
+/* phones: the bar in two rows (name, Rooms, Resume; then the view switch across the width),
+   and the panel as a sheet along the bottom that folds down to its title */
 @media (max-width:640px){
-  .panel{top:auto;bottom:max(8px,env(safe-area-inset-bottom,0px));max-height:min(58%,480px);right:max(8px,env(safe-area-inset-right,0px));left:max(8px,env(safe-area-inset-left,0px));width:auto}
-  .rooms{right:max(8px,env(safe-area-inset-right,0px));left:max(8px,env(safe-area-inset-left,0px));width:auto}
-  .hint{display:none}
+  .bar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"brand rooms resume" "seg seg seg";gap:8px;align-items:center;
+    padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-bottom:16px}
+  .ctrls{display:contents}
+  .brand{grid-area:brand;min-width:0}
   .brand b{font-size:1.15rem}
+  .brand span{font-size:.64rem;letter-spacing:.12em;white-space:nowrap}
+  .seg{grid-area:seg;justify-self:stretch}
+  .seg button{flex:1;padding:7px 8px}
+  #roomsBtn{grid-area:rooms}
+  #resumeBtn{grid-area:resume}
+  .pill{padding:8px 14px}
+  .pill .long{display:none}
+  .pill .short{display:inline}
+  .rooms{top:calc(max(12px,env(safe-area-inset-top,0px)) + 100px);max-height:calc(100% - 116px - env(safe-area-inset-top,0px));
+    right:max(8px,env(safe-area-inset-right,0px));left:max(8px,env(safe-area-inset-left,0px));width:auto}
+  .panel{top:auto;bottom:0;right:max(0px,env(safe-area-inset-right,0px));left:max(0px,env(safe-area-inset-left,0px));width:auto;
+    max-height:min(56%,480px);border-radius:16px 16px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);transition:max-height .3s ease}
+  .panel-in{padding:6px 20px 16px}
+  .panel h2{font-size:1.5rem;padding-right:28px}
+  .grab{display:block;flex:none;align-self:center;width:72px;height:22px;border:0;background:transparent;cursor:pointer;position:relative}
+  .grab::before{content:"";position:absolute;left:18px;right:18px;top:9px;height:4px;border-radius:2px;background:rgba(241,233,220,.32)}
+  .x{top:14px}
+  /* folded: just the eyebrow and the title; tap the handle (or the title) to unfold */
+  .panel.peek{max-height:calc(104px + env(safe-area-inset-bottom,0px))}
+  .panel.peek .panel-in{overflow:hidden}
+  .panel.peek .panel-nav{display:none}
+  .hint,.progress{bottom:max(14px,env(safe-area-inset-bottom,0px))}
+  .hint{display:none}
+}
+/* short screens (a phone held sideways): a slimmer panel and menu under a one-row bar */
+@media (max-height:500px) and (min-width:641px){
+  .panel,.rooms{top:calc(max(10px,env(safe-area-inset-top,0px)) + 52px);max-height:calc(100% - 62px - env(safe-area-inset-top,0px))}
+  .panel{width:min(340px,calc(100% - 32px))}
+  .panel-in{padding:14px 18px;gap:8px}
+  .panel h2{font-size:1.4rem}
+  .panel-nav{padding:8px 12px}
+  .bar{padding-top:max(8px,env(safe-area-inset-top,0px));padding-bottom:8px}
+  .hint{display:none}
 }
 .resume a{color:var(--brass)}
 .resume .rv-contact a{color:var(--ink)}
-.loading small{display:block;font-family:var(--f-body);font-size:.8rem;letter-spacing:.08em;margin-top:8px;text-align:center}
 /* ?ui=0 hides the interface, for taking clean pictures of the model */
-body.bare .bar,body.bare .pins,body.bare .tag,body.bare .hint,body.bare .panel,body.bare .rooms{display:none}
+body.bare .bar,body.bare .pins,body.bare .hint,body.bare .progress,body.bare .panel,body.bare .rooms{display:none}
 /* Elements switched off with the hidden attribute stay hidden even when a rule above gives them a display. */
 [hidden]{display:none!important}

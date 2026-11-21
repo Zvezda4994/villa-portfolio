@@ -185,8 +185,8 @@ def setup_lamps(collection):
 
 def furnished_rooms():
     """The modules of the furnished rooms that have their own lamps and ceiling light."""
-    from . import bedroom, dining, foyer, games, garage, gym, kitchen, library, living, study, trophy
-    return [dining, study, games, kitchen, gym, living, library, trophy, bedroom, garage, foyer]
+    from . import bedroom, dining, foyer, games, garage, gym, kitchen, landing, library, living, study, trophy
+    return [dining, study, games, kitchen, gym, living, library, trophy, bedroom, garage, foyer, landing]
 
 
 def furnished_lamps():

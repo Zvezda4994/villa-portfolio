@@ -11,7 +11,7 @@
   "color": [
    0.5111722946166992,
    0.6016301214694977,
-   0.6404514908790588
+   0.6404514610767365
   ]
  },
  "sky": {
@@ -42,6 +42,9 @@
   },
   "kitchen": {
    "model": "rooms/kitchen.glb"
+  },
+  "landing": {
+   "model": "rooms/landing.glb"
   },
   "library": {
    "model": "rooms/library.glb"
@@ -3279,6 +3282,45 @@
    ],
    "room": "foyer"
   },
+  "landing_stone": {
+   "kind": "vertex",
+   "map": "textures/granite_tile.ktx2",
+   "tile": 2.3,
+   "color": [
+    0.3,
+    0.29,
+    0.3
+   ],
+   "room": "landing"
+  },
+  "landing_painting": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/landing_painting.ktx2",
+   "room": "landing"
+  },
+  "landing_canvas_edge": {
+   "kind": "vertex",
+   "color": [
+    0.039681909478526005,
+    0.030074104146591292,
+    0.024515013703524748
+   ],
+   "room": "landing"
+  },
+  "landing_black": {
+   "kind": "vertex",
+   "color": [
+    0.0030959752321981426,
+    0.0030959752321981426,
+    0.0035010160107980036
+   ],
+   "room": "landing"
+  },
   "foyer_painting": {
    "kind": "vertex",
    "color": [
@@ -3310,6 +3352,11 @@
    "map": "textures/fig_stems.ktx2",
    "room": "foyer"
   }
+ },
+ "smallMaps": {
+  "textures/cobblestone_floor_08.ktx2": "textures/cobblestone_floor_08_lo.ktx2",
+  "textures/marble_01.ktx2": "textures/marble_01_lo.ktx2",
+  "textures/sandy_gravel_02.ktx2": "textures/sandy_gravel_02_lo.ktx2"
  },
  "cameras": {
   "landing": {
@@ -3894,25 +3941,28 @@
  ],
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303997,
-  "sky pool": 339857,
-  "sky front": 389894,
+  "sky environment": 303998,
+  "sky pool": 339877,
+  "sky front": 389416,
   "texture cobblestone_floor_08": 1325057,
+  "texture cobblestone_floor_08 (small)": 336653,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
   "texture granite_tile": 289871,
   "texture laminate_floor_02": 301387,
   "texture marble_01": 1170487,
+  "texture marble_01 (small)": 306020,
   "texture oak_veneer_01": 309404,
   "texture rounded_square_tiled_wall": 318215,
   "texture sandy_gravel_02": 1240623,
+  "texture sandy_gravel_02 (small)": 309822,
   "texture walnut_veneer": 292320,
   "texture terrain_mask": 68102,
   "texture bedroom_spines": 29038,
   "texture cabinet": 308474,
-  "texture chess_black": 316435,
-  "texture chess_white": 322607,
-  "texture chessboard": 939978,
+  "texture chess_black": 81885,
+  "texture chess_white": 83500,
+  "texture chessboard": 249108,
   "texture contact_card": 332113,
   "texture fig_leaves": 66354,
   "texture fig_stems": 84183,
@@ -3927,6 +3977,7 @@
   "texture journal": 178839,
   "texture kitchen_labels": 649396,
   "texture kitchen_tile": 23537,
+  "texture landing_painting": 86540,
   "texture laptop_screen": 8660,
   "texture library_spines": 992829,
   "texture living_tv": 266874,
@@ -3950,27 +4001,28 @@
   "room bedroom": 664816,
   "room dining": 2009996,
   "room foyer": 937624,
-  "room games": 585596,
+  "room games": 584944,
   "room garage": 517940,
   "room gym": 707912,
   "room kitchen": 1321444,
+  "room landing": 70624,
   "room library": 1710032,
   "room living": 2929236,
   "room pool": 1214128,
   "room study": 1188908,
   "room trophy": 1879224,
-  "lightmap ext": 313644,
-  "lightmap ext (small)": 309660,
-  "lightmap gnd": 194188,
-  "lightmap gnd (small)": 190644,
-  "lightmap upr": 196431,
-  "lightmap upr (small)": 193103,
-  "lightmap terrain": 289686,
-  "lightmap terrain (small)": 285790,
-  "lightmap din": 78677,
-  "lightmap pol": 65414,
-  "lightmap stu": 56180,
-  "lightmap gam": 47883,
-  "lightmap kit": 49589
+  "lightmap ext": 313370,
+  "lightmap ext (small)": 309378,
+  "lightmap gnd": 193866,
+  "lightmap gnd (small)": 190338,
+  "lightmap upr": 175843,
+  "lightmap upr (small)": 172635,
+  "lightmap terrain": 289891,
+  "lightmap terrain (small)": 285987,
+  "lightmap din": 78496,
+  "lightmap pol": 65591,
+  "lightmap stu": 54907,
+  "lightmap gam": 47360,
+  "lightmap kit": 49630
  }
 }

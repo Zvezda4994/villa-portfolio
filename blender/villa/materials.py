@@ -85,16 +85,17 @@ MATS = {
     "walnut":      dict(kind="baked", room="dining", tex="walnut_veneer", tile=1.6, tint=(0.50, 0.42, 0.37), rough=0.4),
     "rug":         dict(kind="baked", room="dining", img="rug", color=(1, 1, 1), rough=1.0),
     "painting":    dict(kind="baked", room="dining", img="painting", color=(1, 1, 1), rough=0.9),
-    "chessboard":  dict(kind="baked", room="dining", img="chessboard", color=(1, 1, 1), rough=0.25),
+    "chessboard":  dict(kind="baked", room="dining", img="chessboard", color=(1, 1, 1), rough=0.25,
+                        size=512),       # painted at 1024 and halved by the export: 0.3 MB instead of 0.94
     # curved pieces, lit per vertex
     "leather":     dict(kind="vertex", room="dining", color=(0.33, 0.20, 0.13)),
     "walnut_dark": dict(kind="vertex", room="dining", color=(0.20, 0.13, 0.09)),
     "bronze":      dict(kind="vertex", room="dining", color=(0.27, 0.20, 0.14)),
     "canvas_edge": dict(kind="vertex", room="dining", color=(0.80, 0.76, 0.70)),
     # Poly Haven models, keeping their own colour pictures
-    "chess_white": dict(kind="vertex", room="dining", img="chess_white", size=512,
+    "chess_white": dict(kind="vertex", room="dining", img="chess_white", size=256,
                         src="chess_set/textures/chess_set_pieces_white_diff_1k.jpg", color=(1, 1, 1)),
-    "chess_black": dict(kind="vertex", room="dining", img="chess_black", size=512,
+    "chess_black": dict(kind="vertex", room="dining", img="chess_black", size=256,
                         src="chess_set/textures/chess_set_pieces_black_diff_1k.jpg", color=(1, 1, 1)),
     "cabinet":     dict(kind="vertex", room="dining", img="cabinet", size=512,
                         src="modern_wooden_cabinet/textures/modern_wooden_cabinet_diff_1k.jpg", color=(0.85, 0.80, 0.78)),
@@ -469,6 +470,11 @@ MATS = {
     "foyer_branch": dict(kind="vertex", room="foyer", color=(0.34, 0.25, 0.17)),
     "foyer_pot":   dict(kind="vertex", room="foyer", color=(0.84, 0.80, 0.72)),
     "foyer_canvas_edge": dict(kind="vertex", room="foyer", color=(0.80, 0.76, 0.70)),
+    # the upstairs landing (landing.py): the dark stone wall lined, the painting, a downlight's rim
+    "landing_stone": dict(kind="vertex", room="landing", tex="granite_tile", tile=2.3, tint=(0.30, 0.29, 0.30)),
+    "landing_painting": dict(kind="vertex", room="landing", img="landing_painting", color=(1, 1, 1)),
+    "landing_canvas_edge": dict(kind="vertex", room="landing", color=(0.22, 0.19, 0.17)),
+    "landing_black": dict(kind="vertex", room="landing", color=(0.04, 0.04, 0.045)),
     "foyer_painting": dict(kind="vertex", room="foyer", img="foyer_painting", color=(1, 1, 1)),
     # the fig by the study door (Poly Haven's potted_plant_01), as in the living room
     "foyer_fig_leaves": dict(kind="vertex", room="foyer", img="fig_leaves", size=256, double_sided=True,

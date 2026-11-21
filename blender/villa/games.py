@@ -71,8 +71,8 @@ def _cam(pos, target, fov):
     return dict(pos=tuple(round(float(v), 3) for v in f(pos)), target=tuple(round(float(v), 3) for v in f(target)), fov=fov)
 
 
-# Review cameras. The first is also the room's view on the website: behind the chair,
-# a little to the left, looking at the screens.
+# Review cameras. DESK_CAM ("games_desk") is also the room's view on the website (since
+# step 6): behind the chair, a little to the left, looking at the screens.
 GAMES_CAM = _cam((-2.0, 1.62, 6.55), (0.55, 0.92, 0.60), 46.0)    # from behind the sofa, across the room
 DESK_CAM = _cam((-1.35, 1.45, 2.95), (0.20, 1.10, 0.20), 55.0)     # closer, behind the chair
 SHELF_CAM = _cam((-0.30, 1.48, 0.95), (-0.43, 1.60, 0.08), 36.0)
@@ -108,7 +108,7 @@ def build_games(b):
 # ---- the setup ------------------------------------------------------------------------------
 def rug(k, f):
     """A charcoal rug under the desk and chair, with a fine white line set in from its edge."""
-    x0, x1, z0, z1 = -1.25, 1.45, 0.08, 2.45
+    x0, x1, z0, z1 = -1.80, 1.45, 0.08, 2.45           # wide enough on the left for the PC to stand on it
     k.box("rug_charcoal", f, (x0, 0.0, z0), (x1, 0.010, z1), skip=("-y",), density=0.5)
     i = 0.09
     k.box("rug_line", f, (x0 + i, 0.010, z0 + i), (x1 - i, 0.0105, z1 - i), skip=("-y",), density=0.3)
@@ -255,15 +255,14 @@ def fan(k, centre, axis, r=0.06, glow=True):
 
 
 def pc(k, f):
-    """A white showcase PC on a low white plinth beside the desk: glass front and
+    """A white showcase PC standing on the rug beside the desk's left end: glass front and
     glass side meeting at a pillarless corner, a white board with its pump, RAM and
     heatsinks, a long white graphics card, three fans glowing on the floor of the
     case, three more under the roof on the radiator, and one at the back. No cables."""
     # local x along the case's depth (front at -x), +z its glass side, y up
-    c = Frame(f((DESK["x"][0] - 0.45, 0.0, 0.42)), f.yaw + 40)
+    c = Frame(f((DESK["x"][0] - 0.42, 0.0, 0.42)), f.yaw + 40)
     L, H, Wd, t = 0.46, 0.50, 0.30, 0.012
-    base = 0.22
-    k.box("white_v", c, (-L / 2 - 0.05, 0.0, -Wd / 2 - 0.05), (L / 2 + 0.05, base, Wd / 2 + 0.05))      # the plinth
+    base = 0.011                                   # on the rug (it used to stand on a white plinth)
     y0, y1 = base + 0.015, base + 0.015 + H
     for x in (-L / 2 + 0.04, L / 2 - 0.04):
         for z in (-Wd / 2 + 0.03, Wd / 2 - 0.03):

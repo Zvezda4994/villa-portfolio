@@ -69,10 +69,15 @@ npm run bake       # work out the lighting      -> web/assets/lightmaps        (
 npm run export     # write the model, textures, sky -> web/assets              (about a minute)
 npm run previews   # render the review pictures -> previews/
 npm run figure     # add, update or remove the dining room figure only     (seconds)
+npm run stills     # the pictures shown while the 3D loads, and the link preview -> web/assets/stills, web/og.jpg
+npm run loadtime   # time a cold load on throttled "Fast 4G" (add a URL to time another copy, --phone for a phone)
 ```
 
 `npm run build` does scene, bake and export in one go. While experimenting,
 `npm run bake:draft` and `npm run previews:draft` are fast, rough versions.
+Run `npm run stills` after anything that changes how the house looks (a bake, an
+export): the stills are drawn by the site itself in headless Chrome, so they match
+the 3D that fades in over them.
 
 The scene is never edited by hand in Blender. Open `build/villa.blend` to look
 around, but make changes in the scripts and rebuild, so the scene can always be

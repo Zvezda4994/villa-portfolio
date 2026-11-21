@@ -16,6 +16,8 @@
     "build": "npm run scene && npm run bake && npm run export",
     "serve": "python tools/serve.py",
     "moodboard": "node tools/blender.mjs moodboard",
-    "resume:pdf": "node tools/resume_pdf.mjs"
+    "resume:pdf": "node tools/resume_pdf.mjs",
+    "stills": "node tools/stills.mjs",
+    "loadtime": "node tools/loadtime.mjs"
   }
 }

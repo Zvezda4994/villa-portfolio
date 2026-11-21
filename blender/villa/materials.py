@@ -198,6 +198,10 @@ MATS = {
     "journal_cover": dict(kind="vertex", room="study", color=(0.22, 0.13, 0.08)),
     "journal_pages": dict(kind="vertex", room="study", img="journal", color=(1, 1, 1)),
     "ribbon":      dict(kind="vertex", room="study", color=(0.50, 0.12, 0.10)),
+    # the painting over the sofa (Turner's Fighting Temeraire, public domain) in a gilt-slip walnut frame
+    "study_painting": dict(kind="vertex", room="study", img="study_painting", color=(1, 1, 1)),
+    "study_frame":  dict(kind="vertex", room="study", color=(0.16, 0.10, 0.065)),
+    "study_gilt":   dict(kind="vertex", room="study", color=(0.74, 0.58, 0.33)),
     "pen_black":   dict(kind="vertex", room="study", color=(0.04, 0.04, 0.045)),
     "coffee":      dict(kind="vertex", room="study", color=(0.16, 0.09, 0.05)),
     # Poly Haven's potted_plant_04 (a haworthia in a white pot), keeping its own picture
@@ -266,6 +270,13 @@ MATS = {
     "glass_black": dict(kind="vertex", room="kitchen", color=(0.03, 0.03, 0.035)),
     "lemon":       dict(kind="vertex", room="kitchen", color=(0.88, 0.80, 0.08)),
     "kitchen_coffee": dict(kind="vertex", room="kitchen", color=(0.16, 0.09, 0.05)),
+    # the plated eel on the counter
+    "kitchen_albedo": dict(kind="vertex", room="kitchen", albedo=True, color=(1, 1, 1)),
+    "plate_dark":  dict(kind="vertex", room="kitchen", color=(0.075, 0.072, 0.070)),
+    "eel_sauce":   dict(kind="vertex", room="kitchen", color=(0.20, 0.09, 0.04)),
+    "scallion":    dict(kind="vertex", room="kitchen", color=(0.38, 0.62, 0.20)),
+    "ginger":      dict(kind="vertex", room="kitchen", color=(0.93, 0.68, 0.62)),
+    "chopstick":   dict(kind="vertex", room="kitchen", color=(0.05, 0.035, 0.03)),
     "lamp_brass_k": dict(kind="vertex", room="kitchen", color=(0.82, 0.63, 0.37)),
     "kitchen_globe": dict(kind="emissive", room="kitchen", color=(1.0, 0.90, 0.78), strength=2.0),
     "kitchen_led": dict(kind="emissive", room="kitchen", color=(1.0, 0.92, 0.82), strength=3.0),
@@ -385,21 +396,24 @@ MATS = {
     # metals kept light: the site shows only diffuse light (see the study's lamp brass)
     "trophy_gold": dict(kind="vertex", room="trophy", color=(0.92, 0.72, 0.33)),
     "trophy_silver": dict(kind="vertex", room="trophy", color=(0.82, 0.83, 0.84)),
-    "trophy_bronze": dict(kind="vertex", room="trophy", color=(0.70, 0.45, 0.26)),
     "case_velvet": dict(kind="vertex", room="trophy", color=(0.11, 0.14, 0.26)),
     "case_velvet_dark": dict(kind="vertex", room="trophy", color=(0.07, 0.08, 0.13)),
     "case_bronze": dict(kind="vertex", room="trophy", color=(0.24, 0.19, 0.14)),
     "case_glass":  dict(kind="glass", room="trophy", color=(0.86, 0.90, 0.90), opacity=0.10, reflect=0.25),
     "case_led":    dict(kind="emissive", room="trophy", color=(1.0, 0.90, 0.76), strength=3.0),
-    "crystal":     dict(kind="glass", room="trophy", color=(0.86, 0.92, 0.95), opacity=0.25, reflect=0.5),
     "belt_leather": dict(kind="vertex", room="trophy", color=(0.80, 0.15, 0.12)),
     "belt_enamel": dict(kind="vertex", room="trophy", color=(0.07, 0.10, 0.25)),
     "trophy_leather": dict(kind="vertex", room="trophy", color=(0.48, 0.27, 0.14)),
     "trophy_mat":  dict(kind="vertex", room="trophy", color=(0.91, 0.90, 0.87)),
     "trophy_jersey": dict(kind="vertex", room="trophy", color=(0.15, 0.15, 0.165)),        # the framed team jersey
     "trophy_jersey_gold": dict(kind="vertex", room="trophy", color=(0.90, 0.68, 0.16)),
-    "trophy_chess_white": dict(kind="vertex", room="trophy", color=(0.87, 0.83, 0.73)),
-    "trophy_chess_black": dict(kind="vertex", room="trophy", color=(0.08, 0.07, 0.065)),
+    # the boxing case's fight gloves, the wins case's lanyard and badge, the lounge chair's lamp
+    "trophy_glove": dict(kind="vertex", room="trophy", color=(0.62, 0.06, 0.05)),
+    "trophy_glove_inside": dict(kind="vertex", room="trophy", color=(0.04, 0.03, 0.03)),
+    "trophy_lace": dict(kind="vertex", room="trophy", color=(0.93, 0.92, 0.89)),
+    "trophy_lanyard": dict(kind="vertex", room="trophy", img="trophy_lanyard", color=(1, 1, 1)),
+    "trophy_badge": dict(kind="vertex", room="trophy", img="trophy_badge", color=(1, 1, 1)),
+    "trophy_shade": dict(kind="emissive", room="trophy", color=(1.0, 0.82, 0.62), strength=1.5),
     "trophy_planter": dict(kind="vertex", room="trophy", color=(0.13, 0.125, 0.12)),
     # the fig in the corner (Poly Haven's potted_plant_01), as in the living room
     "trophy_fig_leaves": dict(kind="vertex", room="trophy", img="fig_leaves", size=256, double_sided=True,
@@ -426,6 +440,8 @@ MATS = {
     "bed_glass":   dict(kind="glass", room="bedroom", color=(0.86, 0.90, 0.90), opacity=0.14, reflect=0.3),
     "bed_water":   dict(kind="glass", room="bedroom", color=(0.80, 0.88, 0.90), opacity=0.25, reflect=0.3),
     "bed_pin":     dict(kind="vertex", room="bedroom", color=(0.80, 0.10, 0.08)),
+    "bedroom_vinyl": dict(kind="vertex", room="bedroom", color=(0.025, 0.025, 0.028)),
+    "bedroom_steel": dict(kind="vertex", room="bedroom", color=(0.74, 0.75, 0.76)),
     # the world map (bedroom.paint_map, from Natural Earth's coastlines) and the titled spines
     "bedroom_map": dict(kind="vertex", room="bedroom", img="world_map", color=(1, 1, 1)),
     "bedroom_spines": dict(kind="vertex", room="bedroom", img="bedroom_spines", color=(1, 1, 1)),

@@ -158,6 +158,16 @@ SRC_GEO = ROOT / "assets_src" / "geo"
 WORLD_LAND = dict(file="ne_110m_land.geojson",
                   url="https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson")
 
+# Public-domain paintings hung in the rooms (credited in CREDITS.md), downloaded by
+# fetch_assets.py into assets_src/art/: file name -> where it comes from.
+SRC_ART = ROOT / "assets_src" / "art"
+ARTWORKS = {
+    # the study, over the sofa: J. M. W. Turner, The Fighting Temeraire (1839), National Gallery, London
+    "fighting_temeraire.jpg": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/"
+                              "The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/"
+                              "1920px-The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg",
+}
+
 # The living room's moodboard: your pictures go in assets_src/moodboard/ (never
 # committed); `npm run moodboard` (and every scene build) shrinks them into
 # web/assets/moodboard/ with a list the site picks from at random.

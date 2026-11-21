@@ -57,6 +57,10 @@ RUG_T = 0.012
 TABLE_X, TABLE_Z, TABLE_TOP = (2.72, 3.37), (LOUNGE_Z - 0.55, LOUNGE_Z + 0.55), 0.38
 SOFA = dict(back_x=4.86, length=2.3, depth=0.95)
 FLOOR_LAMP = (4.42, 0.36)
+# The painting over the sofa, on the gym wall: Turner's The Fighting Temeraire (1839, public
+# domain, config.ARTWORKS), its canvas w x h (the original's shape), its middle at y.
+PAINTING = dict(file="fighting_temeraire.jpg", w=1.70, h=1.70 / 1.346, y=1.74, mould=0.075, slip=0.018, d=0.07)
+PAINTING_PX = (768, 572)        # the picture's size on the site (multiples of 4)
 
 # The desk by the glass, and the credenza along the gym wall beside it.
 DESK = dict(cx=3.70, z1=GLASS_Z - 0.34, w=1.6, d=0.72, top=0.75, t=0.032)
@@ -71,6 +75,8 @@ LAMPS = []
 # website: from behind the sofa, looking over it at the whiteboard.
 STUDY_CAM = dict(pos=(5.82, 1.55, 3.30), target=(1.50, 1.10, 2.08), fov=55.0)
 DESK_CAM = dict(pos=(4.55, 1.38, 5.35), target=(3.62, 0.82, 7.15), fov=50.0)
+# the painting over the sofa, from in front of the whiteboard
+PAINTING_CAM = dict(pos=(1.95, 1.50, 2.35), target=(5.925, 1.40, 2.10), fov=50.0)
 
 
 def build_study(b):
@@ -84,6 +90,7 @@ def build_study(b):
         tall_plant(k)
         coffee_table(k)
         sofa(k)
+        painting(k)
         floor_lamp(k)
         desk(k)
         desk_lamp(k)
@@ -306,6 +313,42 @@ def floor_lamp(k):
     LAMPS.append(dict(name="floor_lamp_down", pos=(x, y0 + 0.04, z), size=(0.3, 0.3), watts=28.0, aim=(0.0, -1.0, 0.0)))
     LAMPS.append(dict(name="floor_lamp_up", pos=(x, y1 - 0.04, z), size=(0.3, 0.3), watts=14.0, aim=(0.0, 1.0, 0.0)))
     LAMPS.append(dict(name="floor_lamp_glow", kind="point", pos=(x, (y0 + y1) / 2, z), watts=6.0, radius=0.12))
+
+
+def painting(k):
+    """The painting over the sofa: the canvas in a dark walnut moulding with a narrow gilt
+    slip inside it, hung on the gym wall, and a brass picture light over it. The canvas is
+    lit per vertex on a fine grid, so the picture light's fall-off stays smooth."""
+    from .kit import grid
+    f = Frame((X1, 0.0, LOUNGE_Z), -90.0)              # +z out of the wall, +x to the viewer's right
+    w, h, yc, m, sl, d = (PAINTING[k_] for k_ in ("w", "h", "y", "mould", "slip", "d"))
+    back = 0.012                                       # clear of the house wall (gotcha 30)
+    x0, x1, y0, y1 = -w / 2, w / 2, yc - h / 2, yc + h / 2
+    # the moulding: four bars, a little proud of the slip
+    for lo, hi in (((x0 - sl - m, y0 - sl - m, back), (x1 + sl + m, y0 - sl, back + d)),
+                   ((x0 - sl - m, y1 + sl, back), (x1 + sl + m, y1 + sl + m, back + d)),
+                   ((x0 - sl - m, y0 - sl, back), (x0 - sl, y1 + sl, back + d)),
+                   ((x1 + sl, y0 - sl, back), (x1 + sl + m, y1 + sl, back + d))):
+        k.block("study_frame", f, lo, hi, step=0.05, skip=("-z",))
+    # the gilt slip, stepped down toward the canvas
+    canvas = back + d - 0.022
+    for lo, hi in (((x0 - sl, y0 - sl, back), (x1 + sl, y0, canvas + 0.008)),
+                   ((x0 - sl, y1, back), (x1 + sl, y1 + sl, canvas + 0.008)),
+                   ((x0 - sl, y0, back), (x0, y1, canvas + 0.008)),
+                   ((x1, y0, back), (x1 + sl, y1, canvas + 0.008))):
+        k.block("study_gilt", f, lo, hi, step=0.04, skip=("-z",))
+    v, fc, uv = grid((x0, y0, canvas), (w, 0, 0), (0, h, 0), 34, 26)
+    k.mesh("study_painting", f, v, fc, smooth=False, uvs=uv)
+    # the picture light: a brass bar on two short arms over the frame, glowing underneath
+    ly, out = y1 + sl + m + 0.13, 0.24
+    for x in (-0.40, 0.40):
+        k.tube("lamp_brass", f((x, ly + 0.02, back)), f((x, ly + 0.02, out - 0.02)), 0.006, segments=8)
+        k.soft("lamp_brass", f, (x, ly + 0.02, back + 0.004), (0.05, 0.05, 0.012), 0.004, n=1)
+    k.tube("lamp_brass", f((-0.60, ly, out)), f((0.60, ly, out)), 0.022, segments=16)
+    k.quad("light_warm", f, [(-0.58, ly - 0.0225, out - 0.008), (0.58, ly - 0.0225, out - 0.008),
+                             (0.58, ly - 0.0225, out + 0.008), (-0.58, ly - 0.0225, out + 0.008)])
+    LAMPS.append(dict(name="painting_light", pos=f((0.0, ly - 0.03, out)), size=(1.1, 0.06), watts=30.0,
+                      aim=tuple(np.subtract(f((0, yc - 0.1, 0)), f((0, ly, out))))))
 
 
 # ---- the desk ---------------------------------------------------------------------------
@@ -556,9 +599,28 @@ def book_flat(k, f, at, size, cover, pages="paper_edge"):
 
 # ---- pictures the build paints ------------------------------------------------------------
 def paint_pictures():
+    paint_painting()
     paint_rug()
     paint_whiteboard()
     paint_journal()
+
+
+def paint_painting():
+    """The painting's picture: the downloaded copy (fetch_assets.py) brought to the site's
+    size, with a faint canvas weave and a touch of old varnish."""
+    import bpy
+    path = C.SRC_ART / PAINTING["file"]
+    if not path.exists():
+        raise FileNotFoundError(f"{path} is missing. Run blender/fetch_assets.py first.")
+    w, h = PAINTING_PX
+    img = bpy.data.images.load(str(path))
+    img.scale(w, h)
+    px = np.array(img.pixels[:], dtype=np.float64).reshape(h, w, 4)[..., :3]
+    bpy.data.images.remove(img)
+    yy, xx = np.mgrid[0:h, 0:w]
+    weave = 1.0 - 0.025 * ((xx % 3 == 0) | (yy % 3 == 0))
+    px = px * weave[..., None] * np.array([1.0, 0.985, 0.95])
+    save_png(picture_path("study_painting"), np.clip(px, 0, 1).astype(np.float32))
 
 
 def _smooth_noise(shape, scale, rng):

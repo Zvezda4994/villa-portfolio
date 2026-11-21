@@ -25,10 +25,13 @@ SX0, SX1 = C.STAIR_X0, C.STAIR_X1
 SZ0, SZ1 = C.STAIR_Z
 DOOR = 2.3            # head height of inside doorways
 
-# Furnished rooms whose sheer curtains have gone (the games room has a blackout
-# blind instead; the trophy room opens onto the terrace), and rooms whose ceiling
+# The sheer curtains inside the upstairs glass are off everywhere (your choice, 21 Nov
+# 2026, from the landing shot with and without them): the rooms read clearly from
+# outside. SHEERS = True brings them back, except in NO_SHEERS (the games room has a
+# blackout blind; the trophy room opens onto the terrace). Also the rooms whose ceiling
 # downlights are switched off (the games room is lit by its screens, the gym by its
 # hanging LED bars). Their fittings are still there, just not glowing.
+SHEERS = False
 NO_SHEERS = {"games", "trophy"}
 LIGHTS_OFF = {"games", "gym"}
 
@@ -298,9 +301,9 @@ def upper_floor(b):
     rng = random.Random(3)
     for room, along, a0, a1, t, indoors, every in runs:
         glazing(b, g, along, a0, a1, t, F2, RY, every=every)
-        # Sheer curtains just inside, until the room is furnished. (The random
+        # Sheer curtains just inside, if SHEERS is on. (The random
         # numbers are drawn either way, so the other rooms' curtains don't move.)
-        sheers(b, rng, along, a0, a1, t + indoors * (T / 2 + 0.16), indoors, keep=room not in NO_SHEERS)
+        sheers(b, rng, along, a0, a1, t + indoors * (T / 2 + 0.16), indoors, keep=SHEERS and room not in NO_SHEERS)
 
     h = P / 2
     top = F2 + DOOR

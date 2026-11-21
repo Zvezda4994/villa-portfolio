@@ -89,6 +89,8 @@ def build_foyer(b):
     with b.room(ROOM):
         walls(k)
         stair_side(k)
+        d0, d1, dh = RESUME_DOOR                 # the hotspot anchor: the middle of the resume door's face
+        b.anchor("resume_door", ((d0 + d1) / 2, dh / 2, SZ1 + LINING + 0.02))
         ceiling(Kit(b, "upper", None))
         balustrade(k)
         runner(k)

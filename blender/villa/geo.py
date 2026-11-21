@@ -67,6 +67,7 @@ class Builder:
         self.atlas_rects = {}            # atlas -> [(x, y, w, h)] in texels, for the bake's hole filling
         self.current_room = None
         self.current_attach = None
+        self.anchors = []                # (name, site position, room): hotspot anchors, see `anchor`
 
     @contextmanager
     def attached(self, name):
@@ -78,6 +79,29 @@ class Builder:
             yield self
         finally:
             self.current_attach = old
+
+    def anchor(self, name, pos):
+        """A hotspot's anchor in the current room: an empty, no geometry, exported in the
+        room's file as a node named hotspot_<name> (extras: hotspot, room) and listed in the
+        manifest's `hotspots`. The website can hang a click target or a marker on it."""
+        if not self.current_room:
+            raise ValueError(f"anchor '{name}' must be added inside `with b.room(...)`")
+        if any(a[0] == name for a in self.anchors):
+            raise ValueError(f"anchor '{name}' is added twice")
+        self.anchors.append((name, tuple(float(v) for v in pos), self.current_room))
+
+    def make_anchors(self, collection):
+        """The anchors as empties, in their own collection so the bake and everything that
+        expects meshes never meets them."""
+        for name, pos, room in self.anchors:
+            ob = bpy.data.objects.new(f"hotspot_{name}", None)
+            ob.empty_display_type = "PLAIN_AXES"
+            ob.empty_display_size = 0.1
+            ob.location = to_blender(pos)
+            ob["hotspot"] = name
+            ob["room"] = room
+            collection.objects.link(ob)
+        print(f"[geo] {len(self.anchors)} hotspot anchors")
 
     @contextmanager
     def room(self, name):

@@ -157,6 +157,24 @@ test("the models only use extensions and materials the site understands", () => 
   }
 });
 
+// Hotspot anchors (blender/villa/geo.py, Builder.anchor): empties the site can hang a click
+// target on. Each is listed in the manifest and is a plain node in its own room's file.
+test("the hotspot anchors are in the manifest and in their rooms' files", () => {
+  const wanted = ["living_couch_seat", "resume_door", "library_real_books", "library_laptop", "bedroom_record_player"];
+  const spots = manifest.hotspots || {};
+  for (const name of wanted) assert.ok(spots[name], `no hotspot anchor called ${name}`);
+  for (const [name, h] of Object.entries(spots)) {
+    assert.ok(manifest.rooms[h.room], `${name}: no room called ${h.room}`);
+    assert.equal(h.pos.length, 3);
+    const b = readFileSync(join(ASSETS, manifest.rooms[h.room].model));
+    const json = JSON.parse(b.toString("utf8", 20, 20 + b.readUInt32LE(12)));
+    const node = json.nodes.find(n => n.extras && n.extras.hotspot === name);
+    assert.ok(node, `${name}: not in ${manifest.rooms[h.room].model}`);
+    assert.equal(node.mesh, undefined, `${name}: an anchor has no geometry`);
+    node.translation.forEach((v, i) => assert.ok(Math.abs(v - h.pos[i]) < 1e-3, `${name}: the manifest and the model disagree`));
+  }
+});
+
 // The living room's moodboard: pictures shrunk by `npm run moodboard`, picked at random
 // by the page each time the room opens. They are never part of the first view.
 test("the moodboard's pictures and frames are in order", () => {

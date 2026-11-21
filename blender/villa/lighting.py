@@ -229,18 +229,19 @@ def add_camera(collection, name, pos, target, fov=45.0):
     return ob
 
 
-from .bedroom import BEDROOM_CAM, MAP_CAM as BEDROOM_MAP_CAM, SHELF_CAM as BEDROOM_SHELF_CAM  # noqa: E402
+from .bedroom import BEDROOM_CAM, MAP_CAM as BEDROOM_MAP_CAM, RECORDS_CAM as BEDROOM_RECORDS_CAM, SHELF_CAM as BEDROOM_SHELF_CAM  # noqa: E402
 from .dining import CHESS_CAM, ROOM_CAM  # noqa: E402
 from .foyer import CONSOLE_CAM as FOYER_CONSOLE_CAM, FOYER_CAM  # noqa: E402
 from .games import DESK_CAM as GAMES_DESK_CAM, GAMES_CAM, SHELF_CAM  # noqa: E402
 from .garage import GARAGE_CAM, KEYS_CAM as GARAGE_KEYS_CAM, SCREEN_CAM as GARAGE_SCREEN_CAM  # noqa: E402
 from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_WIDE_CAM  # noqa: E402
-from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
+from .kitchen import DISH_CAM as KITCHEN_DISH_CAM, KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
 from .library import DESK_CAM as LIBRARY_DESK_CAM, LIBRARY_CAM, SPINES_CAM, SPINES_CAM_B  # noqa: E402
 from .living import LIVING_CAM, MECH_CAM, MOODBOARD_CAM, SOFA_CAM, TANK_CAM, TV_CAM  # noqa: E402
 from .pool import CARD_CAM, MOMENT_CAM  # noqa: E402
-from .study import DESK_CAM, STUDY_CAM  # noqa: E402
-from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, CHESS_CAM as TROPHY_CHESS_CAM, JERSEY_CAM as TROPHY_JERSEY_CAM, TROPHY_CAM  # noqa: E402
+from .study import DESK_CAM, PAINTING_CAM as STUDY_PAINTING_CAM, STUDY_CAM  # noqa: E402
+from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, JERSEY_CAM as TROPHY_JERSEY_CAM  # noqa: E402
+from .trophy import LOUNGE_CAM as TROPHY_LOUNGE_CAM, TROPHY_CAM, WINS_CAM as TROPHY_WINS_CAM  # noqa: E402
 
 # The views rendered for review after each build step. The website can jump to
 # any of them with ?shot=name.
@@ -255,12 +256,14 @@ PREVIEW_CAMERAS = {
     "pool_card": CARD_CAM,
     "study": STUDY_CAM,
     "study_desk": DESK_CAM,
+    "study_painting": STUDY_PAINTING_CAM,
     "games": GAMES_CAM,
     "games_desk": GAMES_DESK_CAM,
     "games_shelf": SHELF_CAM,
     "kitchen": KITCHEN_CAM,
     "kitchen_shelf": KITCHEN_SHELF_CAM,
     "kitchen_wide": KITCHEN_WIDE_CAM,
+    "kitchen_dish": KITCHEN_DISH_CAM,
     "gym": GYM_CAM,
     "gym_gear": GEAR_CAM,
     "gym_wide": GYM_WIDE_CAM,
@@ -278,11 +281,13 @@ PREVIEW_CAMERAS = {
     "trophy": TROPHY_CAM,
     "trophy_cases": TROPHY_CASES_CAM,
     "trophy_belt": TROPHY_BELT_CAM,
-    "trophy_chess": TROPHY_CHESS_CAM,
+    "trophy_wins": TROPHY_WINS_CAM,
+    "trophy_lounge": TROPHY_LOUNGE_CAM,
     "trophy_jersey": TROPHY_JERSEY_CAM,
     "bedroom": BEDROOM_CAM,
     "bedroom_map": BEDROOM_MAP_CAM,
     "bedroom_shelf": BEDROOM_SHELF_CAM,
+    "bedroom_records": BEDROOM_RECORDS_CAM,
     "garage": GARAGE_CAM,
     "garage_keys": GARAGE_KEYS_CAM,
     "garage_screen": GARAGE_SCREEN_CAM,

@@ -142,6 +142,16 @@ Downloaded as GeoJSON from Natural Earth's repository
 (https://github.com/nvkelso/natural-earth-vector) by `blender/fetch_assets.py` into
 `assets_src/geo/` (not committed). Only the painted map ships with the site.
 
+## Paintings
+
+| Used for | Name | Author | License | Link |
+|---|---|---|---|---|
+| Study: the painting over the sofa | The Fighting Temeraire (1839), National Gallery, London | J. M. W. Turner | Public domain | https://commons.wikimedia.org/wiki/File:The_Fighting_Temeraire,_JMW_Turner,_National_Gallery.jpg |
+
+Downloaded as Wikimedia Commons' 1920 px copy by `blender/fetch_assets.py` into
+`assets_src/art/` (not committed). The build shrinks it to 768 px with a faint canvas weave
+(`study.paint_painting`); only that copy ships with the site.
+
 ## Figures
 
 The dining room has a slot for one figure, seated across the board from the

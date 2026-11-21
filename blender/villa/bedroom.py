@@ -2,14 +2,14 @@
 linen against a wide upholstered headboard, the world map with two pins (Moscow
 and Tokyo) over it, a nightstand with a lamp, a floor lamp, a pale wool rug and a
 bench at the foot of the bed; on the wall to the lounge, a shelf of books over a
-reading chair.
+reading chair, and beside it, on the games room wall, a record player on a low console.
 
 Plan, looking down, seen from the driveway (the lounge wall at the top, so +x is on
 the right):
 
                        lounge door            shelf, over the chair         (z = 2)
      +------------------[      ]--------------[=====]------------------+
-     |                                         (chair)(table)           |
+     |                                         (chair)(table) [records] |
    s |                                                        [stand]   | g
    i |                                                                  h a
    d glass                       ~~~~~~~~~~ rug ~~~~~~~~ [bench][ bed  ]| e m
@@ -68,6 +68,8 @@ SHELF = dict(y=1.30, w=1.40, d=0.22, t=0.035)
 CHAIR = dict(pos=(-6.72, 1.18), yaw=166.0)
 SIDE_TABLE = (-5.86, 1.42)
 BENCH = dict(z=(2.42, 2.84), w=1.50, h=0.45)       # in the bed's frame
+# the low console with the record player, on the games room wall south of the reading chair's table
+CONSOLE = dict(z=(-0.32, 0.80), d=0.40, h=0.48)
 
 CEILING_LIGHT = 0.30
 LAMPS = []
@@ -77,6 +79,7 @@ LAMPS = []
 BEDROOM_CAM = dict(pos=(-10.55, F2 + 1.55, -6.55), target=(-5.60, F2 + 1.05, -1.20), fov=55.0)
 MAP_CAM = dict(pos=(XE - 2.20, F2 + 1.62, BED_Z + 0.30), target=(XE, F2 + 1.62, BED_Z), fov=50.0)
 SHELF_CAM = dict(pos=(-6.25, F2 + 1.30, -0.55), target=(-6.30, F2 + 0.95, 1.925), fov=50.0)
+RECORDS_CAM = dict(pos=(-6.65, F2 + 1.38, -0.70), target=(-5.30, F2 + 0.52, 0.30), fov=50.0)
 
 
 def build_bedroom(b):
@@ -98,6 +101,7 @@ def build_bedroom(b):
         world_map(k, f)
         shelf(k, titled, cells)
         reading_chair(k)
+        b.anchor("bedroom_record_player", record_console(k))
 
 
 def read_books():
@@ -125,8 +129,9 @@ def walls(k):
     # the headboard's wall (facing -x)
     mz0, mz1 = BED_Z - MAP["w"] / 2 - MAP["fr"], BED_Z + MAP["w"] / 2 + MAP["fr"]
     my0, my1 = MAP["y"] - MAP["h"] / 2 - MAP["fr"], MAP["y"] + MAP["h"] / 2 + MAP["fr"]
+    cz0, cz1 = CONSOLE["z"]
     wall(k, m, (XE - e, F2, ZB), (0, 0, ZN - ZB), (0, H, 0), step=0.15,
-         holes=[(hz0 - ZB, hz1 - ZB, hy0, hy1), (mz0 - ZB, mz1 - ZB, my0, my1)])
+         holes=[(hz0 - ZB, hz1 - ZB, hy0, hy1), (mz0 - ZB, mz1 - ZB, my0, my1), (cz0 - ZB, cz1 - ZB, 0.0, CONSOLE["h"])])
     # the lounge wall (facing -z), round its door
     d0, d1 = LOUNGE_DOOR
     wall(k, m, (XE, F2, ZN - e), (XW - XE, 0, 0), (0, H, 0), step=0.15, holes=[(XE - d1, XE - d0, 0.0, DOOR)])
@@ -606,3 +611,99 @@ def reading_chair(k):
     book_flat(k, Frame(tf((-0.04, 0.51, 0.02)), 25.0), (0.0, 0.0), (0.20, 0.025, 0.14), "book_charcoal")
     c = Frame(tf((0.11, 0.51, -0.06)))
     k.lathe("bed_ceramic", c, [(0.0, 0.0), (0.033, 0.0), (0.04, 0.01), (0.042, 0.08), (0.039, 0.08), (0.036, 0.012), (0.0, 0.01)], 24)
+
+
+# ---- the record player -------------------------------------------------------------------------
+SLEEVES = [(0.62, 0.36, 0.24), (0.86, 0.82, 0.74), (0.20, 0.24, 0.30), (0.52, 0.55, 0.44), (0.12, 0.12, 0.13),
+           (0.74, 0.60, 0.42), (0.34, 0.20, 0.18), (0.80, 0.77, 0.70), (0.42, 0.47, 0.52), (0.66, 0.50, 0.30),
+           (0.18, 0.28, 0.24), (0.88, 0.86, 0.80), (0.48, 0.30, 0.22), (0.26, 0.26, 0.28)]
+
+
+def record_console(k):
+    """A low pale oak console against the games room wall beside the reading chair: a black
+    recessed plinth, two doors on the left, an open bay of records standing on the right. On
+    top, a record player (oak plinth, steel platter, a record on it with a terracotta label,
+    a slim tonearm) at the chair's end, and a small stack of records lying flat beside it, in
+    plain coloured sleeves. Returns the platter's middle (the hotspot anchor)."""
+    from .kit import cushion
+    z0, z1 = CONSOLE["z"]
+    L, D, Hc = z1 - z0, CONSOLE["d"], CONSOLE["h"]
+    f = Frame((XE - LINING, F2, (z0 + z1) / 2), -90.0)      # +z into the room, +x toward the chair (+z)
+    x0, x1 = -L / 2, L / 2
+    k.block("bedroom_black", f, (x0 + 0.04, 0.0, 0.0), (x1 - 0.04, 0.07, D - 0.04), step=0.3, skip=("-y", "-z", "+y"))
+    k.grain("bedroom_oak", f, (x0, Hc - 0.028, 0.0), (x1, Hc, D), step=0.07, skip=("-z",), along="x")       # the top
+    k.grain("bedroom_oak", f, (x0, 0.07, 0.0), (x1, 0.095, D), step=0.08, skip=("-z", "-y"), along="x")     # the bottom
+    for xa in (x0, x1 - 0.025, -0.0125):                                                                    # ends, divider
+        k.grain("bedroom_oak", f, (xa, 0.095, 0.0), (xa + 0.025, Hc - 0.028, D), step=0.07, skip=("-z", "-y", "+y"), along="y")
+    # the left half's two doors, hairline gaps, a slim brass pull on each
+    gap, w = 0.003, (L / 2 - 0.0375) / 2
+    for i in range(2):
+        a = x0 + 0.025 + i * w
+        k.grain("bedroom_oak", f, (a + gap / 2, 0.095 + gap, D - 0.02), (a + w - gap / 2, Hc - 0.028 - gap, D),
+                step=0.06, skip=("-z",), along="y")
+        k.soft("bedroom_brass", f, (a + (w - 0.05 if i == 0 else 0.05), Hc - 0.15, D + 0.006), (0.010, 0.10, 0.012), 0.004, n=1)
+    k.block("bedroom_black", f, (x0 + 0.025, 0.095, D - 0.03), (-0.0125, Hc - 0.028, D - 0.02), step=0.3, skip=("-z",))
+    # the open bay: a dark back, and records standing in it
+    k.block("bedroom_black", f, (0.0125, 0.095, 0.02), (x1 - 0.025, Hc - 0.028, 0.025), step=0.1, skip=("-z",))
+    x = 0.03
+    i = 0
+    while x < x1 - 0.06:
+        t = 0.0045
+        lean = 0.0 if i < 34 else 7.0
+        verts, faces = cushion((t, 0.315, 0.315), 0.0012, n=1, div=2)
+        g = Frame(f((x + t / 2, 0.095 + 0.1575, 0.03 + 0.1575)), f.yaw)
+        T = rot(z=-lean)
+        c = srgb_to_linear(SLEEVES[i % len(SLEEVES)])
+        k.b.mesh(k.g, "bedroom_albedo", [g(tuple(T @ np.array(v))) for v in verts], faces, colors=[c] * len(verts))
+        x += t + 0.0012 + (0.014 if i == 33 else 0.0)
+        i += 1
+        if i > 38:
+            break
+    # the stack of records on top, lying flat, not quite square to each other
+    top = Hc
+    rng = np.random.default_rng(12)
+    y = top
+    for j, colour in enumerate((SLEEVES[0], SLEEVES[7], SLEEVES[4], SLEEVES[9], SLEEVES[2])):
+        t = 0.005
+        verts, faces = cushion((0.315, t, 0.315), 0.0012, n=1, div=2)
+        g = Frame(f((-0.30 + rng.uniform(-0.008, 0.008), y + t / 2, D / 2 + rng.uniform(-0.008, 0.008))),
+                  f.yaw + rng.uniform(-5, 5))
+        c = srgb_to_linear(colour)
+        k.b.mesh(k.g, "bedroom_albedo", [g(v) for v in verts], faces, colors=[c] * len(verts))
+        y += t
+    # the record player, at the chair's end
+    tp = Frame(f((0.27, top, D / 2 - 0.005)), f.yaw)
+    W, Dp, Hp = 0.44, 0.35, 0.075
+    k.grain("bedroom_oak", tp, (-W / 2, 0.012, -Dp / 2), (W / 2, Hp, Dp / 2), step=0.05, along="x")
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            k.lathe("bedroom_black", Frame(tp((sx * (W / 2 - 0.04), 0.0, sz * (Dp / 2 - 0.04)))),
+                    [(0.0, 0.0), (0.022, 0.0), (0.024, 0.012), (0.0, 0.012)], 16)
+    k.block("bedroom_black", tp, (-W / 2 + 0.008, Hp, -Dp / 2 + 0.008), (W / 2 - 0.008, Hp + 0.003, Dp / 2 - 0.008), step=0.05,
+            skip=("-y",))
+    pc = (-0.045, Hp + 0.003, 0.0)                             # the platter's middle
+    k.lathe("bedroom_steel", Frame(tp(pc)), [(0.0, 0.0), (0.03, 0.0), (0.148, 0.004), (0.150, 0.010), (0.150, 0.018),
+                                             (0.0, 0.018)], 64)
+    k.lathe("bedroom_vinyl", Frame(tp((pc[0], pc[1] + 0.018, pc[2]))),
+            [(0.0, 0.0), (0.1500, 0.0), (0.1500, 0.0022), (0.148, 0.0024), (0.0, 0.0024)], 72)
+    k.lathe("bed_accent", Frame(tp((pc[0], pc[1] + 0.0205, pc[2]))), [(0.0, 0.0), (0.049, 0.0), (0.049, 0.0015), (0.0, 0.0015)], 40)
+    k.tube("bedroom_steel", tp((pc[0], pc[1] + 0.02, pc[2])), tp((pc[0], pc[1] + 0.036, pc[2])), 0.0035, segments=8)
+    # the tonearm: a post at the back right, the arm reaching in over the record's outer grooves
+    pv = np.array((0.155, Hp + 0.003, -0.10))
+    k.lathe("bedroom_steel", Frame(tp(tuple(pv))), [(0.0, 0.0), (0.03, 0.0), (0.03, 0.012), (0.012, 0.016), (0.012, 0.055),
+                                                     (0.0, 0.055)], 24)
+    head = np.array((pc[0] + 0.105, Hp + 0.003 + 0.032, pc[2] + 0.06))
+    piv = pv + (0.0, 0.050, 0.0)
+    k.sweep("bedroom_steel", [tp(tuple(piv)), tp(tuple(piv + (head - piv) * 0.55 + (0.006, 0.004, 0.0))), tp(tuple(head))],
+            0.0042, segments=10)
+    back = piv - (head - piv) / np.linalg.norm(head - piv) * 0.06
+    k.tube("bedroom_steel", tp(tuple(piv)), tp(tuple(back)), 0.003, segments=8)
+    k.tube("bedroom_black", tp(tuple(back)), tp(tuple(back - (head - piv) / np.linalg.norm(head - piv) * 0.028)), 0.014,
+           segments=16)
+    hs = Frame(tp(tuple(head)), f.yaw + 35.0)
+    k.soft("bedroom_black", hs, (0.0, -0.004, 0.012), (0.018, 0.006, 0.040), 0.002, n=1)
+    k.lathe("bedroom_steel", Frame(tp((0.175, Hp + 0.003, 0.07))), [(0.0, 0.0), (0.006, 0.0), (0.006, 0.042), (0.0, 0.042)], 12)
+    for dx in (-0.19, -0.155):                                   # speed and start knobs at the front left
+        k.lathe("bedroom_steel", Frame(tp((dx, Hp + 0.003, Dp / 2 - 0.035))),
+                [(0.0, 0.0), (0.011, 0.0), (0.011, 0.012), (0.0, 0.012)], 16)
+    return tp((pc[0], pc[1] + 0.025, pc[2]))

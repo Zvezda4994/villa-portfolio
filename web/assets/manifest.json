@@ -1237,6 +1237,34 @@
    ],
    "room": "study"
   },
+  "study_painting": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/study_painting.ktx2",
+   "room": "study"
+  },
+  "study_frame": {
+   "kind": "vertex",
+   "color": [
+    0.021980947079887205,
+    0.010022825574869039,
+    0.005422868676138171
+   ],
+   "room": "study"
+  },
+  "study_gilt": {
+   "kind": "vertex",
+   "color": [
+    0.5070785101492276,
+    0.29569980462568246,
+    0.08898152563840141
+   ],
+   "room": "study"
+  },
   "pen_black": {
    "kind": "vertex",
    "color": [
@@ -1773,6 +1801,60 @@
     0.021980947079887205,
     0.008540382112116999,
     0.003935939504088967
+   ],
+   "room": "kitchen"
+  },
+  "kitchen_albedo": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "room": "kitchen"
+  },
+  "plate_dark": {
+   "kind": "vertex",
+   "color": [
+    0.006571403616195705,
+    0.006213310068848936,
+    0.00598105957261676
+   ],
+   "room": "kitchen"
+  },
+  "eel_sauce": {
+   "kind": "vertex",
+   "color": [
+    0.033104766570885055,
+    0.008540382112116999,
+    0.0030959752321981426
+   ],
+   "room": "kitchen"
+  },
+  "scallion": {
+   "kind": "vertex",
+   "color": [
+    0.1192801876221121,
+    0.34239163959260344,
+    0.033104766570885055
+   ],
+   "room": "kitchen"
+  },
+  "ginger": {
+   "kind": "vertex",
+   "color": [
+    0.8480882574948619,
+    0.4200332886842154,
+    0.34239163959260344
+   ],
+   "room": "kitchen"
+  },
+  "chopstick": {
+   "kind": "vertex",
+   "color": [
+    0.003935939504088967,
+    0.002708978328173375,
+    0.0023219814241486067
    ],
    "room": "kitchen"
   },
@@ -2600,15 +2682,6 @@
    ],
    "room": "trophy"
   },
-  "trophy_bronze": {
-   "kind": "vertex",
-   "color": [
-    0.44798841244188325,
-    0.17064493581555268,
-    0.0549717326875717
-   ],
-   "room": "trophy"
-  },
   "case_velvet": {
    "kind": "vertex",
    "color": [
@@ -2656,17 +2729,6 @@
    ],
    "room": "trophy",
    "strength": 3.0
-  },
-  "crystal": {
-   "kind": "glass",
-   "color": [
-    0.7105664902244221,
-    0.8275708303626798,
-    0.8900054069935289
-   ],
-   "room": "trophy",
-   "opacity": 0.25,
-   "reflect": 0.5
   },
   "belt_leather": {
    "kind": "vertex",
@@ -2722,23 +2784,62 @@
    ],
    "room": "trophy"
   },
-  "trophy_chess_white": {
+  "trophy_glove": {
    "kind": "vertex",
    "color": [
-    0.7293470915734015,
-    0.6559306827469925,
-    0.49190504085677866
+    0.34239163959260344,
+    0.004896310081623859,
+    0.003935939504088967
    ],
    "room": "trophy"
   },
-  "trophy_chess_black": {
+  "trophy_glove_inside": {
    "kind": "vertex",
    "color": [
-    0.007194409291082934,
-    0.00598105957261676,
-    0.005422868676138171
+    0.0030959752321981426,
+    0.0023219814241486067,
+    0.0023219814241486067
    ],
    "room": "trophy"
+  },
+  "trophy_lace": {
+   "kind": "vertex",
+   "color": [
+    0.8480882574948619,
+    0.8275708303626798,
+    0.7677687605549981
+   ],
+   "room": "trophy"
+  },
+  "trophy_lanyard": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/trophy_lanyard.ktx2",
+   "room": "trophy"
+  },
+  "trophy_badge": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/trophy_badge.ktx2",
+   "room": "trophy"
+  },
+  "trophy_shade": {
+   "kind": "emissive",
+   "color": [
+    1.0,
+    0.6382832153523972,
+    0.34239163959260344
+   ],
+   "room": "trophy",
+   "strength": 1.5
   },
   "trophy_planter": {
    "kind": "vertex",
@@ -2929,6 +3030,24 @@
     0.6038273388553378,
     0.010022825574869039,
     0.007194409291082934
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_vinyl": {
+   "kind": "vertex",
+   "color": [
+    0.0019349845201238392,
+    0.0019349845201238392,
+    0.0021671826625387
+   ],
+   "room": "bedroom"
+  },
+  "bedroom_steel": {
+   "kind": "vertex",
+   "color": [
+    0.5070785101492276,
+    0.5225215539683921,
+    0.5382355236010181
    ],
    "room": "bedroom"
   },
@@ -3489,6 +3608,19 @@
    ],
    "fov": 50.0
   },
+  "study_painting": {
+   "pos": [
+    1.95,
+    1.5,
+    2.35
+   ],
+   "target": [
+    5.925,
+    1.4,
+    2.1
+   ],
+   "fov": 50.0
+  },
   "games": {
    "pos": [
     1.625,
@@ -3566,6 +3698,19 @@
     -2.1
    ],
    "fov": 58.0
+  },
+  "kitchen_dish": {
+   "pos": [
+    -6.02,
+    1.32,
+    -1.2
+   ],
+   "target": [
+    -6.2,
+    0.93,
+    -0.42
+   ],
+   "fov": 45.0
   },
   "gym": {
    "pos": [
@@ -3777,29 +3922,42 @@
   },
   "trophy_belt": {
    "pos": [
-    10.387999999999998,
-    4.86,
+    9.838,
+    5.1,
     -6.25
    ],
    "target": [
     11.437999999999999,
-    4.83,
+    5.05,
     -6.15
    ],
-   "fov": 40.0
+   "fov": 45.0
   },
-  "trophy_chess": {
+  "trophy_wins": {
    "pos": [
-    7.95,
-    4.95,
-    -5.15
+    9.838,
+    5.1,
+    -1.8499999999999999
    ],
    "target": [
-    9.35,
-    4.25,
-    -6.65
+    11.437999999999999,
+    5.0,
+    -1.95
    ],
-   "fov": 50.0
+   "fov": 45.0
+  },
+  "trophy_lounge": {
+   "pos": [
+    7.15,
+    5.0,
+    -4.3
+   ],
+   "target": [
+    9.45,
+    4.2,
+    -6.6
+   ],
+   "fov": 55.0
   },
   "trophy_jersey": {
    "pos": [
@@ -3850,6 +4008,19 @@
     -6.3,
     4.45,
     1.925
+   ],
+   "fov": 50.0
+  },
+  "bedroom_records": {
+   "pos": [
+    -6.65,
+    4.88,
+    -0.7
+   ],
+   "target": [
+    -5.3,
+    4.02,
+    0.3
    ],
    "fov": 50.0
   },
@@ -3932,6 +4103,48 @@
    "fov": 55.0
   }
  },
+ "hotspots": {
+  "living_couch_seat": {
+   "room": "living",
+   "pos": [
+    6.4,
+    0.442,
+    -4.14
+   ]
+  },
+  "library_real_books": {
+   "room": "library",
+   "pos": [
+    11.35,
+    5.138,
+    4.0675
+   ]
+  },
+  "library_laptop": {
+   "room": "library",
+   "pos": [
+    6.8052,
+    4.383,
+    7.1809
+   ]
+  },
+  "bedroom_record_player": {
+   "room": "bedroom",
+   "pos": [
+    -5.282,
+    4.083,
+    0.465
+   ]
+  },
+  "resume_door": {
+   "room": "foyer",
+   "pos": [
+    -2.375,
+    0.67,
+    1.407
+   ]
+  }
+ },
  "credits": [
   {
    "room": "living",
@@ -3942,8 +4155,8 @@
  "bytes": {
   "sky background": 521262,
   "sky environment": 303998,
-  "sky pool": 339877,
-  "sky front": 389416,
+  "sky pool": 339753,
+  "sky front": 389188,
   "texture cobblestone_floor_08": 1325057,
   "texture cobblestone_floor_08 (small)": 336653,
   "texture concrete_wall_007": 299032,
@@ -3975,7 +4188,7 @@
   "texture gym_timer": 7640,
   "texture horse_head": 83148,
   "texture journal": 178839,
-  "texture kitchen_labels": 649396,
+  "texture kitchen_labels": 777652,
   "texture kitchen_tile": 23537,
   "texture landing_painting": 86540,
   "texture laptop_screen": 8660,
@@ -3991,38 +4204,41 @@
   "texture sake_label": 187618,
   "texture screen_chart": 30498,
   "texture screen_main": 46643,
+  "texture study_painting": 415692,
   "texture succulent": 80871,
   "texture tank_back": 62135,
+  "texture trophy_badge": 15763,
+  "texture trophy_lanyard": 62505,
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "texture whiteboard": 157289,
   "texture world_map": 311004,
-  "model": 2377316,
-  "room bedroom": 664816,
+  "model": 2354320,
+  "room bedroom": 775992,
   "room dining": 2009996,
-  "room foyer": 937624,
+  "room foyer": 937768,
   "room games": 584944,
   "room garage": 517940,
   "room gym": 707912,
-  "room kitchen": 1321444,
+  "room kitchen": 1369940,
   "room landing": 70624,
-  "room library": 1710032,
-  "room living": 2929236,
+  "room library": 1710364,
+  "room living": 2929404,
   "room pool": 1214128,
-  "room study": 1188908,
-  "room trophy": 1879224,
-  "lightmap ext": 313370,
-  "lightmap ext (small)": 309378,
-  "lightmap gnd": 193866,
-  "lightmap gnd (small)": 190338,
-  "lightmap upr": 175843,
-  "lightmap upr (small)": 172635,
-  "lightmap terrain": 289891,
-  "lightmap terrain (small)": 285987,
-  "lightmap din": 78496,
-  "lightmap pol": 65591,
-  "lightmap stu": 54907,
-  "lightmap gam": 47360,
-  "lightmap kit": 49630
+  "room study": 1239712,
+  "room trophy": 1370788,
+  "lightmap ext": 314156,
+  "lightmap ext (small)": 310164,
+  "lightmap gnd": 193899,
+  "lightmap gnd (small)": 190371,
+  "lightmap upr": 177220,
+  "lightmap upr (small)": 174012,
+  "lightmap terrain": 289726,
+  "lightmap terrain (small)": 285822,
+  "lightmap din": 78527,
+  "lightmap pol": 64554,
+  "lightmap stu": 53849,
+  "lightmap gam": 46878,
+  "lightmap kit": 49179
  }
 }

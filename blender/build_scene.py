@@ -71,6 +71,9 @@ def main():
     build_plants(b)
     build_pool(b)
     objects = b.finalize(model, materials)
+    anchors = bpy.data.collections.new("hotspots")  # empties marking hotspots, exported with their rooms
+    scene.collection.children.link(anchors)
+    b.make_anchors(anchors)
     # Glowing lampshade diffusers are drawn bright, but the light itself comes from
     # the lamps in lighting.py; letting the bake count them too only adds noise.
     for ob in objects.values():

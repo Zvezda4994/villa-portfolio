@@ -1,6 +1,6 @@
 """The trophy room (wins in coding, boxing and esports), furnished: a display wall of
-spotlit glass cases, a championship belt and medals, the cup, a framed team jersey, and a
-chess table by the glass onto the terrace.
+spotlit glass cases, the cup, a framed team jersey, and a leather lounge chair by the glass
+onto the terrace.
 
 Plan, looking down, seen from the driveway (the library wall at the top, so +x is on
 the right):
@@ -13,17 +13,18 @@ the right):
    e door         [~~~~~~~~~~ rug ~~~~~~~~~~] jersey over [ console ] |  s
    s |                       [bench]           the cup                |  t
      |                                                                |
-     |                     (chair)[chess](chair)   [ case: boxing ]  |
+     |                     [lamp](lounge chair)(table) [ case: boxing ]|
      +-----[==================== glass onto the terrace =============]+
                                                                     (z = -8)
 
 The east wall is the display: two tall glass cases on walnut bases, each lit from
-inside and by a spot from the ceiling track. The boxing case holds the belt, wrapped
-round a dark velvet form, a second belt hung flat on the velvet above it, medals hung
-either side and two more on stands; the
-other holds the coding and esports wins (medals on ribbons, a silver cup, a crystal
-award). Between them, the team jersey in a deep black shadow-box frame (plain black
-with gold trim, no logos) over a walnut console with the cup on it.
+inside and by a spot from the ceiling track. The boxing case (on the left as you come in)
+holds the gold medal as its hero, on a walnut plinth on a glass shelf, the silver beside it,
+a pair of red lace-up fight gloves hung by their laces, and below, the belt wrapped round a
+dark velvet form. The other holds esports and school: the TomorrowLAN lanyard and badge in a
+small shadow-box frame, an IT-fest cup, and a gavel on its block for debate. Between them,
+the team jersey in a deep black shadow-box frame (plain black with gold trim, no logos) over
+a walnut console with the cup on it.
 
 Everything is lit per vertex, the walls and the ceiling lined over the house's own, so
 the room stays clean from a quick draft bake; it has no lightmap.
@@ -36,6 +37,7 @@ from . import config as C
 from .house import P
 from .kit import Frame, Kit, cushion, grid, panel, rot, sweep_geom, wall
 from .materials import srgb_to_linear
+from .textures import picture_path, save_png
 
 ROOM, G = "trophy", "upper"
 F2, RY = C.F2, C.ROOF_Y
@@ -56,15 +58,12 @@ CASE_Z = {"boxing": -6.15, "wins": -1.95}       # the two cases' middles along t
 WALL_Z = -4.05                                  # the jersey, the console and the cup between them
 PHOTO = dict(w=1.40, h=0.98, y=1.95, fr=0.035, d=0.075)      # the jersey's shadow-box frame
 CONSOLE = dict(L=1.80, D=0.42, H=0.74)
-CHESS = dict(x=9.20, z=-6.55, top=0.74, size=0.72)
-SQUARE = 0.058                    # the chess set's own square size (as in the dining room)
+BOX_SHELF = 1.58                  # the glass shelf in the boxing case, over the belt's form
+LOUNGE = dict(x=9.25, z=-6.50, yaw=-42.0)       # the lounge chair by the glass, turned toward the room
 BENCH = dict(x=8.55, z=WALL_Z, L=1.60, D=0.46, H=0.46)
 RUG = dict(x=(6.55, 10.35), z=(-5.55, -2.25), t=0.012)
 FIG = (11.12, -0.68)
 TRACK_X = 10.30                   # the ceiling track of spots, along the display wall
-
-# The chess table's position, in standard notation (FEN): the start, set up and waiting.
-FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 CEILING_LIGHT = 0.30
 CASE_LIGHT = (1.0, 0.88, 0.74)
@@ -74,14 +73,19 @@ LAMPS = []
 # room's door, looking across at the display wall, the terrace through the glass on the left.
 TROPHY_CAM = dict(pos=(4.60, F2 + 1.55, -3.00), target=(11.70, F2 + 1.20, -4.60), fov=55.0)
 CASES_CAM = dict(pos=(9.45, F2 + 1.50, -5.30), target=(11.70, F2 + 1.45, -5.95), fov=50.0)
-BELT_CAM = dict(pos=(XE - LINING - 1.30, F2 + 1.36, CASE_Z["boxing"] - 0.10),
-                target=(XE - LINING - 0.25, F2 + 1.33, CASE_Z["boxing"]), fov=40.0)
-CHESS_CAM = dict(pos=(7.95, F2 + 1.45, -5.15), target=(9.35, F2 + 0.75, -6.65), fov=50.0)
+# the boxing case whole (the gold medal at its middle), and the wins case the same way
+BELT_CAM = dict(pos=(XE - LINING - 1.85, F2 + 1.60, CASE_Z["boxing"] - 0.10),
+                target=(XE - LINING - 0.25, F2 + 1.55, CASE_Z["boxing"]), fov=45.0)
+WINS_CAM = dict(pos=(XE - LINING - 1.85, F2 + 1.60, CASE_Z["wins"] + 0.10),
+                target=(XE - LINING - 0.25, F2 + 1.50, CASE_Z["wins"]), fov=45.0)
+LOUNGE_CAM = dict(pos=(7.15, F2 + 1.50, -4.30), target=(9.45, F2 + 0.70, -6.60), fov=55.0)
 JERSEY_CAM = dict(pos=(XE - LINING - 2.10, F2 + 1.80, WALL_Z), target=(XE - LINING, F2 + 1.80, WALL_Z), fov=45.0)
 
 
 def build_trophy(b):
     LAMPS.clear()
+    paint_lanyard()
+    paint_badge()
     k = Kit(b, G, None)                  # no lightmap: everything here is lit per vertex
     with b.room(ROOM):
         walls(k)
@@ -90,14 +94,13 @@ def build_trophy(b):
         for name, zc in CASE_Z.items():
             vitrine(k, name, zc)
         belt(k, case_frame(CASE_Z["boxing"]))
-        boxing_medals(k, case_frame(CASE_Z["boxing"]))
-        hung_belt(k, case_frame(CASE_Z["boxing"]))
+        boxing(k, case_frame(CASE_Z["boxing"]))
         wins(k, case_frame(CASE_Z["wins"]))
         console(k)
         cup(k)
         jersey_frame(k)
         bench(k)
-        chess_table(k)
+        lounge(k)
         fig(k)
         track(k)
 
@@ -264,7 +267,7 @@ def vitrine(k, name, zc):
                       aim=(0.0, -1.0, 0.0), colour=CASE_LIGHT))
     # and a small spot in the top front corner, aimed back down at what's inside, as museum cases have
     pos = f((0.0, b1 - 0.04, D - 0.06))
-    aim = f((0.0, b0 + 0.50, 0.15))
+    aim = f((0.0, BOX_SHELF + 0.27, 0.27)) if name == "boxing" else f((0.0, b0 + 0.55, 0.20))
     LAMPS.append(dict(name=f"case_{name}_spot", kind="spot", pos=pos, aim=tuple(np.subtract(aim, pos)), watts=10.0,
                       cone=75.0, colour=CASE_LIGHT))
 
@@ -444,64 +447,148 @@ RIBBONS = {
 }
 
 
-def boxing_medals(k, f):
-    """Two medals hung either side of the belt, and one on a stand at each front corner."""
-    deck = CASE["base"] + 0.012
-    for x, y, metal, rib in ((-0.42, 2.03, "trophy_gold", "red"), (-0.42, 1.62, "trophy_silver", "navy"),
-                             (0.42, 2.03, "trophy_gold", "red"), (0.42, 1.62, "trophy_bronze", "red")):
-        medal(k, f, (x, y, 0.040), metal, RIBBONS[rib], hang=0.175)
-    for x, metal, rib in ((-0.40, "trophy_gold", "navy"), (0.40, "trophy_silver", "red")):
-        medal(k, f, (x, deck + 0.046, 0.37), metal, RIBBONS[rib], tilt=14.0)
+def boxing(k, f):
+    """The boxing case above the belt: a glass shelf with the gold medal as the hero on a
+    tall walnut plinth in the middle, the silver on a lower one beside it, and the fight
+    gloves hung by their laces from a brass peg on the velvet."""
+    W, D = CASE["w"], CASE["d"]
+    s = BOX_SHELF
+    k.box("case_glass", f, (-W / 2 + 0.03, s - 0.010, 0.025), (W / 2 - 0.03, s, D - 0.05))
+    for x in (-0.40, 0.40):
+        k.soft("trophy_brass", f, (x, s - 0.02, 0.04), (0.02, 0.02, 0.04), 0.004, n=1)
+    plinth_medal(k, f, 0.0, 0.060, 0.20, "trophy_gold", RIBBONS["red"], 6.0)
+    plinth_medal(k, f, 0.31, 0.046, 0.08, "trophy_silver", RIBBONS["navy"], 10.0)
+    hung_gloves(k, f, -0.27, 2.32)
+
+
+def plinth_medal(k, f, x, r, rise, metal, stripes, tilt, z=0.27):
+    """A medal on its easel on a walnut plinth `rise` tall standing on the boxing case's
+    shelf, its ribbon folded back over the plinth's top, a brass plate on its front."""
+    s = BOX_SHELF
+    top = s + rise
+    k.grain("trophy_walnut", f, (x - 0.075, s, z - 0.22), (x + 0.075, top, z + 0.065), step=0.04, along="x", skip=("-y",))
+    k.soft("trophy_brass", f, (x, s + rise * 0.55, z + 0.067), (0.075, min(0.028, rise * 0.4), 0.003), 0.001, n=1)
+    medal(k, f, (x, top + 0.012 + r, z), metal, stripes, tilt=tilt, r=r)
+
+
+# red lace-up fight gloves, white laces, in the trophy room's own materials
+FIGHT_GLOVE = dict(leather="trophy_glove", rim="trophy_glove", strap=None, laces=True, worn=False,
+                   inside="trophy_glove_inside", lace="trophy_lace", eyelet="trophy_silver")
+
+
+def hung_gloves(k, f, x, y):
+    """The fight gloves, hung from a brass peg by their laces, palms half toward the room."""
+    from .gym import _sphere, glove
+    out = f.R @ np.array((0.0, 0.0, 1.0))
+    k.soft("trophy_brass", f, (x, y, 0.026), (0.03, 0.03, 0.012), 0.004, n=1)
+    k.sweep("trophy_brass", [f((x, y, 0.03)), f((x, y, 0.06)), f((x, y + 0.01, 0.075)), f((x, y + 0.03, 0.078))], 0.004, segments=8)
+    hook = np.array(f((x, y, 0.072)))
+    for dx, yaw, side in ((-0.085, 218.0, 1), (0.085, 142.0, -1)):
+        R = f.R @ rot(y=yaw) @ rot(x=90.0)
+        tops = glove(k, f((x + dx, y - 0.45, 0.115)), R, side, FIGHT_GLOVE)
+        for t in tops:
+            t = np.array(t)
+            mid = (t + hook) / 2 + np.array((0.0, -0.02, 0.0)) + out * 0.012
+            k.sweep("trophy_lace", [tuple(t), tuple(mid), tuple(hook + np.array((0.0, -0.004, 0.0)) + out * 0.004)], 0.0022, segments=6)
+    v, fc = _sphere(tuple(hook + np.array((0.0, -0.006, 0.0)) + out * 0.004), 0.011, 6)
+    k.b.mesh(k.g, "trophy_lace", v, fc)
 
 
 def wins(k, f):
-    """The coding and esports case: three medals on ribbons along the top, a glass shelf
-    with a silver cup, a crystal award and a gold star trophy, and two medals on stands
-    on the floor of the case with a crystal plaque between them."""
-    W, D = CASE["w"], CASE["d"]
+    """The esports and school case: the TomorrowLAN lanyard and badge in a small shadow-box
+    frame hung on the velvet, and on two walnut risers below it, a small silver cup from
+    the IT fest and a gavel on its sound block for debate."""
     deck = CASE["base"] + 0.012
-    shelf = 1.62
-    for x, metal, rib in ((-0.34, "trophy_gold", "teal"), (0.0, "trophy_gold", "blue"), (0.34, "trophy_silver", "black")):
-        medal(k, f, (x, 2.05, 0.040), metal, RIBBONS[rib], hang=0.175)
-    # the glass shelf on two small brass brackets
-    k.box("case_glass", f, (-W / 2 + 0.03, shelf - 0.010, 0.025), (W / 2 - 0.03, shelf, D - 0.05))
-    for x in (-0.40, 0.40):
-        k.soft("trophy_brass", f, (x, shelf - 0.02, 0.04), (0.02, 0.02, 0.04), 0.004, n=1)
-    # a silver cup on a black base
-    g = Frame(f((-0.33, shelf, 0.24)), f.yaw)
-    k.soft("trophy_black", g, (0.0, 0.0225, 0.0), (0.10, 0.045, 0.10), 0.004, n=1)
-    k.lathe("trophy_silver", g, [(0.0, 0.045), (0.045, 0.045), (0.045, 0.052), (0.02, 0.065), (0.011, 0.10), (0.016, 0.11),
-                                 (0.011, 0.12), (0.03, 0.14), (0.06, 0.18), (0.072, 0.23), (0.074, 0.245), (0.068, 0.245),
-                                 (0.062, 0.22), (0.045, 0.17), (0.0, 0.155)], 32)
+    lanyard_frame(k, f, 0.0, 1.90)
+    # the risers, each with a brass plate on its front
+    for x0, x1, h in ((-0.44, -0.08, 0.11), (0.06, 0.46, 0.05)):
+        k.grain("trophy_walnut", f, (x0, deck, 0.09), (x1, deck + h, 0.40), step=0.04, along="x", skip=("-y",))
+        k.soft("trophy_brass", f, ((x0 + x1) / 2, deck + h * 0.5, 0.402), (0.09, min(0.026, h * 0.45), 0.003), 0.001, n=1)
+    small_cup(k, Frame(f((-0.26, deck + 0.11, 0.24)), f.yaw), 0.9)
+    gavel(k, Frame(f((0.26, deck + 0.05, 0.24)), f.yaw))
+
+
+def small_cup(k, g, sc=1.0):
+    """A silver two-handled cup on a black base with a brass plate (built facing +z)."""
+    def S(pts):
+        return [(r * sc, y * sc) for r, y in pts]
+    k.soft("trophy_black", g, (0.0, 0.0225 * sc, 0.0), (0.10 * sc, 0.045 * sc, 0.10 * sc), 0.004, n=1)
+    k.soft("trophy_brass", g, (0.0, 0.022 * sc, 0.0505 * sc), (0.06 * sc, 0.02 * sc, 0.002), 0.0008, n=1)
+    k.lathe("trophy_silver", g, S([(0.0, 0.045), (0.045, 0.045), (0.045, 0.052), (0.02, 0.065), (0.011, 0.10), (0.016, 0.11),
+                                   (0.011, 0.12), (0.03, 0.14), (0.06, 0.18), (0.072, 0.23), (0.074, 0.245), (0.068, 0.245),
+                                   (0.062, 0.22), (0.045, 0.17), (0.0, 0.155)]), 32)
     for sx in (-1, 1):
-        k.sweep("trophy_silver", [g((sx * x, y, 0.0)) for x, y in ((0.066, 0.22), (0.10, 0.225), (0.108, 0.19), (0.09, 0.165), (0.05, 0.16))],
-                0.005, 8)
-    # a crystal award: a slanted glass block on a black base
-    g = Frame(f((0.0, shelf, 0.24)), f.yaw)
-    k.soft("trophy_black", g, (0.0, 0.02, 0.0), (0.15, 0.04, 0.07), 0.004, n=1)
-    verts = [(-0.05, 0.04, -0.022), (0.05, 0.04, -0.022), (0.05, 0.04, 0.022), (-0.05, 0.04, 0.022),
-             (-0.05, 0.25, -0.022), (0.05, 0.30, -0.022), (0.05, 0.30, 0.022), (-0.05, 0.25, 0.022)]
-    faces = [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
-    k.mesh("crystal", g, verts, faces, smooth=False)
-    # a gold star on a fluted column
-    g = Frame(f((0.33, shelf, 0.24)), f.yaw)
-    k.soft("trophy_black", g, (0.0, 0.025, 0.0), (0.09, 0.05, 0.09), 0.004, n=1)
-    k.lathe("trophy_gold", g, [(0.0, 0.05), (0.03, 0.05), (0.03, 0.06), (0.016, 0.07), (0.014, 0.16), (0.022, 0.17), (0.0, 0.175)], 16)
-    pts = [(math.cos(math.pi / 2 + math.pi * i / 5) * (0.06 if i % 2 == 0 else 0.025),
-            math.sin(math.pi / 2 + math.pi * i / 5) * (0.06 if i % 2 == 0 else 0.025)) for i in range(10)]
-    cy = 0.235
-    front = [(0.0, cy, 0.008)] + [(x, cy + y, 0.004) for x, y in pts]
-    back = [(0.0, cy, -0.008)] + [(x, cy + y, -0.004) for x, y in pts]
-    verts = front + back
-    faces = [(0, 1 + i, 1 + (i + 1) % 10) for i in range(10)] + [(11, 12 + (i + 1) % 10, 12 + i) for i in range(10)]
-    faces += [(1 + i, 12 + i, 12 + (i + 1) % 10, 1 + (i + 1) % 10) for i in range(10)]
-    k.mesh("trophy_gold", g, verts, faces, smooth=False)
-    # on the floor of the case
-    for x, metal, rib in ((-0.40, "trophy_gold", "teal"), (0.40, "trophy_bronze", "blue")):
-        medal(k, f, (x, deck + 0.046, 0.37), metal, RIBBONS[rib], tilt=14.0)
-    g = Frame(f((0.0, deck, 0.30)), f.yaw)
-    k.soft("trophy_black", g, (0.0, 0.015, 0.0), (0.22, 0.03, 0.06), 0.004, n=1)
-    k.box("crystal", g, (-0.09, 0.03, -0.012), (0.09, 0.15, 0.012))
+        k.sweep("trophy_silver", [g((sx * x * sc, y * sc, 0.0)) for x, y in ((0.066, 0.22), (0.10, 0.225), (0.108, 0.19),
+                                                                             (0.09, 0.165), (0.05, 0.16))], 0.005 * sc, 8)
+
+
+def gavel(k, g):
+    """A walnut gavel lying beside its round sound block, brass bands round its head."""
+    k.lathe("trophy_walnut_v", Frame(g((0.06, 0.0, -0.02))), [(0.0, 0.0), (0.062, 0.0), (0.064, 0.004), (0.064, 0.024),
+                                                             (0.060, 0.028), (0.0, 0.028)], 40)
+    k.lathe("trophy_brass", Frame(g((0.06, 0.010, -0.02))), [(0.0645, 0.0), (0.0645, 0.008)], 40)
+    # the head, lying on the riser with its axis across the case, and the handle toward the front
+    r = 0.026
+    c = np.array(g((-0.06, r, 0.0)))
+    a = np.subtract(g((1.0, 0.0, 0.0)), g((0.0, 0.0, 0.0)))
+    k.tube("trophy_walnut_v", tuple(c - a * 0.055), tuple(c + a * 0.055), r, segments=24, step=0.01)
+    for s_ in (-0.040, 0.040):
+        k.tube("trophy_brass", tuple(c + a * (s_ - 0.004)), tuple(c + a * (s_ + 0.004)), r + 0.0012, segments=24, step=0.004)
+    end = np.array(g((-0.03, 0.010, 0.20)))
+    k.tube("trophy_walnut_v", tuple(c), tuple(end), 0.0085, segments=12, r1=0.010)
+    sphere(k, "trophy_walnut_v", tuple(end + (end - c) / np.linalg.norm(end - c) * 0.004), 0.012, 12)
+
+
+def lanyard_frame(k, f, cx, cy):
+    """A small black shadow-box frame on the velvet: the TomorrowLAN lanyard laid in a loop
+    on a white board, its clip holding the badge."""
+    w, h, fr, d = 0.46, 0.60, 0.024, 0.036
+    z0 = 0.024                                       # the frame's back, on the velvet
+    x0, x1, y0, y1 = cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2
+    for lo, hi in (((x0, y0, z0), (x0 + fr, y1, z0 + d)), ((x1 - fr, y0, z0), (x1, y1, z0 + d)),
+                   ((x0 + fr, y0, z0), (x1 - fr, y0 + fr, z0 + d)), ((x0 + fr, y1 - fr, z0), (x1 - fr, y1, z0 + d))):
+        k.block("trophy_black", f, lo, hi, step=0.04, skip=("-z",))
+    zb = z0 + 0.006
+    a0, a1, b0, b1 = x0 + fr, x1 - fr, y0 + fr, y1 - fr
+    v, fc, _ = grid((a0, b0, zb), (a1 - a0, 0, 0), (0, b1 - b0, 0), 14, 18)
+    k.mesh("trophy_mat", f, v, fc, smooth=False)
+    # the badge, standing a few millimetres off the board
+    bw, bh = 0.105, 0.146
+    bx, by = cx, cy - 0.11
+    v, fc, uv = grid((bx - bw / 2, by - bh / 2, zb + 0.005), (bw, 0, 0), (0, bh, 0), 6, 8)
+    k.mesh("trophy_badge", f, v, fc, smooth=False, uvs=uv)
+    k.block("trophy_mat", f, (bx - bw / 2, by - bh / 2, zb), (bx + bw / 2, by + bh / 2, zb + 0.0045), step=0.03,
+            skip=("-z", "+z"))
+    # the clip at its top, and the lanyard's loop up from it
+    ctop = by + bh / 2
+    k.soft("trophy_silver", f, (bx, ctop + 0.008, zb + 0.008), (0.018, 0.026, 0.006), 0.002, n=1)
+    ctrl = [(bx - 0.004, ctop + 0.022), (bx - 0.06, ctop + 0.08), (bx - 0.125, ctop + 0.17), (bx - 0.135, b1 - 0.08),
+            (bx - 0.095, b1 - 0.03), (bx, b1 - 0.022), (bx + 0.095, b1 - 0.03), (bx + 0.135, b1 - 0.08),
+            (bx + 0.125, ctop + 0.17), (bx + 0.06, ctop + 0.08), (bx + 0.004, ctop + 0.022)]
+    pts = [np.array(q) for q in ctrl]
+    for _ in range(4):                               # Chaikin's corner cutting: a smooth loop through them
+        out = [pts[0]]
+        for p0, p1 in zip(pts[:-1], pts[1:]):
+            out += [0.75 * p0 + 0.25 * p1, 0.25 * p0 + 0.75 * p1]
+        pts = out + [pts[-1]]
+    seg = [np.linalg.norm(b_ - a_) for a_, b_ in zip(pts[:-1], pts[1:])]
+    length = sum(seg)
+    lw = 0.022
+    verts, faces, uvs = [], [], []
+    run = 0.0
+    for i, q in enumerate(pts):
+        t = pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]
+        t /= np.linalg.norm(t)
+        nrm = np.array((-t[1], t[0]))
+        z = zb + 0.0015 + 0.0012 * run / length          # rising a hair along its length, so the ends can cross
+        verts += [(*(q - nrm * lw / 2), z), (*(q + nrm * lw / 2), z)]
+        if i:
+            run += seg[i - 1]
+        uvs.append(run / length)
+    for i in range(len(pts) - 1):
+        faces.append((2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1))
+    face_uvs = [[(uvs[i], 0.0), (uvs[i + 1], 0.0), (uvs[i + 1], 1.0), (uvs[i], 1.0)] for i in range(len(pts) - 1)]
+    k.mesh("trophy_lanyard", f, verts, faces, smooth=False, uvs=face_uvs)
 
 
 # ---- the console, the cup and the jersey ------------------------------------------------------
@@ -706,7 +793,7 @@ def jersey_frame(k):
         band(side, 0.036)
 
 
-# ---- the bench, the chess table, the fig ------------------------------------------------------
+# ---- the bench, the lounge corner, the fig ---------------------------------------------------
 def bench(k):
     """A long gallery bench in cognac leather on two black steel frames, facing the display."""
     x, z, L, D, Hb = BENCH["x"], BENCH["z"], BENCH["L"], BENCH["D"], BENCH["H"]
@@ -723,85 +810,50 @@ def bench(k):
     k.rod("trophy_black", f((-(L / 2 - 0.12), Hb - t - 0.02, 0.0)), f((L / 2 - 0.12, Hb - t - 0.02, 0.0)), 0.02)
 
 
-def parse_fen(fen):
-    out = {}
-    for row, text in enumerate(fen.split()[0].split("/")):
-        rank, file = 7 - row, 0
-        for ch in text:
-            if ch.isdigit():
-                file += int(ch)
-            else:
-                out[(file, rank)] = ch
-                file += 1
-    return out
-
-
-def chess_table(k):
-    """A walnut chess table by the glass, its board inlaid in maple and walnut, a set
-    standing ready (FEN), and a leather chair at each side: White on the east."""
-    from .dining import PIECE_OBJECTS
-    from .library import desk_chair
-    from .props import load, place
-    cx, cz, top, S = CHESS["x"], CHESS["z"], CHESS["top"], CHESS["size"]
-    y = F2 + top
-    half = S / 2
-    world = Frame((0.0, 0.0, 0.0))
-    border = 0.022
-    bh = 4 * SQUARE + border                        # the board's half-width
-    # the top: four walnut strips round the board (nothing lies over a face lit per vertex, gotcha 26)
-    t = 0.035
-    for lo, hi in (((cx - half, y - t, cz - half), (cx + half, y, cz - bh)), ((cx - half, y - t, cz + bh), (cx + half, y, cz + half)),
-                   ((cx - half, y - t, cz - bh), (cx - bh, y, cz + bh)), ((cx + bh, y - t, cz - bh), (cx + half, y, cz + bh))):
-        k.grain("trophy_walnut", world, lo, hi, step=0.06, along="x")
-    # the board: squares painted per vertex, each its own points so the edges stay crisp
-    k.block("trophy_walnut_v", world, (cx - bh, y - t, cz - bh), (cx + bh, y - 0.004, cz + bh), step=0.2, skip=("+y",))
-    light, dark, edge = (srgb_to_linear(c) for c in ((0.80, 0.68, 0.50), (0.27, 0.16, 0.10), (0.18, 0.11, 0.07)))
-    verts, faces, colors = [], [], []
-
-    def square(xa, xb, za, zb, colour, n=2):
-        base = len(verts)
-        for i in range(n + 1):
-            for j in range(n + 1):
-                verts.append((xa + (xb - xa) * i / n, y + 0.0015, za + (zb - za) * j / n))
-                colors.append(colour)
-        for i in range(n):
-            for j in range(n):
-                a, c = base + i * (n + 1) + j, base + (i + 1) * (n + 1) + j
-                faces.append((a, a + 1, c + 1, c))
-    for xa, xb, za, zb in ((cx - bh, cx + bh, cz - bh, cz - bh + border), (cx - bh, cx + bh, cz + bh - border, cz + bh),
-                           (cx - bh, cx - bh + border, cz - bh + border, cz + bh - border),
-                           (cx + bh - border, cx + bh, cz - bh + border, cz + bh - border)):
-        square(xa, xb, za, zb, edge, 3)
-    # White sits on the east (+x): rank 1 at +x, the a-file on White's left (+z)
-    for file in range(8):
-        for rank in range(8):
-            xc, zc = cx + (3.5 - rank) * SQUARE, cz + (3.5 - file) * SQUARE
-            colour = dark if (file + rank) % 2 == 0 else light
-            square(xc - SQUARE / 2, xc + SQUARE / 2, zc - SQUARE / 2, zc + SQUARE / 2, colour)
-    k.b.mesh(G, "trophy_albedo", verts, faces, smooth=False, colors=colors)
-    # the pedestal: a turned column on a crossed foot, an apron under the top
-    k.block("trophy_walnut_v", world, (cx - 0.17, y - t - 0.05, cz - 0.17), (cx + 0.17, y - t, cz + 0.17), step=0.1, skip=("+y",))
-    k.lathe("trophy_walnut_v", Frame((cx, F2, cz)), [(0.0, 0.05), (0.07, 0.05), (0.05, 0.10), (0.042, 0.20), (0.05, 0.45),
-                                                    (0.042, 0.60), (0.06, 0.64), (0.06, top - t - 0.05), (0.0, top - t - 0.05)], 32)
-    for yaw in (45.0, -45.0):
-        k.soft("trophy_walnut_v", Frame((cx, F2, cz), yaw), (0.0, 0.03, 0.0), (0.62, 0.06, 0.07), 0.015, n=2)
-    # the pieces (Poly Haven's chess set, in plain ivory and ebony)
-    wanted = {name.format(colour) for name in PIECE_OBJECTS.values() for colour in ("white", "black")}
-    pieces = load("chess_set", only=wanted, thin={n: (0.45 if "pawn" in n else 0.35) for n in wanted})
-    rng = np.random.default_rng(6)
-    for (file, rank), letter in parse_fen(FEN).items():
-        colour = "white" if letter.isupper() else "black"
-        piece = pieces[PIECE_OBJECTS[letter.lower()].format(colour)]
-        x = cx + (3.5 - rank) * SQUARE + rng.uniform(-0.002, 0.002)
-        z = cz + (3.5 - file) * SQUARE + rng.uniform(-0.002, 0.002)
-        twist = rng.uniform(-0.15, 0.15) if letter.lower() == "n" else rng.uniform(-0.6, 0.6)
-        # the set is modelled with White at -z; here White is at +x, so a quarter turn
-        place(k.b, G, f"trophy_chess_{colour}", piece, (x, y + 0.0015, z), yaw=-math.pi / 2 + twist)
-    for side in (-1, 1):
-        f = Frame((cx + side * 0.66, F2, cz), 90.0 if side < 0 else -90.0)
-        desk_chair(k, f, leather="trophy_leather", wood="trophy_walnut_v", brass="trophy_brass")
-    spot = (cx, RY - 0.06, cz + 0.2)
-    LAMPS.append(dict(name="chess_spot", kind="spot", pos=spot, aim=(0.0, -1.0, -0.08), watts=30.0, cone=50.0))
+def lounge(k):
+    """By the glass onto the terrace: a low lounge chair in cognac leather on a walnut
+    shell and black legs, turned toward the room, a round walnut side table beside it with a
+    book and a brass dish, and a slim floor lamp with a linen shade behind its shoulder."""
+    from .study import book_flat
+    f = Frame((LOUNGE["x"], F2, LOUNGE["z"]), LOUNGE["yaw"])        # facing +z
+    W, D = 0.84, 0.86
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            p = f((sx * (W / 2 - 0.09), 0.0, sz * (D / 2 - 0.10)))
+            k.tube("trophy_black", p, (p[0], p[1] + 0.16, p[2]), 0.011, segments=8, r1=0.017)
+    soft_fine(k, "trophy_walnut_v", f, (0.0, 0.195, 0.0), (W - 0.04, 0.05, D - 0.06), 0.02, div=6)          # the seat's shell
+    for sx in (-1, 1):                                                                                       # walnut sides
+        soft_fine(k, "trophy_walnut_v", f, (sx * (W / 2 - 0.022), 0.375, -0.01), (0.044, 0.36, D - 0.06), 0.018, div=6)
+        soft_fine(k, "trophy_leather", f, (sx * (W / 2 - 0.035), 0.575, 0.0), (0.10, 0.05, D - 0.12), 0.022, div=6)
+    soft_fine(k, "trophy_leather", f, (0.0, 0.30, 0.04), (W - 0.12, 0.15, D - 0.16), 0.05, div=8,
+              shape=lambda vx, vy, vz: (vx, vy - (0.014 * (1 - (2 * vx / W) ** 2) * (1 - (2 * vz / D) ** 2) if vy > 0 else 0.0), vz))
+    soft_fine(k, "trophy_walnut_v", f, (0.0, 0.62, -D / 2 + 0.035), (W - 0.06, 0.78, 0.045), 0.02, div=6, tilt=-14,
+              pivot=(0.0, 0.22, -D / 2 + 0.035))
+    soft_fine(k, "trophy_leather", f, (0.0, 0.63, -D / 2 + 0.125), (W - 0.15, 0.64, 0.14), 0.06, div=8, tilt=-14,
+              pivot=(0.0, 0.22, -D / 2 + 0.125))
+    # the side table, on the sitter's left, with a book and a small brass dish
+    st = Frame(f((W / 2 + 0.33, 0.0, 0.06)))
+    k.lathe("trophy_black", st, [(0.0, 0.0), (0.17, 0.0), (0.17, 0.012), (0.02, 0.02), (0.016, 0.52), (0.0, 0.52)], 32)
+    k.lathe("trophy_walnut_v", st, [(0.0, 0.52), (0.25, 0.52), (0.25, 0.552), (0.0, 0.552)], 48)
+    book_flat(k, Frame(st((0.03, 0.552, -0.02)), LOUNGE["yaw"] + 25), (0.0, 0.0), (0.24, 0.03, 0.17), "book_navy")
+    k.lathe("trophy_brass", Frame(st((-0.13, 0.552, 0.09))),
+            [(0.0, 0.0), (0.035, 0.0), (0.055, 0.012), (0.062, 0.022), (0.058, 0.023), (0.05, 0.014), (0.0, 0.008)], 32)
+    # the floor lamp, behind the chair's right shoulder
+    lx, ly, lz = f((-W / 2 - 0.14, 0.0, -D / 2 - 0.02))
+    lf = Frame((lx, ly, lz))
+    k.lathe("trophy_black", lf, [(0.0, 0.0), (0.15, 0.0), (0.15, 0.012), (0.13, 0.024), (0.02, 0.03), (0.0, 0.03)], 40)
+    k.tube("trophy_brass", (lx, ly + 0.025, lz), (lx, ly + 1.45, lz), 0.0095, segments=10)
+    y0, y1, r = 1.28, 1.58, 0.20
+    k.lathe("trophy_shade", lf, [(r, y0), (r, y1)], 48)
+    k.lathe("trophy_shade", lf, [(r - 0.004, y1), (r - 0.004, y0)], 48)
+    k.disc("light_warm", lf, (0.0, y0 + 0.06, 0.0), r - 0.03, 32, down=True)
+    for a in range(3):
+        ang = 2 * math.pi * a / 3
+        k.tube("trophy_brass", (lx, ly + 1.45, lz), (lx + (r - 0.005) * math.cos(ang), ly + y1 - 0.01, lz + (r - 0.005) * math.sin(ang)),
+               0.003, segments=6)
+    LAMPS.append(dict(name="lounge_lamp_down", pos=(lx, ly + y0 + 0.04, lz), size=(0.28, 0.28), watts=30.0, aim=(0.0, -1.0, 0.0)))
+    LAMPS.append(dict(name="lounge_lamp_up", pos=(lx, ly + y1 - 0.04, lz), size=(0.28, 0.28), watts=14.0, aim=(0.0, 1.0, 0.0)))
+    LAMPS.append(dict(name="lounge_lamp_glow", kind="point", pos=(lx, ly + (y0 + y1) / 2, lz), watts=6.0, radius=0.12))
 
 
 def fig(k):
@@ -823,7 +875,7 @@ def fig(k):
 # ---- the lights ----------------------------------------------------------------------------------
 def track(k):
     """A slim black track along the ceiling in front of the display wall, with a spot for
-    each case, the photo and the chess table (the cup has its own, in `cup`)."""
+    each case and the photo (the cup has its own, in `cup`)."""
     y = RY - 0.03
     k.rod("trophy_black", (TRACK_X, y, -7.05), (TRACK_X, y, -0.85), 0.034)
     cf = {name: case_frame(z) for name, z in CASE_Z.items()}
@@ -846,7 +898,7 @@ def track(k):
             LAMPS.append(dict(name=f"track_{name}", kind="spot", pos=tuple(pos), aim=tuple(d), watts=watts, cone=cone))
 
 
-# ---- medals' discs and the second belt -----------------------------------------------------------
+# ---- medals' discs ----------------------------------------------------------------------------
 def coin(k, mat, F, r, t, n=44, star=0.50):
     """A medal's disc, its face looking along local +z (F maps its own points to the world):
     flat back and face, a raised rim round the edge, a thin raised ring and an embossed star
@@ -891,44 +943,41 @@ def coin(k, mat, F, r, t, n=44, star=0.50):
     k.b.mesh(G, mat, side, facing(side, sf, radial), smooth=False)
 
 
-def hung_belt(k, f):
-    """A second belt hung flat on the velvet above the first, from a brass pin at each end,
-    sagging a little in the middle: a black strap edged in gold, a round gold centre plate
-    and a smaller plate each side."""
-    xe, ytop, sag, w, z = 0.33, 2.17, 0.09, 0.13, 0.034
-    xs = np.linspace(-xe, xe, 41)
-    ys = ytop - sag * (1 - (xs / xe) ** 2)
-    path = [f((float(x), float(y), z)) for x, y in zip(xs, ys)]
-    along = np.subtract(path[-1], path[0])
-    out = np.subtract(f((0, 0, 1)), f((0, 0, 0)))
-    side = np.cross(along, out)
-    # the strap, painted per vertex, edges kept square to its curve
-    verts, faces, colors = [], [], []
-    black = srgb_to_linear((0.07, 0.065, 0.065))
-    for i, (x, y) in enumerate(zip(xs, ys)):
-        slope = -sag * (-2 * x / xe ** 2)
-        nx, ny = -slope, 1.0
-        m = math.hypot(nx, ny)
-        nx, ny = nx / m, ny / m
-        for s in (-w / 2, w / 2):
-            verts.append(f((float(x + nx * s), float(y + ny * s), z)))
-            colors.append(black)
-    for i in range(len(xs) - 1):
-        faces.append((2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1))
-    k.b.mesh(G, "trophy_albedo", verts, facing(verts, faces, lambda c: out), smooth=False, colors=colors)
-    for s in (-1, 1):
-        edge = []
-        for x, y in zip(xs, ys):
-            slope = -sag * (-2 * x / xe ** 2)
-            m = math.hypot(slope, 1.0)
-            edge.append(f((float(x - slope / m * s * (w / 2 - 0.003)), float(y + 1 / m * s * (w / 2 - 0.003)), z + 0.002)))
-        k.sweep("trophy_gold", edge, 0.0035, 8)
-    for x in (-xe + 0.015, xe - 0.015):
-        sphere(k, "trophy_brass", f((x, ytop + 0.005, z + 0.006)), 0.006, 10)
-    # the plates
-    for x, r in ((0.0, 0.088), (-0.19, 0.040), (0.19, 0.040)):
-        y = ytop - sag * (1 - (x / xe) ** 2)
+# ---- the lanyard's and the badge's pictures -------------------------------------------------------
+LANYARD_INK = (0.07, 0.11, 0.30)                 # TomorrowLAN's lanyard: navy, the name in white
 
-        def F(q, x=x, y=y):
-            return f((x + q[0], y + q[1], z + 0.006 + q[2]))
-        coin(k, "trophy_gold", F, r, 0.008, star=0.62)
+
+def paint_lanyard(w=1536, h=48):
+    """The lanyard's woven strap: navy, "TomorrowLAN" repeated along it in white, with a fine
+    pale line along each edge. Laid once along the lanyard's whole length."""
+    from .labels import text_mask
+    img = np.ones((h, w, 3)) * np.array(LANYARD_INK)
+    n = 7
+    mask = text_mask((w, h), [("TomorrowLAN", (i + 0.5) / n, 0.28, 0.58, "CENTER", 1.06) for i in range(n)], bold=0.8)
+    img = img * (1 - mask[..., None]) + np.array((0.96, 0.96, 0.96)) * mask[..., None]
+    img[1:3] = img[h - 3:h - 1] = np.array((0.55, 0.62, 0.80))
+    rng = np.random.default_rng(9)
+    img *= (1 + 0.04 * rng.standard_normal((h, w)) * ((np.arange(w) % 2) == 0)[None, :])[..., None]   # the weave
+    save_png(picture_path("trophy_lanyard"), np.clip(img, 0, 1).astype(np.float32))
+
+
+def paint_badge(w=256, h=356):
+    """The TomorrowLAN badge: a white card, a navy band across the top with the event's name in
+    plain type (no logo), the name below it, and a barcode."""
+    from .labels import text_mask
+    img = np.ones((h, w, 3)) * np.array((0.96, 0.96, 0.95))
+    band = int(h * 0.30)
+    img[h - band:] = np.array(LANYARD_INK)
+    words = text_mask((w, h), [("TomorrowLAN", 0.5, 0.80, 0.105, "CENTER", 1.0)], bold=1.0)
+    img = img * (1 - words[..., None]) + np.array((0.97, 0.97, 0.97)) * words[..., None]
+    name = text_mask((w, h), [("Aditya", 0.5, 0.52, 0.095, "CENTER", 1.0), ("Singh", 0.5, 0.42, 0.095, "CENTER", 1.0)],
+                     bold=0.8)
+    img = img * (1 - name[..., None]) + np.array((0.06, 0.06, 0.07)) * name[..., None]
+    rng = np.random.default_rng(4)
+    x = 52
+    while x < w - 52:                                # a plain barcode near the bottom
+        bw = int(rng.integers(1, 4))
+        if rng.random() < 0.55:
+            img[int(h * 0.08):int(h * 0.18), x:x + bw] = np.array((0.08, 0.08, 0.09))
+        x += bw + int(rng.integers(1, 3))
+    save_png(picture_path("trophy_badge"), np.clip(img, 0, 1).astype(np.float32))

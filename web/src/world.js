@@ -322,8 +322,10 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const visibleNow = {};                       // filled in by the page, so late arrivals match the current view
   const carried = [];                          // things that travel with the camera (the visitor's hand at the pool)
   const byMaterial = new Map();                // material name -> meshes, for things you can click (the contact card)
+  const hotspots = new Map();                  // anchor name -> its empty (blender/villa/geo.py, Builder.anchor), once its room is in
   function addModel(root) {
     root.traverse(o => {
+      if (o.userData && o.userData.hotspot) hotspots.set(o.userData.hotspot, o);
       if (!o.isMesh) return;
       const {group, lightmap, attach} = info(o);
       o.material = materialFor(o.material.name, lightmap);
@@ -537,6 +539,13 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
     setVisible(group, on) { visibleNow[group] = on; groups[group].forEach(o => { o.visible = on; }); },
     carry,
     hasCarried: () => carried.length > 0,
+    // A hotspot anchor's world position (manifest.hotspots lists them all, loaded or not).
+    hotspot(name) {
+      const o = hotspots.get(name);
+      if (o) return o.getWorldPosition(new THREE.Vector3());
+      const h = manifest.hotspots && manifest.hotspots[name];
+      return h ? new THREE.Vector3(...h.pos) : null;
+    },
     // The visitor opened this room: load its furniture next, and pick its moodboard's pictures.
     openRoom(name) {
       if (roomReady[name]) { wanted = name; poke(); }

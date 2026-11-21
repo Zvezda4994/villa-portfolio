@@ -288,8 +288,9 @@ def glove(k, base, R, side, kind="brown"):
     kind has eyelets and crossed laces down the palm side of the cuff; the others a strap.
     Returns the two top eyelets (world points), where hanging laces start."""
     from .kit import sweep_geom
-    st = GLOVES[kind]
+    st = GLOVES[kind] if isinstance(kind, str) else kind       # a name here, or another room's own style
     leather = st["leather"]
+    inside, lace, eyelet = st.get("inside", "glove_inside"), st.get("lace", "lace_tan"), st.get("eyelet", "steel_brushed")
 
     def put(mat, verts, faces, smooth=True):
         colors = [_wear(v) for v in verts] if (st["worn"] and mat == leather) else None
@@ -330,9 +331,9 @@ def glove(k, base, R, side, kind="brown"):
     v, fc = sweep_geom(rim, 0.0065, 10, caps=False)
     put(st["rim"], v, fc)
     v, fc = _loft([_ellipse(z_end - 0.002, -0.011), _ellipse(z_end + 0.07, -0.011)], flip=True)    # the dark inside
-    put("glove_inside", v, fc, smooth=False)
+    put(inside, v, fc, smooth=False)
     v, fc = _loft([_ellipse(z_end - 0.001, -0.011), _ellipse(z_end - 0.001, -0.001)], flip=True)
-    put("glove_inside", v, fc, smooth=False)
+    put(inside, v, fc, smooth=False)
     tops = []
     if st["strap"]:
         z0, z1 = -0.035, -0.105
@@ -351,13 +352,13 @@ def glove(k, base, R, side, kind="brown"):
                 cx = sx * 0.0135
                 y = CUFF["cy"] - b * math.sqrt(max(0.0, 1 - (cx / a) ** 2)) - 0.0015
                 holes[(i, sx)] = (cx, y, z)
-                ring(k, "steel_brushed", _place(base, R, [(cx, y, z)])[0], R @ np.array((0.0, -1.0, 0.0)), 0.0016, 0.0034, 10)
+                ring(k, eyelet, _place(base, R, [(cx, y, z)])[0], R @ np.array((0.0, -1.0, 0.0)), 0.0016, 0.0034, 10)
         for i in range(len(rows) - 1):
             for sx in (-1, 1):
                 p0, p1 = np.array(holes[(i, sx)]), np.array(holes[(i + 1, -sx)])
                 mid = (p0 + p1) / 2 + (0.0, -0.0025, 0.0)
                 v, fc = sweep_geom([tuple(p0), tuple(mid), tuple(p1)], 0.0021, 6, caps=False)
-                put("lace_tan", v, fc)
+                put(lace, v, fc)
         tops = _place(base, R, [holes[(len(rows) - 1, -1)], holes[(len(rows) - 1, 1)]])
     return tops
 

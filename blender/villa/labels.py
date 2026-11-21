@@ -36,11 +36,14 @@ def _font(name=None):
     return bpy.data.fonts.load("<builtin>")
 
 
-def text_mask(size, lines, font=None):
+def text_mask(size, lines, font=None, bold=0.0):
     """White-on-black mask of some lines of text. `size` is (width, height) in
     pixels; each line is (text, x, y, height, align, spacing), with x a fraction
     of the picture's width and y and height fractions of its height, measured
-    from the bottom left. `font` is a file name from config.FONTS (default Inter)."""
+    from the bottom left. `font` is a file name from config.FONTS (default Inter).
+    `bold` thickens every stroke by that many pixels on each side (`embolden`), for a
+    heavier face than the font has. (Blender's own text offset does this badly: it drops
+    the tail of a Q and the bar of an A, and leaves stray lines through words.)"""
     import bpy
     w, h = size
     scene = bpy.data.scenes.new("label_mask")
@@ -94,7 +97,25 @@ def text_mask(size, lines, font=None):
     bpy.data.cameras.remove(cam)
     bpy.data.worlds.remove(scene.world)
     bpy.data.scenes.remove(scene)
-    return mask                                 # bottom row first, like load_pixels
+    return embolden(mask, bold) if bold else mask      # bottom row first, like load_pixels
+
+
+def embolden(mask, r):
+    """Grow a text mask's strokes by r pixels all round (a round, anti-aliased dilation)."""
+    out = mask.copy()
+    n = int(r + 1)
+    h, w = mask.shape
+    for dy in range(-n, n + 1):
+        for dx in range(-n, n + 1):
+            d = (dx * dx + dy * dy) ** 0.5
+            k = min(1.0, max(0.0, r + 0.5 - d))
+            if k <= 0 or (dx == 0 and dy == 0):
+                continue
+            shifted = np.zeros_like(mask)
+            shifted[max(0, dy):h + min(0, dy), max(0, dx):w + min(0, dx)] = \
+                mask[max(0, -dy):h + min(0, -dy), max(0, -dx):w + min(0, -dx)]
+            out = np.maximum(out, shifted * k)
+    return out
 
 
 def _paper(shape, base, rng, fibres=0.0):

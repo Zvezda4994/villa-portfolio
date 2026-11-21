@@ -14,7 +14,7 @@ on the right):
    g |                                                                     [ library
    e door                                                                     door
      |                                                                      |
-     +-----[ glass to the front, sheers ]-----------------------------------+  (z = 8)
+     +-----[ glass to the front ]-------------------------------------------+  (z = 8)
 
 The painting hangs on the wall to the lounge between the top of the stairs and the
 lounge's door, so the way up from the stairs stays clear, under its own spot. Nothing

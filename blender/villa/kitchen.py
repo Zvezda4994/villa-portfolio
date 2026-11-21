@@ -75,6 +75,7 @@ LAMPS = []
 KITCHEN_CAM = dict(pos=(-6.45, 1.36, -3.02), target=(-6.62, 1.47, -0.075), fov=52.0)
 SHELF_CAM = dict(pos=(-6.40, 1.66, -1.30), target=(-6.55, 1.78, -0.10), fov=50.0)
 WIDE_CAM = dict(pos=(-5.55, 1.70, -7.05), target=(-9.40, 1.00, -2.10), fov=58.0)
+DISH_CAM = dict(pos=(-6.02, 1.32, -1.20), target=(-6.20, 0.93, -0.42), fov=45.0)      # the plated eel
 
 
 def read_labels():
@@ -189,7 +190,12 @@ def shelves(k, f, labels, cells):
             if idx is None:
                 extra_piece(k, f, spec, cx, y)
             else:
-                at = Frame(f((cx, y, SHELF_D / 2 + 0.01)), f.yaw + rng.uniform(-7, 7))
+                # each one turned so its label faces the visitor on the stool (the site's view),
+                # give or take a couple of degrees, so they read from the room
+                p = f((cx, y, SHELF_D / 2 + 0.01))
+                eye = KITCHEN_CAM["pos"]
+                yaw = math.degrees(math.atan2(eye[0] - p[0], eye[2] - p[2]))
+                at = Frame(p, yaw + rng.uniform(-2.5, 2.5))
                 container(k, at, spec, labels[idx], cells[idx])
             x += w + gap
         start += count
@@ -215,19 +221,20 @@ def container_spec(i):
 
 
 LABEL_STYLE = {
-    # ground colour, ink, paper grain and a fine border (sRGB)
-    "jar":       ((0.95, 0.94, 0.90), (0.10, 0.10, 0.10), True),
-    "canister":  ((0.93, 0.92, 0.89), (0.12, 0.12, 0.12), False),     # printed straight onto the glaze
-    "tin_black": ((0.93, 0.90, 0.83), (0.08, 0.08, 0.08), True),
-    "tin_steel": ((0.72, 0.58, 0.42), (0.11, 0.08, 0.06), True),       # kraft paper
-    "tin_sage":  ((0.95, 0.94, 0.90), (0.12, 0.13, 0.11), True),
+    # ground colour, ink, paper grain and a fine border (sRGB). Near-black ink on pale grounds,
+    # so the names read from the stool across the island.
+    "jar":       ((0.96, 0.95, 0.92), (0.025, 0.025, 0.025), True),
+    "canister":  ((0.94, 0.93, 0.90), (0.03, 0.03, 0.03), False),     # printed straight onto the glaze
+    "tin_black": ((0.95, 0.93, 0.87), (0.02, 0.02, 0.02), True),
+    "tin_steel": ((0.84, 0.73, 0.57), (0.03, 0.02, 0.015), True),     # kraft paper, a pale one
+    "tin_sage":  ((0.96, 0.95, 0.92), (0.03, 0.035, 0.03), True),
 }
 BODY = {"canister": "canister_white", "tin_black": "tin_black", "tin_steel": "steel_brushed", "tin_sage": "tin_sage"}
 
 
 def container(k, f, spec, text, cell):
     kind, r, h = spec["kind"], spec["r"], spec["h"]
-    lw = {"jar": 0.112, "canister": 0.128, "tin_black": 0.100, "tin_steel": 0.100, "tin_sage": 0.100}[kind]
+    lw = {"jar": 0.130, "canister": 0.146, "tin_black": 0.114, "tin_steel": 0.114, "tin_sage": 0.114}[kind]
     lh = lw / LABEL_ASPECT
     middle = {"jar": 0.45 * h, "canister": 0.52 * h}.get(kind, (h - 0.03) / 2)
     ly0 = middle - lh / 2
@@ -337,6 +344,63 @@ def counter_things(k, f):
         k.tube("oak_light", tuple(p1 - d * 0.005), tuple(p1 + d * 0.065), 0.022, segments=12, r1=0.016)
     # an oak chopping board leaning against the tiles
     k.box("oak_light", f, (0.55, top, 0.015), (0.95, top + 0.30, 0.035), tilt=-12.0, pivot=(0, top, 0.035))
+    eel_plate(k, Frame(f((-0.42, top, 0.34)), f.yaw - 8.0))      # facing the room
+
+
+def eel_plate(k, f):
+    """A plated dish: grilled eel (unagi) in three glazed pieces on a long dark ceramic plate,
+    a streak of the sauce, scallion and a little pickled ginger, and black lacquered
+    chopsticks laid on a ceramic rest beside it. Built facing +z (toward the stool)."""
+    from .kit import cushion
+    # the plate: a long rectangle with a low raised rim, matte charcoal glaze
+    L, W, t = 0.36, 0.16, 0.012
+    k.soft("plate_dark", f, (0.0, t / 2, 0.0), (L, t, W), 0.005, n=2)
+    for sz in (-1, 1):
+        k.soft("plate_dark", f, (0.0, t + 0.004, sz * (W / 2 - 0.008)), (L - 0.02, 0.008, 0.012), 0.004, n=1)
+    for sx in (-1, 1):
+        k.soft("plate_dark", f, (sx * (L / 2 - 0.008), t + 0.004, 0.0), (0.012, 0.008, W - 0.02), 0.004, n=1)
+    k.quad("eel_sauce", f, [(-0.12, t + 0.0006, -0.045), (0.13, t + 0.0006, -0.052),
+                            (0.13, t + 0.0006, -0.040), (-0.12, t + 0.0006, -0.037)])
+    # the eel: three pieces in a row, glazed lacquer-brown, charred in stripes from the grill
+    brown, glaze, char, skin = (np.array(c) for c in ((0.42, 0.20, 0.07), (0.56, 0.30, 0.10), (0.10, 0.05, 0.02),
+                                                      (0.16, 0.13, 0.10)))
+
+    def eel_colour(v, w_, d_):
+        x, y, z = v
+        if y < 0.002:
+            c = skin
+        else:
+            c = brown + (glaze - brown) * (0.5 + 0.5 * math.sin(x * 90 + z * 40))
+            stripe = abs(math.sin((x + 0.6 * z) * 2 * math.pi / 0.018))
+            if stripe > 0.86:
+                c = char + (c - char) * 0.35
+            edge = max(abs(x) / (w_ / 2), abs(z) / (d_ / 2))
+            if edge > 0.86:
+                c = c * 0.7 + char * 0.3
+        return tuple(float(u) for u in np.clip(c, 0, 1) ** 2.2)
+    for dx, dz, turn in ((-0.093, 0.010, -5.0), (0.0, 0.002, 4.0), (0.093, -0.006, -2.0)):
+        w_, h_, d_ = 0.084, 0.014, 0.072
+        verts, faces = cushion((w_, h_, d_), 0.0035, n=2, div=8)
+        bend = [(x, y + h_ / 2 + (0.004 * (1 - (2 * z / d_) ** 2) if y > 0 else 0.0), z) for x, y, z in verts]
+        g = Frame(f((dx, t, dz)), f.yaw + turn)
+        k.b.mesh(k.g, "kitchen_albedo", [g(v) for v in bend], faces, colors=[eel_colour(v, w_, d_) for v in bend])
+    # scallion slivers on top, and a little fan of pickled ginger at one end
+    rng = random.Random(17)
+    for i in range(9):
+        x, z = rng.uniform(-0.12, 0.12), rng.uniform(-0.02, 0.024)
+        a = math.radians(rng.uniform(0, 180))
+        p0 = f((x - 0.008 * math.cos(a), t + 0.021, z - 0.008 * math.sin(a)))
+        p1 = f((x + 0.008 * math.cos(a), t + 0.021, z + 0.008 * math.sin(a)))
+        k.tube("scallion", p0, p1, 0.0016, segments=6)
+    for i in range(4):
+        k.soft("ginger", f, (0.152, t + 0.003 + 0.0016 * i, 0.034 - 0.008 * i), (0.030, 0.0025, 0.022), 0.001, n=1,
+               turn=20 + 14 * i)
+    # the chopsticks on their rest, in front of the plate
+    r = Frame(f((0.12, 0.0, W / 2 + 0.05)), f.yaw)
+    k.soft("plate_dark", r, (0.0, 0.006, 0.0), (0.045, 0.012, 0.014), 0.005, n=2)
+    for dz in (-0.004, 0.004):
+        tip, head = r((0.03, 0.012 + 0.004, dz)), r((-0.21, 0.005, dz * 1.6))
+        k.tube("chopstick", head, tip, 0.0035, segments=8, r1=0.0016)
 
 
 # ---- the island and stools ---------------------------------------------------------------------
@@ -541,7 +605,7 @@ def walls(k):
 
 # ---- pictures ----------------------------------------------------------------------------------
 LABEL_COLS = 4
-LABEL_CELL = (256, 144)
+LABEL_CELL = (256, 160)            # taller than before: bigger type
 LABEL_ASPECT = LABEL_CELL[0] / LABEL_CELL[1]
 LABEL_PAD = 6                      # pixels of the cell's ground colour round each label, against mipmap bleeding
 
@@ -580,12 +644,12 @@ def paint_labels(labels):
     def layout(scale):
         out = []
         for (x0, y0, lines, _), s in zip(places, scale):
-            cap = (0.36 if len(lines) == 1 else 0.24) * ch * s            # cap height in pixels
+            cap = (0.44 if len(lines) == 1 else 0.29) * ch * s            # cap height in pixels
             em = cap / 0.727
             if len(lines) == 1:
                 base = [y0 + (ch - cap) / 2]
             else:
-                gap = 0.62 * cap
+                gap = 0.50 * cap
                 b0 = y0 + (ch - (2 * cap + gap)) / 2
                 base = [b0 + cap + gap, b0]
             for text, by in zip(lines, base):
@@ -595,14 +659,15 @@ def paint_labels(labels):
     # set them small once (so none spills into its neighbour), measure how wide each
     # came out, and set them again at the size that fits
     trial = 0.4
-    mask = text_mask((W, H), layout([trial] * n))
-    limit = cw - 2 * (LABEL_PAD + 22)
+    bold = 2.0                                                          # pixels: a heavier stroke than Inter's regular
+    mask = text_mask((W, H), layout([trial] * n), bold=bold)
+    limit = cw - 2 * (LABEL_PAD + 14)
     scale = []
     for x0, y0, _, _ in places:
         cols = np.nonzero(mask[y0:y0 + ch, x0:x0 + cw].max(axis=0) > 0.3)[0]
         width = (cols[-1] - cols[0] + 1) / trial if len(cols) else 0
         scale.append(min(1.0, limit / width) if width else 1.0)
-    mask = text_mask((W, H), layout(scale))
+    mask = text_mask((W, H), layout(scale), bold=bold)
     for x0, y0, _, ink in places:
         m = mask[y0:y0 + ch, x0:x0 + cw, None]
         img[y0:y0 + ch, x0:x0 + cw] = img[y0:y0 + ch, x0:x0 + cw] * (1 - m) + np.array(ink) * m

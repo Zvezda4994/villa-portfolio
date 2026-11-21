@@ -404,6 +404,43 @@ with its fittings, and one large original painting on the lounge wall (`paint_pa
 colour field: dusk blue over terracotta over sand) under its own spot, between the stairs'
 arrival and the lounge door. The work-in-progress banner is gone.
 
+**Pre-bake changes** (approved 21 Nov 2026, draft bake):
+- *Study:* Turner's *The Fighting Temeraire* (1839, public domain, `config.ARTWORKS`, fetched
+  by `fetch_assets.py` from Wikimedia Commons into `assets_src/art/`, credited in `CREDITS.md`)
+  on the gym wall behind the sofa: 1.70 m canvas in a dark walnut moulding with a gilt slip,
+  a brass picture light (`study.painting`, `paint_painting`, 768 px). Review camera
+  `study_painting`. The study is about 2.7 MB now. That wall isn't lined, so the draft leaves
+  it blotchy close up; the full bake fixes it, or line it like the kitchen's.
+- *Kitchen:* the labels are bigger (taller cells, 256 x 160), near-black ink on paler grounds,
+  in a heavier stroke, and every container is turned to face the stool camera (give or take
+  2.5°). The stroke is thickened in the picture (`labels.embolden`, `text_mask(..., bold=px)`):
+  Blender's own text offset dropped the tail of the Q ("SOL") and the bar of the A. On the
+  counter, a plated eel (`kitchen.eel_plate`): three glazed, grill-marked pieces on a long
+  charcoal plate, scallion, pickled ginger, sauce, black chopsticks on a rest. Camera `kitchen_dish`.
+- *Trophy room:* the chess table is gone. Boxing case (left from the room view): a glass shelf
+  over the belt, the gold medal as the hero on a tall walnut plinth, the silver on a lower one,
+  red lace-up fight gloves hung by their laces (`gym.glove` now takes a style dict; this one is
+  `FIGHT_GLOVE`). The second belt and the six old medals are gone. Wins case (right): the
+  TomorrowLAN lanyard and badge in a shadow-box frame (plain type, your name, no logo;
+  `paint_lanyard`, `paint_badge`), a small silver IT-fest cup and a gavel on its block, on
+  walnut risers. By the glass: a cognac leather lounge chair, a round walnut side table and a
+  floor lamp (`lounge`). The jersey is unchanged. Cameras: `trophy_belt` (the whole boxing
+  case now), `trophy_wins`, `trophy_lounge` (was `trophy_chess`).
+- *Bedroom:* a low oak console on the games room wall by the reading chair (`record_console`):
+  a turntable with a record on it, a stack of five records on top, about 40 standing in the
+  open bay, all in plain coloured sleeves. Camera `bedroom_records`.
+- *Curtains:* the sheers are off everywhere (`house.SHEERS = False`), your pick from the
+  landing shot with and without them.
+- *Hotspot anchors:* `b.anchor(name, pos)` inside a room adds an empty (no geometry), made in
+  its own `hotspots` collection so the bake never sees it, exported into the room's file as a
+  node `hotspot_<name>` (extras `hotspot`, `room`) and listed in the manifest's `hotspots`.
+  On the site, `world.hotspot(name)` gives its position. Five so far: `living_couch_seat`,
+  `resume_door`, `library_real_books`, `library_laptop`, `bedroom_record_player`. A test checks
+  them.
+Previews: `browser_study_painting`, `browser_kitchen`, `_shelf`, `_dish`, `browser_trophy`,
+`_belt`, `_wins`, `_lounge`, `browser_bedroom`, `_records`, `browser_landing`, and Blender's
+renders of the same cameras.
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft

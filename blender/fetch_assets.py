@@ -2,7 +2,8 @@
 
 The textures and models are CC0 assets from Poly Haven; the fonts are from the
 Google Fonts collection, under the SIL Open Font License; the coastlines for the
-bedroom's world map are Natural Earth's, public domain (see CREDITS.md). None
+bedroom's world map are Natural Earth's, public domain; the paintings hung in the
+rooms are public-domain works from Wikimedia Commons (see CREDITS.md). None
 of them are kept in the repo, so run this once after cloning:
 
     python blender/fetch_assets.py
@@ -16,13 +17,13 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from villa.config import FONTS, SRC_FONTS, SRC_GEO, SRC_MODELS, SRC_TEX, WORLD_LAND   # noqa: E402
+from villa.config import ARTWORKS, FONTS, SRC_ART, SRC_FONTS, SRC_GEO, SRC_MODELS, SRC_TEX, WORLD_LAND   # noqa: E402
 from villa.materials import TEXTURE_IDS       # noqa: E402
 from villa.props import MODEL_IDS             # noqa: E402
 
 TEXTURE_URL = "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/{id}/{id}_diff_1k.jpg"
 FILES_API = "https://api.polyhaven.com/files/{id}"
-HEADERS = {"User-Agent": "villa-build-script"}
+HEADERS = {"User-Agent": "villa-build-script/1.0 (portfolio scene build)"}   # Wikimedia refuses a bare name
 
 
 def get(url):
@@ -97,11 +98,27 @@ def fetch_geo():
     print(f"fetched  {dest.name}  ({len(data) // 1024} KB, {len(land['features'])} shapes)")
 
 
+def fetch_art():
+    """Public-domain paintings, as Wikimedia Commons' 1920 px copies."""
+    SRC_ART.mkdir(parents=True, exist_ok=True)
+    for name, url in ARTWORKS.items():
+        dest = SRC_ART / name
+        if dest.exists() and dest.stat().st_size > 10_000:
+            print(f"have     {name}")
+            continue
+        data = get(url)
+        if data[:2] != b"\xff\xd8":
+            raise SystemExit(f"{name}: the download is not a JPEG, check the link")
+        dest.write_bytes(data)
+        print(f"fetched  {name}  ({len(data) // 1024} KB)")
+
+
 def main():
     fetch_textures()
     fetch_models()
     fetch_fonts()
     fetch_geo()
+    fetch_art()
 
 
 if __name__ == "__main__":

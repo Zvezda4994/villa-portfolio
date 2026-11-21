@@ -43,6 +43,8 @@ def _needs_uvs(ob):
     on them) keep their UVs. On everything else they would be dead weight."""
     if ob.get("lit") == "lightmap":
         return True
+    if ob.type != "MESH":
+        return False
     for m in ob.data.materials:
         spec = MATS.get(m.name, {}) if m is not None else {}
         if spec.get("kind") == "water" or "img" in spec or "tex" in spec or "moodboard" in spec:
@@ -71,13 +73,13 @@ def _position_bits(bits):
 
 def export_glb(objects, path, position_bits=None):
     for ob in objects:
-        if not _needs_uvs(ob):
+        if ob.type == "MESH" and not _needs_uvs(ob):
             for layer in list(ob.data.uv_layers):
                 ob.data.uv_layers.remove(layer)
     bpy.ops.object.select_all(action="DESELECT")
     for ob in objects:
         ob.select_set(True)
-    bpy.context.view_layer.objects.active = objects[0]
+    bpy.context.view_layer.objects.active = next(ob for ob in objects if ob.type == "MESH")
     path.parent.mkdir(parents=True, exist_ok=True)
     old_bits = _position_bits(position_bits) if position_bits else None
     try:
@@ -296,7 +298,7 @@ def export_sky(model):
 
 
 # ---- manifest ----------------------------------------------------------------
-def write_manifest(fog, sizes, sky_paths, rooms, small_maps):
+def write_manifest(fog, sizes, sky_paths, rooms, small_maps, hotspots):
     materials = {}
     for name, m in MATS.items():
         entry = dict(kind=m["kind"])
@@ -347,6 +349,7 @@ def write_manifest(fog, sizes, sky_paths, rooms, small_maps):
         materials=materials,
         smallMaps=small_maps,
         cameras={k: dict(pos=list(v["pos"]), target=list(v["target"]), fov=v["fov"]) for k, v in PREVIEW_CAMERAS.items()},
+        hotspots=hotspots,
         credits=_credits(),
         bytes=sizes,
     )
@@ -380,9 +383,14 @@ def main():
     house = [ob for ob in model.objects if not ob.get("room")]
     sizes["model"] = export_glb(house, C.ASSETS / "villa.glb").stat().st_size
     # Each furnished room in a file of its own, in the order they are loaded
+    # Hotspot anchors (empties, geo.Builder.anchor) go into their room's file as plain nodes
+    anchors = list(bpy.data.collections["hotspots"].objects) if "hotspots" in bpy.data.collections else []
+    hotspots = {ob["hotspot"]: dict(room=ob["room"], pos=[round(v, 4) for v in (ob.location.x, ob.location.z, -ob.location.y)])
+                for ob in anchors}
     rooms = {}
     for room in sorted({ob["room"] for ob in model.objects if ob.get("room")}):
         objects = [ob for ob in model.objects if ob.get("room") == room]
+        objects += [ob for ob in anchors if ob.get("room") == room]
         rel = f"rooms/{room}.glb"
         sizes[f"room {room}"] = export_glb(objects, C.ASSETS / rel, ROOM_POSITION_BITS).stat().st_size
         rooms[room] = dict(model=rel)
@@ -390,7 +398,7 @@ def main():
         if old.stem not in rooms:
             old.unlink()
             print(f"[export] removed unused {old.name}")
-    manifest = write_manifest(fog, sizes, sky_paths, rooms, small_maps)
+    manifest = write_manifest(fog, sizes, sky_paths, rooms, small_maps, hotspots)
     # The figure at the dining table, if one is set (config.FIGURE); otherwise any old one is removed.
     manifest = export_figure(C.ASSETS / "manifest.json")
 

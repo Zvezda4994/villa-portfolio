@@ -107,6 +107,7 @@ def build_living(b):
         tank(k)
         rug(k)
         sofa(k, Frame((SOFA["x"], RUG["t"], SOFA["z"])))
+        b.anchor("living_couch_seat", couch_seat(Frame((SOFA["x"], RUG["t"], SOFA["z"]))))
         coffee_table(k)
         console(k)
         tv(k)
@@ -665,6 +666,13 @@ def rug(k):
     for a, c in (((x1, z0), (x0, z0)), ((x0, z0), (x0, z1)), ((x0, z1), (x1, z1)), ((x1, z1), (x1, z0))):
         k.b.mesh(G, "living_albedo", [(a[0], 0.0, a[1]), (c[0], 0.0, c[1]), (c[0], t, c[1]), (a[0], t, a[1])], [(0, 1, 2, 3)],
                  colors=[edge] * 4)
+
+
+def couch_seat(f):
+    """The top of the long run's middle seat cushion (the hotspot anchor), in the sofa's frame f."""
+    arm, D, seat = 0.20, SOFA["D"], 0.43
+    cw = (SOFA["main"] - arm) / 3
+    return f((arm + cw * 1.5, seat, 0.20 + (D - 0.20) / 2 + 0.01))
 
 
 def sofa(k, f):

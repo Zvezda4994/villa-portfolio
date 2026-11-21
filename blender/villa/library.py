@@ -244,6 +244,11 @@ def build_library(b):
         desk_chair(k, Frame((DESK["cx"] - 0.10, F2, DESK["z1"] - DESK["d"] - 0.22), 4.0))
         banker_lamp(k)
         laptop(k)
+        # hotspot anchors: the eye-level shelf of real titles (between bays 3 and 4, at the
+        # spines' middle height) and the laptop's screen
+        b.anchor("library_real_books", (XE - DEP + 0.01, F2 + BOARDS[EYE_ROWS[0]] + BT + 0.12,
+                                        (_bay_z(TITLE_BAYS[0]) + _bay_z(TITLE_BAYS[1])) / 2))
+        b.anchor("library_laptop", laptop_screen())
         manuscript(k)
         reading_corner(k)
         shelf_lights()
@@ -676,11 +681,21 @@ def banker_lamp(k):
     LAMPS.append(dict(name="banker_glow", kind="point", pos=(cx, cy + 0.02, cz), watts=1.2, radius=0.05, colour=(0.45, 0.9, 0.55)))
 
 
+def laptop_frame():
+    """The laptop's own frame on the desk: its front (+z) toward the sitter."""
+    return Frame(desk_frame()((-0.08, DESK["top"], 0.36)), desk_frame().yaw + 180.0 - 6.0)
+
+
+def laptop_screen():
+    """The middle of the laptop's screen, in the world (the hotspot anchor)."""
+    T, D, tilt = 0.014, 0.215, math.radians(-20.0)    # as in `laptop`: the lid tipped back about the hinge
+    y = 0.10                                          # the screen's middle, up the lid from the hinge
+    return laptop_frame()((0.0, T + y * math.cos(tilt), -D / 2 + y * math.sin(tilt)))
+
+
 def laptop(k):
     """An open laptop, a little off centre, the draft on its screen."""
-    f = desk_frame()
-    top = DESK["top"]
-    g = Frame(f((-0.08, top, 0.36)), f.yaw + 180.0 - 6.0)        # its front (+z) toward the sitter
+    g = laptop_frame()                                           # its front (+z) toward the sitter
     W, D, T = 0.31, 0.215, 0.014
     k.soft("aluminium", g, (0.0, T / 2, 0.0), (W, T, D), 0.004, n=2)
     k.quad("laptop_keys", g, [(-0.13, T + 0.0005, 0.005), (0.13, T + 0.0005, 0.005), (0.13, T + 0.0005, -0.095),

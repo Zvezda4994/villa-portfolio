@@ -12,14 +12,15 @@ so +x is on the right):
    i |              [========== sofa, facing the TV ===][       ]   [bench]      | s
    n |                         ~~~~~~~~~ rug ~~~~~~~~~~                           | t
    g |                                                                           |
-     |        [=========== the tank: floor to ceiling, a moss-covered rock ======]|
+     |        [=========== the tank: floor to ceiling, boulder, mech at the end ==]|
      +---[ glass ]-----------------------------------------------------[glass]---+
                          back wall, glass onto the pool deck                 (z = -8)
 
 The room is open to the dining room on its west side. The tank sits in a plaster
-niche on the back wall: a glowing backdrop, sand and soil, a big moss-covered rock (in
-place of the mech, for now), driftwood, grasses and swords, and a few fish. The TV
-shows a paused streaming screen with "Hunter × Hunter" in plain type, no artwork.
+niche on the back wall: a glowing backdrop, sand and soil, a big moss-covered boulder,
+smaller stones, driftwood, grasses and swords, and fish. At its right-hand end a mech sits
+slumped against the side glass, a sword through it, moss on its shoulders, head and
+thighs and plants growing from its joints (mech.py; the model is config.MECH_MODEL).
 
 The moodboard is five frames in mixed sizes. In the file they are plain colour fields;
 the site lays your pictures (assets_src/moodboard/, shrunk by `npm run moodboard`)
@@ -35,6 +36,7 @@ import random
 import numpy as np
 
 from . import config as C
+from . import mech
 from .house import H1, P
 from .kit import Frame, Kit, grid, panel
 from .materials import MATS, srgb_to_linear
@@ -54,7 +56,7 @@ LINING = 0.012                      # the walls' plaster lining stands off the h
 
 # The tank, in a niche on the back wall between the windows.
 TANK = dict(x=(4.75, 10.05), front=-6.62, base=0.30, top=2.78, wing=0.10)
-ROCK = (7.05, -7.12)                # the moss-covered rock, where the mech will rest one day
+ROCK = (7.05, -7.12)                # the big moss-covered boulder in the middle of the tank
 TV_X = 6.30                         # the TV's middle, between the doors
 CONSOLE = dict(L=2.40, D=0.44, H=0.50)
 SCREEN = (1.841, 1.036)             # 83", 16:9
@@ -91,6 +93,9 @@ LIVING_CAM = dict(pos=(3.45, 1.45, -0.80), target=(9.40, 1.05, -6.20), fov=55.0)
 TV_CAM = dict(pos=(6.10, 1.10, -4.12), target=(6.30, 1.00, -0.10), fov=50.0)
 MOODBOARD_CAM = dict(pos=(8.95, 1.74, -3.70), target=(11.70, 1.78, -3.70), fov=50.0)
 TANK_CAM = dict(pos=(7.75, 1.30, -5.15), target=(7.00, 0.95, -7.40), fov=55.0)
+# the tank from the sofa, looking back over it, and a closer look at the mech
+SOFA_CAM = dict(pos=(6.30, 1.18, -3.90), target=(7.35, 1.30, -7.20), fov=60.0)
+MECH_CAM = dict(pos=(7.85, 0.85, -5.80), target=(9.40, 0.88, -7.15), fov=44.0)
 
 
 def build_living(b):
@@ -156,16 +161,18 @@ def walls(k):
 # ---- the tank ------------------------------------------------------------------------------
 def tank(k):
     """A tank from a low plinth almost to the ceiling, set in a plaster niche: glass in a
-    slim black frame, a glowing blue-green backdrop, soil and sand, the moss-covered
-    rock, smaller stones, driftwood, grasses along the back, swords and a carpet of
-    moss in front, and a few fish."""
+    slim black frame, a glowing blue-green backdrop, soil and sand, the mech seated in
+    the middle against the back glass, a few stones and driftwood out at the ends,
+    grasses and stem plants either side of it, swords and moss cushions in front, plants
+    growing from the mech's joints, and fish."""
     (x0, x1), zf, base, top, wing = TANK["x"], TANK["front"], TANK["base"], TANK["top"], TANK["wing"]
     world = Frame((0.0, 0.0, 0.0))
     zb = ZB + 0.01
     # the niche: plaster wings either side, a fascia over the glass hiding the light
     for wx0, wx1, inner in ((x0 - wing, x0, "+x"), (x1, x1 + wing, "-x")):
         k.block("plaster_v", world, (wx0, 0.0, ZB), (wx1, H1, zf), step=0.12, skip=("-z", "-y", "+y", inner))
-    panel(k, "plaster_v", (x0, top, zf), (x1 - x0, 0, 0), (0, H1 - top, 0), step=0.12)
+    # (a fine grid: the tank's glow grazes it, and a coarse one showed as blocks)
+    panel(k, "plaster_v", (x0, top, zf), (x1 - x0, 0, 0), (0, H1 - top, 0), step=0.04)
     panel(k, "tank_black", (x0, H1 - 0.03, zb), (x1 - x0, 0, 0), (0, 0, zf - zb), step=0.25)       # the hood's dark inside
     # the plinth under the glass, and the glass in its frame
     panel(k, "tank_plinth", (x0, 0.0, zf), (x1 - x0, 0, 0), (0, base, 0), step=0.10)
@@ -179,45 +186,127 @@ def tank(k):
     k.b.mesh(G, "tank_back", v, fc, smooth=False, uvs=uv)
     panel(k, "tank_black", (x0 + 0.001, base, zf), (0, 0, zb - zf), (0, top - base, 0), step=0.15)
     panel(k, "tank_black", (x1 - 0.001, base, zb), (0, 0, zf - zb), (0, top - base, 0), step=0.15)
+    # dark linings up inside the hood, over the backdrop's top edge: from the sofa you can
+    # see up through the glass to the house's own wall there
+    hood = H1 - 0.03
+    panel(k, "tank_black", (x0, top - 0.002, zb + 0.001), (x1 - x0, 0, 0), (0, hood - top, 0), step=0.25)
+    panel(k, "tank_black", (x0 + 0.001, top - 0.002, zf), (0, 0, zb - zf), (0, hood - top, 0), step=0.25)
+    panel(k, "tank_black", (x1 - 0.001, top - 0.002, zb), (0, 0, zf - zb), (0, hood - top, 0), step=0.25)
     rng = np.random.default_rng(41)
-    height = substrate(k, rng)
-    stones(k, rng, height)
+    ground = _ground(rng)
+    # the mech first (if a model is set), on the bare sand, so the sand can be banked up
+    # round where it rests
+    # (its back kept about 0.3 m off the back glass, so it sits out of the corner)
+    made = mech.build(lambda x, z: ground(x, z), x1 - 0.015, (zb + 0.32, zf - 0.03))
+    mounds = [(ROCK[0], ROCK[1], 0.04, 0.50)]                 # banked up round the boulder
+    verts = None
+    if made:
+        verts, faces, colors, info = made
+        mounds += _mounds(ground, info)
+    height = substrate(k, rng, ground, mounds)
+    if made:
+        k.b.mesh(G, "mech_body", [tuple(p) for p in verts], faces, smooth=True, colors=[tuple(c) for c in colors],
+                 uvs=info["uvs"])
+        if info["cushions"]:
+            cv, cf, cc = info["cushions"]
+            k.b.mesh(G, "living_albedo", [tuple(p) for p in cv], cf, smooth=True, colors=[tuple(c) for c in cc])
+        if info["strands"]:
+            sv, sf = info["strands"]
+            k.b.mesh(G, "aqua_moss", [tuple(p) for p in sv], sf, smooth=True)
+        clear = _footprint(verts, info["seat"][1])
+    else:
+        def clear(x, z, pad=0.04):
+            return True
+    stones(k, height, clear)
     driftwood(k, height)
-    plants(k, rng, height)
-    fish(k, rng)
+    plants(k, rng, height, clear)
+    if made:
+        joint_plants(k, rng, info)
+    fish(k, rng, verts)
     # the tank's own light, in the hood, and its glow out into the room
     cx = (x0 + x1) / 2
     LAMPS.append(dict(name="tank_light", pos=(cx, top - 0.03, (zb + zf) / 2), size=(x1 - x0 - 0.2, 0.8), watts=260.0,
                       aim=(0.0, -1.0, 0.0), colour=TANK_LIGHT))
     LAMPS.append(dict(name="tank_glow", pos=(cx, 1.55, zf + 0.10), size=(x1 - x0 - 0.3, 2.1), watts=22.0,
                       aim=(0.0, 0.0, 1.0), colour=(0.55, 0.85, 0.95)))
+    if made:
+        # a narrow spot from the hood onto the mech, and a cool rim light from behind and
+        # above catching its head and shoulder edges, so it is the brightest thing at that end
+        head = np.array(info["points"]["neck"])
+        mx, my, mz = info["seat"]
+        spot = (mx - 0.35, top - 0.06, mz + 0.30)
+        aim = (mx - 0.10, my + 0.45, mz + 0.05)
+        LAMPS.append(dict(name="tank_mech_spot", kind="spot", pos=spot, aim=tuple(np.subtract(aim, spot)), watts=95.0,
+                          cone=34.0, colour=(0.97, 0.98, 1.0)))
+        rim = (x1 - 0.12, top - 0.10, zb + 0.10)
+        LAMPS.append(dict(name="tank_mech_rim", kind="spot", pos=rim, aim=tuple(np.subtract(head, rim)), watts=60.0,
+                          cone=30.0, colour=(0.62, 0.82, 1.0)))
 
 
-def substrate(k, rng):
-    """The tank's floor: dark soil banked up at the back, a sand path in front, and the
-    cut edge of it all against the glass. Returns a function giving its height."""
-    (x0, x1), zf, base = TANK["x"], TANK["front"], TANK["base"]
+def _ground(rng):
+    """The bare floor's height: soil banked up toward the back, gently lumpy."""
+    (x0, x1), zf = TANK["x"], TANK["front"]
     zb = ZB + 0.01
     nx, nz = int((x1 - x0) / 0.05), int((zf - zb) / 0.05)
     lumps = _smooth_noise((nz + 1, nx + 1), 4, rng)
-    rx, rz = ROCK
 
-    def h(x, z, j=None, i=None):
-        s = (z - zf) / (zb - zf)                                    # 0 at the glass, 1 at the back
-        y = base + 0.07 + 0.17 * s ** 1.3
-        y += 0.06 * math.exp(-((x - rx) ** 2 / 0.9 + (z - rz) ** 2 / 0.25))   # banked up round the rock
-        if j is not None:
-            y += 0.012 * lumps[j, i]
+    def h(x, z):
+        s = min(max((z - zf) / (zb - zf), 0.0), 1.0)              # 0 at the glass, 1 at the back
+        i = min(max(int(round((x - x0) / (x1 - x0) * nx)), 0), nx)
+        j = min(max(int(round(s * nz)), 0), nz)
+        return TANK["base"] + 0.07 + 0.17 * s ** 1.3 + 0.012 * lumps[j, i]
+    h.grid = (nx, nz)
+    return h
+
+
+def _mounds(ground, info):
+    """Sand drifted up round where the mech rests: its seat, its heels and its knee.
+    Each is (x, z, height, radius)."""
+    p = info["points"]
+    cx, floor, cz = info["seat"]
+    out = [(cx, cz, 0.05, 0.40)]
+    for key, under, r in (("ankle-", 0.05, 0.16), ("knee-", 0.06, 0.20), ("ankle+", 0.05, 0.16)):
+        x, y, z = p[key]
+        rise = y - under + 0.02 - ground(x, z)
+        if rise > 0:
+            out.append((x, z, rise, r))
+    return out
+
+
+def _footprint(verts, floor, cell=0.05):
+    """Where the mech's lowest parts rest on the sand, as a test of (x, z)."""
+    low = verts[verts[:, 1] < floor + 0.40]
+    cells = {(int(math.floor(x / cell)), int(math.floor(z / cell))) for x, _, z in low}
+
+    def clear(x, z, pad=0.04):
+        r = int(math.ceil(pad / cell))
+        i, j = int(math.floor(x / cell)), int(math.floor(z / cell))
+        return not any((i + a, j + b) in cells for a in range(-r, r + 1) for b in range(-r, r + 1))
+    return clear
+
+
+def substrate(k, rng, ground, mounds):
+    """The tank's floor: dark soil banked up at the back and round the mech, a sand path
+    in front, and the cut edge of it all against the glass. Returns a function giving
+    its height."""
+    (x0, x1), zf, base = TANK["x"], TANK["front"], TANK["base"]
+    zb = ZB + 0.01
+    nx, nz = ground.grid
+
+    def h(x, z):
+        y = ground(x, z)
+        for mx, mz, mh, mr in mounds:
+            y += mh * math.exp(-((x - mx) ** 2 + (z - mz) ** 2) / (mr * mr * 0.5))
         return y
-
     verts, colors = [], []
     soil, sand = np.array([0.16, 0.12, 0.09]), np.array([0.74, 0.66, 0.52])
+    path_noise = _smooth_noise((nz + 1, nx + 1), 4, rng)
     for i in range(nx + 1):
         for j in range(nz + 1):
             x, z = x0 + (x1 - x0) * i / nx, zf + (zb - zf) * j / nz
-            verts.append((x, h(x, z, j, i), z))
+            verts.append((x, h(x, z), z))
             s = (z - zf) / (zb - zf)
-            path = 1.0 - min(1.0, max(0.0, (s - 0.25 + 0.08 * lumps[j, i]) / 0.15))
+            path = 1.0 - min(1.0, max(0.0, (s - 0.25 + 0.08 * path_noise[j, i]) / 0.15))
             c = soil * (1 - path) + sand * path
             c = c * (0.9 + 0.2 * rng.random())
             colors.append(srgb_to_linear(tuple(np.clip(c, 0, 1))))
@@ -228,7 +317,7 @@ def substrate(k, rng):
     verts, colors, faces = [], [], []
     for i in range(nx + 1):
         x = x0 + (x1 - x0) * i / nx
-        hy = h(x, zf, 0, i)
+        hy = h(x, zf)
         for r in range(5):
             y = base + (hy - base) * r / 4
             verts.append((x, y, zf - 0.006))
@@ -239,7 +328,7 @@ def substrate(k, rng):
             a, c = i * 5 + r, (i + 1) * 5 + r
             faces.append((a, c, c + 1, a + 1))
     k.b.mesh(G, "living_albedo", verts, faces, smooth=True, colors=colors)
-    return lambda x, z: h(x, z)
+    return h
 
 
 def _icosphere(level=2):
@@ -322,46 +411,54 @@ def rock(k, centre, size, seed, moss=0.0, level=3, sink=0.25, cushion=False):
     k.b.mesh(G, "living_albedo", out, faces, smooth=True, colors=colors)
 
 
-def stones(k, rng, height):
+def stones(k, height, clear):
+    """The big boulder, moss over part of its top, and smaller stones round it and along
+    the tank, any that would sit under the mech left out. (The boulder is kept smaller
+    and less mossy than the mech's moss so the mech is the first thing you see.)"""
     rx, rz = ROCK
-    # the big one, mossy all over its top: about 1.3 m across and 0.8 m high
-    rock(k, (rx, height(rx, rz) + 0.10, rz), (0.66, 0.52, 0.44), seed=7, moss=1.0, level=5)
+    # the big one: about 0.9 m across and 0.5 m high
+    rock(k, (rx, height(rx, rz) + 0.07, rz), (0.44, 0.35, 0.29), seed=7, moss=0.55, level=4)
     for x, z, s, moss, seed in ((rx - 0.95, -7.30, 0.32, 0.8, 11), (rx + 0.90, -6.97, 0.22, 0.5, 12),
                                 (rx + 1.30, -7.40, 0.36, 0.9, 13), (5.35, -7.25, 0.28, 0.7, 14),
                                 (9.45, -7.05, 0.30, 0.6, 15), (rx - 0.55, -6.86, 0.12, 0.0, 16),
                                 (8.65, -6.82, 0.10, 0.0, 17), (5.95, -6.88, 0.09, 0.3, 18),
                                 (rx + 0.45, -6.86, 0.08, 0.0, 19), (9.80, -6.85, 0.07, 0.0, 20)):
-        rock(k, (x, height(x, z) + s * 0.17, z), (s, s * 0.78, s * 0.85), seed=seed, moss=moss, level=5 if s > 0.25 else 4)
+        if not clear(x, z, pad=s * 0.8):
+            continue
+        rock(k, (x, height(x, z) + s * 0.17, z), (s, s * 0.78, s * 0.85), seed=seed, moss=moss, level=4)
 
 
 def driftwood(k, height):
     """Two gnarled pieces of dark driftwood, each a short root crown low behind the
     rocks with branches that wander up and out, thinning as they go."""
     rng = np.random.default_rng(5)
+    (x0, x1) = TANK["x"]
     for bx, bz, lean in ((5.85, -7.38, 1.0), (8.35, -7.34, -1.0)):
         base = np.array((bx, height(bx, bz) - 0.04, bz))
-        for n in range(5):
-            # each branch: a random walk upward, leaning away from the rock
+        for n in range(4):
+            # each branch: a random walk upward, leaning away from the boulder
             d = np.array((lean * rng.uniform(0.15, 0.55), 1.0, rng.uniform(-0.15, 0.25)))
             d /= np.linalg.norm(d)
-            length = rng.uniform(0.7, 1.7) * (1.0 if n else 1.15)
+            length = rng.uniform(0.7, 1.5) * (1.0 if n else 1.15)
             pts, p = [tuple(base + rng.normal(0, 0.03, 3) * (1, 0, 1))], base.copy()
-            steps = 14
+            steps = 12
             for _ in range(steps):
                 d = d + rng.normal(0, 0.22, 3) * np.array((1.0, 0.35, 0.6))
                 d[1] = max(d[1], 0.25)
                 d /= np.linalg.norm(d)
                 p = p + d * length / steps
+                p[0] = min(max(p[0], x0 + 0.08), x1 - 0.08)
                 p[2] = min(max(p[2], -7.62), -6.80)
                 pts.append(tuple(p))
-            r0 = rng.uniform(0.028, 0.045) * (1.3 if n == 0 else 1.0)
-            k.sweep("driftwood", pts, [r0, r0 * 0.7, r0 * 0.45, r0 * 0.2, 0.004], segments=9)
+            r0 = rng.uniform(0.026, 0.040) * (1.3 if n == 0 else 1.0)
+            k.sweep("driftwood", pts, [r0, r0 * 0.7, r0 * 0.45, r0 * 0.2, 0.004], segments=8)
             # a twig off it, about halfway up
-            if rng.random() < 0.7:
+            if rng.random() < 0.6:
                 mid = np.array(pts[steps // 2])
-                tip = mid + np.array((lean * rng.uniform(-0.2, 0.35), rng.uniform(0.2, 0.4), rng.uniform(-0.05, 0.1)))
+                tip = mid + np.array((lean * rng.uniform(-0.1, 0.25), rng.uniform(0.2, 0.35), rng.uniform(-0.05, 0.1)))
+                tip[0] = min(max(tip[0], x0 + 0.06), x1 - 0.06)
                 k.sweep("driftwood", [tuple(mid), tuple((mid + tip) / 2 + rng.normal(0, 0.03, 3)), tuple(tip)],
-                        [r0 * 0.4, r0 * 0.25, 0.003], segments=7)
+                        [r0 * 0.4, r0 * 0.25, 0.003], segments=6)
 
 
 def _ribbon(k, mat, base, h, w, lean, twist, turn=0.0, n=8):
@@ -382,10 +479,27 @@ def _ribbon(k, mat, base, h, w, lean, twist, turn=0.0, n=8):
     k.b.mesh(G, mat, verts, faces, smooth=True)
 
 
-def plants(k, rng, height):
+def _stem_plant(k, rng, cx, cz, y0, mat, n, hgt, spread=0.10, stems=6, foot=None):
+    """A bushy stem plant: a few stems and a dense tuft of short leaves up them."""
+    for _ in range(n):
+        a = rng.uniform(0, 2 * math.pi)
+        r = abs(rng.normal(0, spread))
+        x, z = cx + r * math.cos(a), min(-6.85, cz + r * math.sin(a) * 0.6)
+        y = (foot(x, z) if foot else y0) + rng.uniform(0.0, hgt)
+        L = rng.uniform(0.06, 0.12)
+        out = np.array((math.cos(a), rng.uniform(0.3, 0.9), math.sin(a)))
+        _ribbon(k, mat, (x, y, z), L * 0.4, L * 0.30, tuple(out * L), rng.uniform(-0.4, 0.4), turn=a + math.pi / 2, n=3)
+    for _ in range(stems):
+        x, z = cx + rng.normal(0, spread * 0.6), cz + rng.normal(0, spread * 0.4)
+        y = foot(x, z) if foot else y0
+        k.tube(mat, (x, y, z), (x + rng.normal(0, 0.05), y + hgt, z + rng.normal(0, 0.03)), 0.004, segments=5, step=0.1)
+
+
+def plants(k, rng, height, clear):
     """Ribbon grass along the back, reaching the surface and bending over along it;
-    bushy red and olive stem plants either side of the rock; sword plants; and a
-    carpet of moss cushions over the sand."""
+    bushy red and olive stem plants either side of the boulder; sword plants; and a
+    carpet of moss cushions over the sand. Anything that would grow out of the mech is
+    left out."""
     (x0, x1) = TANK["x"]
     surface = TANK["top"] - 0.12
     for cx in np.linspace(x0 + 0.15, x1 - 0.15, 22):
@@ -398,26 +512,20 @@ def plants(k, rng, height):
             # blades that reach the surface lie over along it
             over = max(0.0, tall - reach * 0.85) * 2.5
             lean = (rng.normal(0, 0.12) + over * rng.choice((-1, 1)), 0.0, rng.uniform(0.04, 0.22))
+            if not clear(x, z, pad=0.02):
+                continue
             _ribbon(k, "aqua_grass", (x, y, z), tall, rng.uniform(0.016, 0.026), lean, rng.uniform(-2.0, 2.0),
                     rng.uniform(0, math.pi), n=10)
     # bushy stem plants: dense tufts of short leaves, reddish and olive
     for cx, cz, mat, n, hgt in ((5.15, -7.35, "aqua_red", 70, 0.65), (9.70, -7.40, "aqua_red", 60, 0.55),
                                 (6.15, -7.45, "aqua_olive", 60, 0.75), (8.10, -7.50, "aqua_olive", 70, 0.85),
                                 (9.25, -7.30, "aqua_olive", 45, 0.45)):
-        for _ in range(n):
-            a = rng.uniform(0, 2 * math.pi)
-            r = abs(rng.normal(0, 0.10))
-            x, z = cx + r * math.cos(a), min(-6.85, cz + r * math.sin(a) * 0.6)
-            y = height(x, z) + rng.uniform(0.0, hgt)
-            L = rng.uniform(0.06, 0.12)
-            out = np.array((math.cos(a), rng.uniform(0.3, 0.9), math.sin(a)))
-            _ribbon(k, mat, (x, y, z), L * 0.4, L * 0.30, tuple(out * L), rng.uniform(-0.4, 0.4), turn=a + math.pi / 2, n=3)
-        for _ in range(6):                                       # their stems
-            x, z = cx + rng.normal(0, 0.06), cz + rng.normal(0, 0.04)
-            y = height(x, z)
-            k.tube(mat, (x, y, z), (x + rng.normal(0, 0.05), y + hgt, z + rng.normal(0, 0.03)), 0.004, segments=5, step=0.1)
+        if clear(cx, cz, pad=0.10):
+            _stem_plant(k, rng, cx, cz, None, mat, n, hgt, foot=height)
     # sword plants: rosettes of broad leaves arching out
     for cx, cz, size in ((5.85, -7.02, 0.42), (8.45, -7.12, 0.46), (9.55, -6.95, 0.32), (6.30, -6.95, 0.28)):
+        if not clear(cx, cz, pad=size * 0.5):
+            continue
         y = height(cx, cz)
         for i in range(13):
             a = 2 * math.pi * i / 13 + rng.uniform(-0.2, 0.2)
@@ -426,13 +534,40 @@ def plants(k, rng, height):
             _ribbon(k, "aqua_leaf", (cx, y, cz), L * 0.9, L * 0.22, tuple(out * L * 0.55), rng.uniform(-0.3, 0.3),
                     turn=a + math.pi / 2, n=6)
     # moss cushions over the sand in front
-    for _ in range(40):
+    placed = 0
+    while placed < 36:
         x, z = rng.uniform(x0 + 0.15, x1 - 0.15), rng.uniform(-7.05, -6.72)
-        if abs(x - ROCK[0]) < 0.75 and z < -6.95:
+        if (abs(x - ROCK[0]) < 0.50 and z < -6.95) or not clear(x, z):
             continue
         s = rng.uniform(0.035, 0.075)
         rock(k, (x, height(x, z) + 0.004, z), (s, s * 0.45, s * 0.9), seed=int(rng.integers(1000, 9999)), level=2,
              sink=0.0, cushion=True)
+        placed += 1
+
+
+def joint_plants(k, rng, info):
+    """Plants growing out of the mech's joints: grass from its hips, neck, right elbow
+    and right shoulder, an olive stem plant out of the raised left knee, a red one at
+    the outstretched right ankle. Sized to the mech (it is about knee height to a person)."""
+    p = info["points"]
+
+    def tuft(at, n, lo, hi):
+        at = np.asarray(at, float)
+        for _ in range(n):
+            base = at + rng.normal(0, 0.015, 3) * (1, 0.4, 1)
+            tall = rng.uniform(lo, hi)
+            lean = rng.normal(0, 0.04, 3) * (1, 0, 1)
+            lean[2] = min(lean[2], -6.70 - base[2])                 # keep the tips off the front glass
+            _ribbon(k, "aqua_grass", tuple(base), tall, rng.uniform(0.007, 0.012), tuple(lean), rng.uniform(-1.5, 1.5),
+                    rng.uniform(0, math.pi), n=5)
+    tuft(p["hip+"] + np.array((0.0, 0.05, 0.0)), 10, 0.06, 0.18)
+    tuft(p["hip-"] + np.array((0.0, 0.05, 0.0)), 10, 0.06, 0.18)
+    tuft(p["neck"] + np.array((0.0, 0.02, 0.0)), 7, 0.04, 0.12)
+    tuft(p["elbow-"], 6, 0.04, 0.12)
+    tuft(p["shoulder-"] + np.array((0.0, 0.04, 0.0)), 6, 0.05, 0.14)
+    kx, ky, kz = p["knee+"]
+    _stem_plant(k, rng, kx, min(kz, -6.90), ky + 0.03, "aqua_olive", 22, 0.16, spread=0.03, stems=2)
+    tuft(p["ankle-"], 8, 0.05, 0.14)
 
 
 def _fish_body(k, f, L, H, W, colour, n=10, seg=8):
@@ -459,23 +594,45 @@ def _fish_body(k, f, L, H, W, colour, n=10, seg=8):
     k.b.mesh(G, "living_albedo", verts, faces, smooth=True, colors=colors)
 
 
-def fish(k, rng):
-    """A school of small tetras, blue above and red below, and three angelfish."""
+def fish(k, rng, mech_verts):
+    """A school of small tetras, blue above and red below; a few more round the mech's
+    head and some small orange ones by the sword's hilt; three angelfish. None is
+    placed inside the mech."""
+    pts = mech_verts[::7] if mech_verts is not None else np.zeros((1, 3)) + 100.0
+
+    def free(p, gap=0.05):
+        return (-7.60 < p[2] < -6.70) and np.min(np.sum((pts - p) ** 2, axis=1)) > gap * gap
+
+    def school(centre, spread, n, size, colour, heading=180.0):
+        placed = 0
+        for _ in range(n * 30):
+            if placed == n:
+                break
+            p = np.asarray(centre) + rng.normal(0, 1, 3) * spread
+            if not free(p):
+                continue
+            _fish_body(k, Frame(tuple(p), heading + rng.normal(0, 16)), size, size * 0.29, size * 0.15, colour)
+            placed += 1
+
     def tetra(s, up):
         if up > 0.05 and 0.2 < s < 0.92:
             return (0.10, 0.62, 0.95)
         if up <= 0.05 and s > 0.08:
             return (0.88, 0.14, 0.10)
         return (0.80, 0.82, 0.84)
-    centre = np.array((8.55, 1.45, -7.05))
-    for _ in range(26):
-        p = centre + rng.normal(0, 1, 3) * (0.42, 0.16, 0.14)
-        _fish_body(k, Frame(tuple(p), 180.0 + rng.normal(0, 14)), 0.055, 0.016, 0.008, tetra)
+
+    def ember(s, up):
+        return (0.95, 0.42, 0.12) if s > 0.12 else (0.85, 0.70, 0.55)
+    school((8.40, 1.50, -7.05), (0.42, 0.16, 0.14), 24, 0.055, tetra)
+    if mech_verts is not None:
+        top = mech_verts[np.argmax(mech_verts[:, 1])]
+        school((top[0] - 0.30, top[1] + 0.05, -6.95), (0.18, 0.08, 0.08), 9, 0.045, tetra, heading=30.0)
+        school((top[0] - 0.25, top[1] - 0.35, -6.85), (0.10, 0.06, 0.05), 6, 0.035, ember, heading=150.0)
 
     def angel(s, up):
         bar = any(abs(s - c) < 0.05 for c in (0.30, 0.55, 0.80))
         return (0.12, 0.11, 0.10) if bar else (0.86, 0.85, 0.80)
-    for x, y, z, heading in ((6.15, 1.70, -7.10, 15.0), (6.55, 1.95, -7.25, 190.0), (9.30, 1.15, -7.00, 160.0)):
+    for x, y, z, heading in ((6.15, 1.70, -7.10, 15.0), (6.55, 1.95, -7.25, 190.0), (8.85, 1.85, -7.05, 160.0)):
         f = Frame((x, y, z), heading)
         _fish_body(k, f, 0.10, 0.075, 0.014, angel)
         for sgn in (1, -1):                        # the long dorsal and anal fins

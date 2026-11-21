@@ -138,8 +138,8 @@ The living room, sparse and calm, oatmeal linen and walnut (`blender/villa/livin
 - a stone-grey rug, a low walnut coffee table (bowl, books, the remote), a brass floor
   lamp, a fig in the corner by the TV;
 - the tank on the back wall, floor to ceiling in a plaster niche: a glowing blue-green
-  backdrop, soil and sand, a big boulder under fine, dark, patchy moss (in the mech's
-  place, for now), smaller stones, two gnarled pieces of driftwood, ribbon grass, red
+  backdrop, soil and sand, a big boulder under fine, dark, patchy moss (made smaller
+  when the mech came, see below), smaller stones, two gnarled pieces of driftwood, ribbon grass, red
   and olive stem plants, sword plants, moss cushions, a school of tetras and three
   angelfish;
 - the moodboard on the east wall: five frames in mixed sizes (oak and black, two with
@@ -282,7 +282,8 @@ New review cameras: `trophy_jersey` and `pool_card`.
 current floor's ceiling (`inside` in `main.js`), no labels show at all: the panel names the
 room, and other rooms' labels used to shine through the walls. Labels show only in the
 Outside, Ground and Upstairs overviews, as before. The banner now reads "Work in
-progress: the aquarium centrepiece and a car for the garage are still coming."
+progress: the aquarium centrepiece and a car for the garage are still coming." (Since the
+mech: "Work in progress: a car for the garage is still coming.")
 
 **Step 5, batch 5: the resume view** (approved 20 Nov 2026; done before the
 aquarium mech at your request). "Skip to resume", `#resume` links and the little door under
@@ -305,6 +306,50 @@ the stairs all open the same view:
   the JSON compiler and the Discord bot are out. three.js, Blender and ONNX Runtime are in
   Tools. The print page sets skills inline ("Tools: ...") and slightly tighter type so the PDF
   stays on one page.
+
+**Step 5, the aquarium mech** (approved 21 Nov 2026, after four passes). The tank's
+centrepiece is a downloaded model, posed, repainted and mossed by the build; your choice
+after an original mech built from primitives read as too blocky:
+- The model: "Samurai Style Gundam Mecha" by lawlietrecluze (Sketchfab, CC BY 4.0), fan art
+  in the style of a well-known franchise. You chose to use it and to take it down on request
+  (20 Nov 2026). It is credited in the living room's panel (from the manifest's `credits`)
+  and in `CREDITS.md`. The download stays in `assets_src/models/nu_gundam/` (never
+  committed); only the changed copy ships, inside `living.glb`.
+- To take it down: set `MECH_MODEL = None` in `config.py`, rebuild (`npm run scene`,
+  `bake:draft`, `export`), delete its `CREDITS.md` row, commit and push. The tank keeps its
+  stones and plants; the credit disappears with it.
+- `mech_source.py` reads the glTF (one fused, AI-generated, 2-million-triangle mesh, no rig),
+  welds its chunks, thins it to 120k triangles keeping its UVs, and bakes the full mesh's
+  crevices (AO), sharp edges (Cycles' pointiness) and its texture's panel lines onto the thin
+  mesh's UVs as a grey detail picture (`mech_detail`, 768 px). Cached in
+  `build/mech_source.npz` and `build/textures/mech_detail.png`.
+- `mech.py` poses it with a 16-bone skeleton placed by hand (`SKELETON`, `BONES`, `POSE`):
+  each point is weighted to its nearest bone, blending into the parent or child near a joint.
+  The pose: sat in the right-hand end, its back and left shoulder against the side glass,
+  turned 30° toward the sofa, slumped and turned a little toward the glass, head bowed and
+  tipped toward it, the right arm hanging with the back of its hand on the sand, the right
+  leg out along the sand, the left knee drawn up with the forearm across it. Head height
+  1.40 m. Its shield and big back wings are cut away; the katana's grip from its hand tops a
+  long blade driven in through the belly at an angle into the sand beside it.
+- Paint (per vertex, `mech_body` material, times the detail picture): dark weathered
+  gunmetal; the model's red trim dark metal, gold trim tarnished bronze; worn bone paint
+  survives only on the chest, the right shoulder and the left shin; chipped edges, rust runs,
+  silt low down. Moss only as patches on what faces up (shoulder tops, crest, thighs), kept
+  off the edges. A 417 unit plate (bone, faded red band, black stencil) on the right shoulder,
+  turned to face the sofa.
+- A narrow spot from the hood and a cool rim light from the back corner pick it out.
+- The rest of the tank is back as it was, but the boulder is a third smaller and less mossy;
+  stones and plants that would sit under the mech are left out. Grass grows from its hips,
+  neck, right elbow, right shoulder and right ankle, an olive stem plant from the raised knee;
+  tetras round its head, orange fish by the hilt.
+- The living room's panel lost its "To do" line. The banner now reads "Work in progress: a
+  car for the garage is still coming."
+- New review cameras `living_sofa` (the tank from the sofa) and `living_mech` (close-up).
+  Previews: `previews/browser_living_sofa.jpg`, `browser_living_mech.jpg`,
+  `browser_living.jpg`, `browser_living_tank.jpg`, `browser_ground.jpg`.
+- Download: the living room is now 4.35 MB, over its 4 MB target (the test allows 4.5):
+  `living.glb` 2.93 MB and the detail picture 0.65 MB. A 512 px detail picture
+  (`DETAIL_SIZE` in `mech_source.py`) would bring it to about 4.0 MB, a little softer.
 
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
@@ -776,6 +821,17 @@ The traps hit so far, so they don't get rediscovered.
     ran across the garage and the foyer, in the browser only. `kit.sweep_geom` now drops
     repeated points. A long thin line in the browser that Blender doesn't show: look for a
     mesh edge to (0, 0, 0).
+39. **Normal maps do nothing on surfaces lit per vertex.** The site draws them with an unlit
+    material (the light is baked into the vertex colours), so detail from a dense model has to
+    be baked into a picture laid over the mesh instead (the mech's `mech_detail`: AO, edges,
+    panel lines). A "vertex" material with both `img` and `albedo` multiplies the picture by
+    the per-vertex colour in Blender and on the site.
+40. **The export can fail with "[Errno 22] Invalid argument" writing a room file** while the
+    preview server has that file open (Windows). Stop the preview server before `npm run export`.
+41. **AI-generated downloads are one fused mesh.** No parts, no rig: the mech's shield, wings
+    and katana grip are cut out by position, and it is posed by weights to a hand-placed
+    skeleton. Check a new pose from the side as well as the front; at 1.4 m tall the tank's
+    1.07 m depth is the hard limit, and the front glass decides how far it can come forward.
 
 ## Next
 
@@ -786,8 +842,6 @@ The traps hit so far, so they don't get rediscovered.
   `npm run figure` (steps above).
 - The car (step 2): pick a model and an engine sound from the options shown,
   whenever you want to pick it back up.
-- The aquarium's mech: your spec first (see the build order).
-- The living room's panel copy (it still shows its todo).
 - For later steps:
   - a choice of chess position for the dining table;
   - approval before buying anything over about $60, most likely the car model.
@@ -799,12 +853,8 @@ The traps hit so far, so they don't get rediscovered.
    on and a licensed engine start plays on click (sound only after a click). The
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms (in progress). Batches 1 to 5 are done.
-   Next: the aquarium mech.** See "Step 5: the brief for the remaining rooms" below.
-   - **The aquarium mech: its own session next, with your spec first.** It goes on
-     the tank's floor in place of the moss-covered rock (`ROCK` in `living.py`), an
-     original design, moss-covered. Nothing is built for it yet.
-6. **Polish.** The brief's performance section now has targets and no hard
+5. **The remaining rooms: done** (batches 1 to 5 and the aquarium mech, 21 Nov 2026).
+6. **Polish (next).** The brief's performance section now has targets and no hard
    total size limit. Step 6 builds them:
    - **A still of the landing shot within about 1 second.** It's a full-quality
      render from the exact landing camera; the live 3D fades in over it from the
@@ -821,7 +871,8 @@ The traps hit so far, so they don't get rediscovered.
        bottles). Their light is baked per vertex and differs per copy, so
        instancing needs that light kept per instance (or a shared average).
        Decide which in step 6.
-     - Bring the dining room under budget (see "Furnishing a room").
+     - Bring the dining room under budget (see "Furnishing a room"), and the living room
+       back to about 4 MB (it is 4.35 MB with the mech; the detail picture at 512 px would do it).
    - **A still for every room**, rendered from its camera (`PREVIEW_CAMERAS`
      already has the dining one), shown while that room loads.
    - **Prefetching.** Start loading a room when the visitor hovers over its label,
@@ -881,7 +932,7 @@ images you supply.
 
 **Batches:** (1) study and games room, done; (2) kitchen and gym, done; (3) living
 room and library, done; (4) trophy room, bedroom, garage and foyer, done; (5) the resume
-view, done. The aquarium mech gets its own session, from your spec.
+view, done. The aquarium mech, done (21 Nov 2026).
 
 **Batch 4's later additions, your words:** "Garage: empty bays, no cars yet, but leave space
 and lighting for one car later." Then, after review: a car under a fitted cover in the west

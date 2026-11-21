@@ -99,6 +99,10 @@ function renderPanel(r) {
   for (const f of Object.values(world?.manifest.figures || {})) {
     if (f.room === r.id) h += `<p class="credit">${esc(f.credit)} <a href="${encodeURI(f.link)}" target="_blank" rel="noopener">Model page</a></p>`;
   }
+  // credits for models built into the room (the tank's mech), from the manifest
+  for (const c of world?.manifest.credits || []) {
+    if (c.room === r.id) h += `<p class="credit">${esc(c.credit)} <a href="${encodeURI(c.link)}" target="_blank" rel="noopener">Model page</a></p>`;
+  }
   if (r.todo) h += `<p class="todo">To do: ${r.todo}</p>`;
   $("panelBody").innerHTML = h; $("panel").hidden = false;
   $("panelBody").querySelectorAll("[data-go]").forEach(a => a.onclick = e => { e.preventDefault(); const t = a.dataset.go; if (t === "resume") showResume(true); else openRoom(t); });

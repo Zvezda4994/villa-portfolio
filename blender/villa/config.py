@@ -121,6 +121,19 @@ CHESS_CAPTURED = "pP"
 # then commit and push. PROGRESS.md has the full checklist.
 FIGURE = None
 
+# ---- The mech in the living room's tank --------------------------------------------
+# A downloaded model (fan art, your choice, 20 Nov 2026), posed, repainted and mossed by
+# blender/villa/mech.py. The file lives under assets_src/models/ (never committed);
+# mech_source.py thins it once into build/mech_source.npz. The credit is shown in the
+# living room's panel (from the manifest) and listed in CREDITS.md.
+# To take it down: set MECH_MODEL = None, rebuild (npm run scene, bake:draft, export),
+# then commit and push. The tank keeps its stones and plants, with an empty corner.
+MECH_MODEL = dict(
+    file="nu_gundam/samurai_style_gundam_mecha/scene.gltf",
+    credit='Mech based on "Samurai Style Gundam Mecha" by lawlietrecluze, CC BY 4.0; repainted, posed and weathered.',
+    link="https://sketchfab.com/3d-models/samurai-style-gundam-mecha-298b529104e84c92a58a850c14d00525",
+)
+
 # ---- The contact card on the pool deck's side table --------------------------------
 # Change these and rebuild the scene
 # (npm run scene, then bake and export) to reprint the card.

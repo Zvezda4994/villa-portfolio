@@ -22,7 +22,6 @@
 //   opens  (optional, with hit) "resume" opens the resume view; otherwise this stop's panel
 //
 // A body line is a paragraph, or, if it starts with "<ul" (a list), placed as it is.
-// The living room is still waiting on its copy (todo).
 
 export const ROOMS = [
   {id: "driveway", floor: "out", area: "The driveway", title: "Hi, I'm Aditya", at: [-3, 1.6, 13], view: [[-12, 3.2, 19], [-2.6, 1, 10.6]],
@@ -57,8 +56,7 @@ export const ROOMS = [
     // by the study door, across the sofa to the tank, the moodboard on the right (blender/villa/living.py, LIVING_CAM).
     // The moodboard's frames get a fresh random pick from web/assets/moodboard/ each time the room opens.
     view: [[3.45, 1.45, -0.8], [9.4, 1.05, -6.2]], near: 0.4,
-    body: ["Floor-to-ceiling tank with a moss-covered mech resting on the bottom. Pure decoration, and the thing guests ask about first."],
-    todo: "The tank and the mech arrive when this room is furnished."},
+    body: ["Floor-to-ceiling tank with a moss-covered mech resting on the bottom. Pure decoration, and the thing guests ask about first."]},
 
   {id: "kitchen", floor: "g", area: "Kitchen", title: "Tools and stack", at: [-8.5, 1.7, -4],
     // sitting at the island, looking across it at the labelled shelves (blender/villa/kitchen.py, KITCHEN_CAM)

@@ -11,7 +11,7 @@
   "color": [
    0.5111722946166992,
    0.6016301214694977,
-   0.6404514610767365
+   0.6404514908790588
   ]
  },
  "sky": {
@@ -2255,6 +2255,26 @@
    ],
    "room": "living"
   },
+  "aqua_moss": {
+   "kind": "vertex",
+   "color": [
+    0.008540382112116999,
+    0.024515013703524748,
+    0.003935939504088967
+   ],
+   "room": "living",
+   "doubleSided": true
+  },
+  "mech_body": {
+   "kind": "vertex",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "map": "textures/mech_detail.ktx2",
+   "room": "living"
+  },
   "moodboard_1": {
    "kind": "vertex",
    "color": [
@@ -3604,6 +3624,32 @@
    ],
    "fov": 55.0
   },
+  "living_sofa": {
+   "pos": [
+    6.3,
+    1.18,
+    -3.9
+   ],
+   "target": [
+    7.35,
+    1.3,
+    -7.2
+   ],
+   "fov": 60.0
+  },
+  "living_mech": {
+   "pos": [
+    7.85,
+    0.85,
+    -5.8
+   ],
+   "target": [
+    9.4,
+    0.88,
+    -7.15
+   ],
+   "fov": 44.0
+  },
   "library": {
    "pos": [
     2.55,
@@ -3839,11 +3885,18 @@
    "fov": 55.0
   }
  },
+ "credits": [
+  {
+   "room": "living",
+   "credit": "Mech based on \"Samurai Style Gundam Mecha\" by lawlietrecluze, CC BY 4.0; repainted, posed and weathered.",
+   "link": "https://sketchfab.com/3d-models/samurai-style-gundam-mecha-298b529104e84c92a58a850c14d00525"
+  }
+ ],
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303998,
-  "sky pool": 339772,
-  "sky front": 389653,
+  "sky environment": 303997,
+  "sky pool": 339857,
+  "sky front": 389894,
   "texture cobblestone_floor_08": 1325057,
   "texture concrete_wall_007": 299032,
   "texture floor_pebbles_01": 337436,
@@ -3878,6 +3931,7 @@
   "texture library_spines": 992829,
   "texture living_tv": 266874,
   "texture manuscript": 205199,
+  "texture mech_detail": 647502,
   "texture painting": 317639,
   "texture persian_rug": 507179,
   "texture philo_leaves": 67382,
@@ -3901,22 +3955,22 @@
   "room gym": 707912,
   "room kitchen": 1321444,
   "room library": 1710032,
-  "room living": 2428348,
+  "room living": 2929236,
   "room pool": 1214128,
   "room study": 1188908,
   "room trophy": 1879224,
-  "lightmap ext": 313009,
-  "lightmap ext (small)": 309041,
-  "lightmap gnd": 193994,
-  "lightmap gnd (small)": 190442,
-  "lightmap upr": 197001,
-  "lightmap upr (small)": 193649,
-  "lightmap terrain": 289760,
-  "lightmap terrain (small)": 285864,
-  "lightmap din": 78581,
-  "lightmap pol": 65186,
-  "lightmap stu": 59701,
-  "lightmap gam": 46611,
-  "lightmap kit": 51263
+  "lightmap ext": 313644,
+  "lightmap ext (small)": 309660,
+  "lightmap gnd": 194188,
+  "lightmap gnd (small)": 190644,
+  "lightmap upr": 196431,
+  "lightmap upr (small)": 193103,
+  "lightmap terrain": 289686,
+  "lightmap terrain (small)": 285790,
+  "lightmap din": 78677,
+  "lightmap pol": 65414,
+  "lightmap stu": 56180,
+  "lightmap gam": 47883,
+  "lightmap kit": 49589
  }
 }

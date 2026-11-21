@@ -311,10 +311,20 @@ def write_manifest(fog, sizes, sky_paths, rooms):
         lightmaps=lightmaps,
         materials=materials,
         cameras={k: dict(pos=list(v["pos"]), target=list(v["target"]), fov=v["fov"]) for k, v in PREVIEW_CAMERAS.items()},
+        credits=_credits(),
         bytes=sizes,
     )
     (C.ASSETS / "manifest.json").write_text(json.dumps(manifest, indent=1))
     return manifest
+
+
+def _credits():
+    """Credits shown in a room's panel for models built into it (the tank's mech)."""
+    from villa.mech_source import source_path
+    out = []
+    if C.MECH_MODEL and source_path().exists():
+        out.append(dict(room="living", credit=C.MECH_MODEL["credit"], link=C.MECH_MODEL["link"]))
+    return out
 
 
 def main():

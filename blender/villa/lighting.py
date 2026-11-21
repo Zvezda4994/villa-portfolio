@@ -237,7 +237,7 @@ from .garage import GARAGE_CAM, KEYS_CAM as GARAGE_KEYS_CAM, SCREEN_CAM as GARAG
 from .gym import BOARD_CAM as GYM_BOARD_CAM, GEAR_CAM, GYM_CAM, WIDE_CAM as GYM_WIDE_CAM  # noqa: E402
 from .kitchen import KITCHEN_CAM, SHELF_CAM as KITCHEN_SHELF_CAM, WIDE_CAM as KITCHEN_WIDE_CAM  # noqa: E402
 from .library import DESK_CAM as LIBRARY_DESK_CAM, LIBRARY_CAM, SPINES_CAM, SPINES_CAM_B  # noqa: E402
-from .living import LIVING_CAM, MOODBOARD_CAM, TANK_CAM, TV_CAM  # noqa: E402
+from .living import LIVING_CAM, MECH_CAM, MOODBOARD_CAM, SOFA_CAM, TANK_CAM, TV_CAM  # noqa: E402
 from .pool import CARD_CAM, MOMENT_CAM  # noqa: E402
 from .study import DESK_CAM, STUDY_CAM  # noqa: E402
 from .trophy import BELT_CAM as TROPHY_BELT_CAM, CASES_CAM as TROPHY_CASES_CAM, CHESS_CAM as TROPHY_CHESS_CAM, JERSEY_CAM as TROPHY_JERSEY_CAM, TROPHY_CAM  # noqa: E402
@@ -269,6 +269,8 @@ PREVIEW_CAMERAS = {
     "living_tv": TV_CAM,
     "living_moodboard": MOODBOARD_CAM,
     "living_tank": TANK_CAM,
+    "living_sofa": SOFA_CAM,
+    "living_mech": MECH_CAM,
     "library": LIBRARY_CAM,
     "library_spines": SPINES_CAM,
     "library_spines_b": SPINES_CAM_B,

@@ -154,6 +154,20 @@ delete the row if it is ever taken down:
 | Used for | Name | Author | License | Link |
 |---|---|---|---|---|
 
+## The aquarium mech
+
+The mech in the living room's tank is built from a downloaded model (`MECH_MODEL` in
+`blender/villa/config.py`). The download stays in `assets_src/` (not committed); the
+build thins it, poses it, repaints it and adds moss, so only that changed copy ships,
+inside `web/assets/rooms/living.glb`. The living room's panel shows the credit.
+It is fan art in the style of a well-known franchise; you chose to use it (20 Nov
+2026) and to take it down on request. To do that, set `MECH_MODEL = None`, rebuild,
+and delete this row.
+
+| Used for | Name | Author | License | Link |
+|---|---|---|---|---|
+| The mech in the tank (posed, repainted, weathered, mossed) | Samurai Style Gundam Mecha | lawlietrecluze | CC BY 4.0 | https://sketchfab.com/3d-models/samurai-style-gundam-mecha-298b529104e84c92a58a850c14d00525 |
+
 ## Sky and lighting
 
 Blender's built-in sky model. No HDRI files.

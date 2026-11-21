@@ -35,6 +35,13 @@ Furniture adds three things:
            web/assets/moodboard/ over it, picked at random each time the room opens.
 """
 
+def _mech_model_present():
+    """Whether the tank's mech model is set and downloaded (its detail picture is made from it)."""
+    from .mech_source import source_path
+    path = source_path()
+    return bool(path and path.exists())
+
+
 MATS = {
     # --- house ---
     "stone":       dict(kind="baked", tex="marble_01", tile=2.4, tint=(1.0, 0.97, 0.92), rough=0.7),
@@ -323,6 +330,11 @@ MATS = {
     "aqua_red":    dict(kind="vertex", room="living", color=(0.62, 0.22, 0.14), double_sided=True),
     "aqua_olive":  dict(kind="vertex", room="living", color=(0.40, 0.48, 0.16), double_sided=True),
     "driftwood":   dict(kind="vertex", room="living", color=(0.23, 0.16, 0.10)),
+    "aqua_moss":   dict(kind="vertex", room="living", color=(0.09, 0.17, 0.05), double_sided=True),    # strands hanging off the mech
+    # the mech: painted per vertex, with the full-detail model's crevices, edges and panel
+    # lines baked into a grey picture over its own UVs (mech_source.py)
+    "mech_body":   dict(kind="vertex", room="living", albedo=True, color=(1, 1, 1),
+                        **(dict(img="mech_detail") if _mech_model_present() else {})),
     # the moodboard's frames: plain colour fields in the file; the site lays one of the
     # pictures in web/assets/moodboard/ over each when the room opens. The number is
     # the picture's shape (width / height), for cropping.
@@ -537,6 +549,20 @@ def build_materials():
                     link(other, socket["B_Color"])
                     colour = socket["Result_Color"]
                 link(colour, bsdf.inputs["Base Color"])
+            elif "img" in m and m.get("albedo"):
+                # a picture over the object's own UVs, times a colour painted per vertex (the mech)
+                node = new("ShaderNodeTexImage")
+                node.image = image(picture_path(m["img"]))
+                coords = new("ShaderNodeUVMap")
+                coords.uv_map = "UVMap"
+                link(coords.outputs["UV"], node.inputs["Vector"])
+                attr = new("ShaderNodeAttribute")
+                attr.attribute_name = "Albedo"
+                mul = new("ShaderNodeVectorMath")
+                mul.operation = "MULTIPLY"
+                link(node.outputs["Color"], mul.inputs[0])
+                link(attr.outputs["Color"], mul.inputs[1])
+                link(mul.outputs[0], bsdf.inputs["Base Color"])
             elif "img" in m or ("moodboard" in m and picture_path(name).exists()):
                 # One picture over the object's own UVs, times a plain colour. (A moodboard
                 # frame gets one of your pictures only in Blender's renders; on the site the

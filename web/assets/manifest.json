@@ -4104,6 +4104,14 @@
   }
  },
  "hotspots": {
+  "gym_gloves": {
+   "room": "gym",
+   "pos": [
+    7.66,
+    1.25,
+    0.255
+   ]
+  },
   "living_couch_seat": {
    "room": "living",
    "pos": [
@@ -4143,14 +4151,6 @@
     0.67,
     1.407
    ]
-  },
-  "gym_gloves": {
-   "room": "gym",
-   "pos": [
-    7.66,
-    1.25,
-    0.255
-   ]
   }
  },
  "credits": [
@@ -4162,9 +4162,9 @@
  ],
  "bytes": {
   "sky background": 521262,
-  "sky environment": 303998,
-  "sky pool": 339753,
-  "sky front": 389188,
+  "sky environment": 303997,
+  "sky pool": 339751,
+  "sky front": 389192,
   "texture cobblestone_floor_08": 1325057,
   "texture cobblestone_floor_08 (small)": 336653,
   "texture concrete_wall_007": 299032,
@@ -4235,18 +4235,18 @@
   "room pool": 1214128,
   "room study": 1239712,
   "room trophy": 1370788,
-  "lightmap ext": 314156,
-  "lightmap ext (small)": 310164,
-  "lightmap gnd": 193899,
-  "lightmap gnd (small)": 190371,
-  "lightmap upr": 177220,
-  "lightmap upr (small)": 174012,
-  "lightmap terrain": 289726,
-  "lightmap terrain (small)": 285822,
-  "lightmap din": 78527,
-  "lightmap pol": 64554,
-  "lightmap stu": 53849,
-  "lightmap gam": 46878,
-  "lightmap kit": 49179
+  "lightmap ext": 4123168,
+  "lightmap ext (small)": 272926,
+  "lightmap gnd": 2676490,
+  "lightmap gnd (small)": 200974,
+  "lightmap upr": 2320973,
+  "lightmap upr (small)": 171611,
+  "lightmap terrain": 3417455,
+  "lightmap terrain (small)": 255675,
+  "lightmap din": 1051565,
+  "lightmap pol": 791129,
+  "lightmap stu": 774586,
+  "lightmap gam": 541388,
+  "lightmap kit": 621465
  }
 }

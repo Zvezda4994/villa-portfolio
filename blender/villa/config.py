@@ -84,7 +84,7 @@ ATLASES = {
     "terrain": dict(size=2048, density=None),  # the sand (laid out separately)
     # Furnished rooms each get their own lightmap for the big furniture surfaces,
     # loaded together with the room after the first view is up.
-    "din": dict(size=1024, density=140.0, room="dining"),
+    "din": dict(size=1024, density=140.0, room="dining", ship=512),   # shipped at 512 px: no visible change, 0.8 MB less
     "pol": dict(size=1024, density=90.0, room="pool"),
     "stu": dict(size=1024, density=110.0, room="study"),
     "gam": dict(size=1024, density=110.0, room="games"),

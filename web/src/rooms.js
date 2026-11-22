@@ -33,7 +33,7 @@ export const ROOMS = [
   {id: "dining", floor: "g", area: "Dining room", title: "Meruem Chess Coach", at: [-2.3, 1.9, -4.3],
     // the visitor's seat at the table, looking down over the board (blender/villa/dining.py, CHESS_CAM)
     view: [[-1.23, 1.30, -3.52], [-1.25, 0.77, -4.35]], near: 0.4,
-    body: ["I started learning chess and wanted a coach that goes into the why: why one move is best, how to calculate a line, how to approach a position. So I built one. Stockfish grades every move, Maia plays like a real opponent at my rating, and Claude explains the engine’s lines in plain English. It runs entirely in the browser, with no server, and adapts as I improve.",
+    body: ["I started learning chess and wanted a coach that goes into the why: why one move is best, how to calculate a line, how to approach a position. So I built one. I used Stockfish to grade and compute moves, Maia to emulate a real opponent at any elo, and Claude for explanation and reasoning behind engine lines. It is serverless and adaptive in difficulty.",
       "On the table: a Ruy Lopez, Chigorin variation, after 16...Bd7."],
     links: [["Live site", "https://zvezda4994.github.io/Meruem-Chess-Coach/"], ["Code", "https://github.com/Zvezda4994/Meruem-Chess-Coach", 0, 1]]},
 
@@ -50,13 +50,13 @@ export const ROOMS = [
   {id: "gym", floor: "g", area: "Home gym", title: "Combat sports", at: [9, 1.7, 4],
     // behind the heavy bag, looking at the gear wall (blender/villa/gym.py, GYM_CAM)
     view: [[8.75, 1.4, 6.3], [7.15, 1.0, 0.25]], near: 0.4,
-    body: ["I’ve trained in combat sports since I was 14, mostly Muay Thai, kickboxing and boxing, at Grant’s Martial Arts in Dartmouth."]},
+    body: ["I’ve trained and competed in combat sports since I was 14, mostly Muay Thai, kickboxing and boxing, at Grant’s Martial Arts in Dartmouth."]},
 
   {id: "living", floor: "g", area: "Living room", title: "The fish tank", at: [6.5, 1.9, -6.6],
     // by the study door, across the sofa to the tank, the moodboard on the right (blender/villa/living.py, LIVING_CAM).
     // The moodboard's frames get a fresh random pick from web/assets/moodboard/ each time the room opens.
     view: [[3.45, 1.45, -0.8], [9.4, 1.05, -6.2]], near: 0.4,
-    body: ["Learning Blender for this house was meant to be a means to an end. Somewhere along the way I started building things just because I enjoyed it, and this tank is my favourite."]},
+    body: ["I started learning Blender only for this project, and ended up quite liking the process and intricacies of 3D modeling. This tank is my favourite."]},
 
   {id: "kitchen", floor: "g", area: "Kitchen", title: "Tools and stack", at: [-8.5, 1.7, -4],
     // sitting at the island, looking across it at the labelled shelves (blender/villa/kitchen.py, KITCHEN_CAM)
@@ -69,13 +69,13 @@ export const ROOMS = [
     // in the foyer's front corner, across to the stairs, the plinth and the resume door (blender/villa/foyer.py, FOYER_CAM)
     view: [[0.4, 1.6, 7.0], [-2.6, 1.0, 1.0]], near: 0.4,
     hit: [[-2.79, 0.0, 1.37], [-1.96, 1.34, 1.47]], opens: "resume",
-    body: ["The full resume as a plain page, for anyone short on time. The little door under the stairs opens it too."],
+    body: ["My resume as a plain page, for anyone short on time."],
     links: [["Open resume", "#resume", 1]]},
 
   {id: "library", floor: "u", area: "Library", title: "Books and writing", at: [6.75, 5.2, 4],
     // from the landing door, across to the east wall's shelves, the desk on the right (blender/villa/library.py, LIBRARY_CAM)
     view: [[2.55, 5.0, 5.75], [11.0, 4.7, 3.05]], near: 0.4,
-    body: ["Reading has been a formative habit for as long as I can remember. I keep coming back to Dumas, Fleming and the old Travis McGee mysteries, and to anything that gives me new information or a new way to think. Ask me about the one I’m writing."]},
+    body: ["Reading has been a formative habit for as long as I can remember. I greatly enjoy literature of intrigue like Dumas, Fleming, and old Travis McGee mysteries, as well as getting insights into high performers and frameworks that promote novel ways of thinking. Ask me about the one I’m writing!"]},
 
   {id: "trophy", floor: "u", area: "Trophy room", title: "Wins", at: [8, 5.2, -4],
     // inside the games room door, looking at the display wall, the terrace on the left (blender/villa/trophy.py, TROPHY_CAM)

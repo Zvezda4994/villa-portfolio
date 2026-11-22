@@ -25,7 +25,8 @@ import bpy  # noqa: E402
 import numpy as np  # noqa: E402
 
 from villa import config as C  # noqa: E402
-from villa.ktx2 import write_ktx2  # noqa: E402
+from villa.denoise import chart_ids, denoise  # noqa: E402
+from villa.ktx2 import write_ktx2, write_smaller  # noqa: E402
 from villa.lighting import setup_render  # noqa: E402
 from villa.textures import to_srgb  # noqa: E402
 
@@ -174,7 +175,20 @@ def main():
             if light is None:
                 continue
             np.save(C.BAKE_DIR / f"{atlas}.npy", light.astype(np.float16))
+        # the grain Cycles leaves in a bake, smoothed within each chart (villa/denoise.py);
+        # the raw bake stays in the .npy, so --encode-only redoes this from it
+        scale = size / spec["size"]
+        light, grain, grain_after = denoise(light, rects.get(atlas), scale)
+        light = fill_holes(light, chart_ids(light.shape[:2], rects.get(atlas), scale) >= 0)
         big = encode(light, out / f"{atlas}.ktx2", max_levels=4)
+        # A room's lightmap can be baked sharper than it ships: `ship` keeps only the
+        # mip levels up to that size (the dining room's, to stay under its 4.5 MB).
+        if spec.get("ship"):
+            tmp = out / f"{atlas}.ship.ktx2"
+            n = write_smaller(out / f"{atlas}.ktx2", tmp, spec["ship"])
+            if n:
+                tmp.replace(out / f"{atlas}.ktx2")
+                big, size = n, spec["ship"]
         # The house's lightmaps also get a small copy that loads first. A furnished
         # room's arrives after the first view anyway, so it only needs the full one.
         if spec.get("room"):
@@ -182,11 +196,12 @@ def main():
             small = 0
         else:
             small = encode(shrink(light, min(size, C.LOW_RES)), out / f"{atlas}_lo.ktx2", max_levels=3)
-        report[atlas] = dict(size=size, bytes=big, bytes_lo=small,
+        report[atlas] = dict(size=size, bytes=big, bytes_lo=small, grain=grain, grain_after=grain_after,
                              p50=float(np.percentile(light, 50)), p99=float(np.percentile(light, 99)),
                              p999=float(np.percentile(light, 99.9)), max=float(light.max()))
         print(f"[bake] {atlas}: {size}px  {big // 1024} KB (+{small // 1024} KB small)  "
-              f"median {report[atlas]['p50']:.2f}  99% {report[atlas]['p99']:.2f}  max {report[atlas]['max']:.2f}  {time.time() - start:.0f}s")
+              f"median {report[atlas]['p50']:.2f}  99% {report[atlas]['p99']:.2f}  max {report[atlas]['max']:.2f}  "
+              f"grain {grain:.3f} -> {grain_after:.3f}  {time.time() - start:.0f}s")
 
     if not only and not encode_only:
         start = time.time()

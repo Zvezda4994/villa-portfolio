@@ -446,6 +446,10 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
   const waiting = key => { const j = jobs.get(key); return j && !j.started ? key : null; };
   const mapJobs = [...jobs.keys()].filter(k => k.startsWith("map:"));
   function next() {
+    // the room the visitor opened has the connection to itself: after the full bake the
+    // sharp lightmaps are 12 MB, and sharing with them doubled a room's wait
+    const open = wanted && jobs.get("room:" + wanted);
+    if (open && open.started && !open.finished) return null;
     return (wanted && waiting("room:" + wanted)) || waiting("light") ||
       likely.map(n => waiting("room:" + n)).find(Boolean) || mapJobs.map(waiting).find(Boolean) ||
       (saveData ? null : roomNames.map(n => waiting("room:" + n)).find(Boolean));
@@ -460,7 +464,7 @@ export async function loadWorld(renderer, scene, onProgress = () => {}) {
         continue;
       }
       const j = jobs.get(key); j.started = true;
-      try { await j.run(); } catch (e) { console.warn("Could not load", key, e); } finally { j.done(); }
+      try { await j.run(); } catch (e) { console.warn("Could not load", key, e); } finally { j.finished = true; j.done(); poke(); }
     }
   }
   const poke = () => { for (const wake of sleepers.splice(0)) wake(); };

@@ -64,6 +64,7 @@ SHELF_X = -6.30                   # the shelf's middle along the lounge wall
 MAP = dict(w=1.62, h=0.64, y=1.96, fr=0.028)  # over the headboard, on the bed's middle
 LAT = (-58.0, 84.0)               # the map's latitude range (it's a plain equirectangular projection)
 PINS = [("Russia", 55.76, 37.62), ("Japan", 35.68, 139.69)]     # at the capitals, Moscow and Tokyo
+PAINTED_PINS = [("France", 48.86, 2.35)]     # Paris: printed on the map picture (paint_pins), no geometry or bake
 SHELF = dict(y=1.30, w=1.40, d=0.22, t=0.035)
 CHAIR = dict(pos=(-6.72, 1.18), yaw=166.0)
 SIDE_TABLE = (-5.86, 1.42)
@@ -571,7 +572,34 @@ def paint_map(w=1024, ss=2):
         if 0 <= y < h:
             img[y, :] = img[y, :] * (0.80 if lat == 0 else 0.86)
     img *= (1 + 0.012 * rng.standard_normal((h, w)))[..., None]
+    paint_pins(img)
     save_png(picture_path("world_map"), np.clip(img, 0, 1).astype(np.float32))
+
+
+def paint_pins(img):
+    """Pins printed on the map picture itself (PAINTED_PINS), so one can be added without
+    re-baking: a red head the size of the real pins' (PINS), lit from above, with a soft
+    shadow below and to the right. Rows run south to north, as in paint_map."""
+    h, w = img.shape[:2]
+    px_per_m = w / MAP["w"]
+    r = 0.0095 * px_per_m                                  # the modelled pins' head radius
+    yy, xx = np.mgrid[0:h, 0:w].astype(float) + 0.5
+    red, dark = np.array([0.78, 0.12, 0.09]), np.array([0.42, 0.05, 0.04])
+    for _name, lat, lon in PAINTED_PINS:
+        u, t = map_point(lat, lon)
+        cx, cy = u * w, t * h
+        # the shadow, cast down and to the right by the spot over the bed
+        d = np.hypot(xx - (cx + 0.45 * r), yy - (cy - 0.85 * r))
+        shade = np.clip(1.0 - d / (1.5 * r), 0.0, 1.0) ** 1.5 * 0.55
+        img *= (1.0 - shade)[..., None]
+        # the head: red, darker toward its rim, a highlight up and to the left
+        d = np.hypot(xx - cx, yy - cy)
+        cover = np.clip(r - d + 0.5, 0.0, 1.0)
+        edge = np.clip(d / r, 0.0, 1.0) ** 2
+        col = red * (1 - edge[..., None]) + dark * edge[..., None]
+        hl = np.clip(1.0 - np.hypot(xx - (cx - 0.35 * r), yy - (cy + 0.40 * r)) / (0.45 * r), 0.0, 1.0) ** 2
+        col = col + (np.array([1.0, 0.92, 0.88]) - col) * (0.75 * hl)[..., None]
+        img[:] = img * (1 - cover[..., None]) + col * cover[..., None]
 
 
 # ---- the bench and the reading chair ------------------------------------------------------------

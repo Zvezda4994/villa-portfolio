@@ -160,7 +160,7 @@ test("the models only use extensions and materials the site understands", () => 
 // Hotspot anchors (blender/villa/geo.py, Builder.anchor): empties the site can hang a click
 // target on. Each is listed in the manifest and is a plain node in its own room's file.
 test("the hotspot anchors are in the manifest and in their rooms' files", () => {
-  const wanted = ["living_couch_seat", "resume_door", "library_real_books", "library_laptop", "bedroom_record_player"];
+  const wanted = ["living_couch_seat", "resume_door", "library_real_books", "library_laptop", "bedroom_record_player", "gym_gloves"];
   const spots = manifest.hotspots || {};
   for (const name of wanted) assert.ok(spots[name], `no hotspot anchor called ${name}`);
   for (const [name, h] of Object.entries(spots)) {
@@ -234,6 +234,25 @@ test("rooms data is complete and its links go somewhere", async () => {
       if (internal) assert.ok(url === "#resume" || ids.has(url.slice(1)), `${r.id}: "${label}" points to ${url}, which isn't a room`);
       else assert.match(url, /^https:\/\//, `${r.id}: "${label}" should be an https link`);
     }
+  }
+});
+
+// The dots in the rooms (HOTSPOTS in rooms.js): each on an exported anchor in its stop's room,
+// doing exactly one thing.
+test("every hotspot sits on an anchor in its stop's room and does one thing", async () => {
+  const {ROOMS, HOTSPOTS} = await import(pathToFileURL(join(WEB, "src", "rooms.js")).href);
+  const isPoint = p => Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
+  for (const s of HOTSPOTS) {
+    const stop = ROOMS.find(r => r.id === s.stop);
+    assert.ok(stop, `hotspot ${s.anchor}: no stop called ${s.stop}`);
+    const h = (manifest.hotspots || {})[s.anchor];
+    assert.ok(h, `hotspot ${s.anchor}: no anchor of that name in the manifest`);
+    assert.equal(h.room, stop.room || stop.id, `hotspot ${s.anchor}: its anchor is in the ${h.room} room, not ${stop.room || stop.id}`);
+    assert.ok(s.label, `hotspot ${s.anchor}: needs a label for screen readers`);
+    const does = ["view", "resume", "url", "tip"].filter(k => s[k]);
+    assert.equal(does.length, 1, `hotspot ${s.anchor}: should do one thing, not ${does.join(" and ") || "nothing"}`);
+    if (s.view) assert.ok(s.view.length === 2 && s.view.every(isPoint), `hotspot ${s.anchor}: "view" should be [camera, target]`);
+    if (s.url) assert.match(s.url, /^https:\/\//);
   }
 });
 

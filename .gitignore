@@ -16,3 +16,6 @@ node_modules/
 
 # Work set aside for later (the scripted character), kept locally, never committed
 _shelved/
+
+# Review shots of the site's interface, taken for checking (not kept in the repo)
+previews/ui_*

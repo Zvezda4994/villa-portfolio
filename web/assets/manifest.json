@@ -4143,6 +4143,14 @@
     0.67,
     1.407
    ]
+  },
+  "gym_gloves": {
+   "room": "gym",
+   "pos": [
+    7.66,
+    1.25,
+    0.255
+   ]
   }
  },
  "credits": [
@@ -4212,14 +4220,14 @@
   "texture vase_round": 68338,
   "texture vase_tall": 78787,
   "texture whiteboard": 157289,
-  "texture world_map": 311004,
+  "texture world_map": 311103,
   "model": 2354320,
   "room bedroom": 775992,
   "room dining": 2009996,
   "room foyer": 937768,
   "room games": 584944,
   "room garage": 517940,
-  "room gym": 707912,
+  "room gym": 708048,
   "room kitchen": 1369940,
   "room landing": 70624,
   "room library": 1710364,

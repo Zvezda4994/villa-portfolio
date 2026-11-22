@@ -5,7 +5,7 @@
 
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
-import {ROOMS, FLOOR_NAME, NEIGHBOURS} from "./rooms.js";
+import {ROOMS, FLOOR_NAME, NEIGHBOURS, HOTSPOTS} from "./rooms.js";
 import {loadResume, resumeHTML, RESUME_PDF} from "./resume.js";
 import {Still, STILL, cameraFov, stillFiles} from "./still.js";
 import {loadWorld, TONE_MAPPING} from "./world.js";
@@ -51,6 +51,12 @@ const camera = new THREE.PerspectiveCamera(STILL.fov, 1, 0.3, 4000);
 scene.add(camera);                       // so things carried by the camera (the visitor's hand) are drawn
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI / 2 - 0.04; controls.minDistance = 4; controls.maxDistance = 90;
+// touch: one finger looks around, two pan and pinch to zoom (OrbitControls' own default, set here on purpose)
+controls.touches = {ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN};
+// Inside a room the camera may tip a little past level, to look up at a lamp or the top shelves; outside it
+// stays above what it looks at. Review shots lift the limit altogether (reviewShot).
+const POLAR = {out: Math.PI / 2 - 0.04, room: Math.PI / 2 + 0.12};
+let reviewShot = false;
 
 const HOME = {pos: [-19, 5.5, 30], target: [-2, 1.8, 8]};      // the landing shot (and its still)
 camera.position.set(...HOME.pos); controls.target.set(...HOME.target);
@@ -68,12 +74,16 @@ let view = "out";
 // on, even if the view changes first (from the games room to the kitchen, say).
 // Sizes from blender/villa/config.py: HALF_W, HALF_D, H1 and ROOF_Y.
 const HOUSE = {halfW: 12, halfD: 8, ceiling: {g: 3.2, u: 6.5}};
+const FLOOR_Y = {g: 0, u: 3.5};                  // each floor's level (config.F2 upstairs)
 let lifted = "", inside = null;                  // inside: the floor whose room the camera is in
 function fitFloors() {
   if (!world) return;
   const p = camera.position, inHouse = Math.abs(p.x) < HOUSE.halfW && Math.abs(p.z) < HOUSE.halfD;
-  if (inside && !(inHouse && p.y < HOUSE.ceiling[inside])) inside = null;
+  // out through the ceiling, or down through the floor (a flight between floors whose frames
+  // happened to skip the part above the roof)
+  if (inside && !(inHouse && p.y < HOUSE.ceiling[inside] && p.y > FLOOR_Y[inside] - 0.05)) inside = null;
   if (!inside && inHouse && p.y < HOUSE.ceiling[view]) inside = view;
+  if (!reviewShot) controls.maxPolarAngle = inside ? POLAR.room : POLAR.out;
   const now = inside ? "out" : view;             // inside a room, the whole house shows
   if (now === lifted) return;
   lifted = now;
@@ -82,6 +92,7 @@ function fitFloors() {
 }
 function setView(v, fly = true) {
   view = v;
+  if (fly) here = null;                  // off to an overview: no room's hotspots any more
   fitFloors();
   controls.minDistance = 4;
   $("vOut").setAttribute("aria-pressed", v === "out"); $("vG").setAttribute("aria-pressed", v === "g"); $("vU").setAttribute("aria-pressed", v === "u");
@@ -104,13 +115,15 @@ const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 // (used to come down into a room from above instead of through a wall).
 function flyTo(pos, target, ms = 1300, via = null) {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  userMoved = false;                     // the stop's view is kept as authored until the visitor moves (keepClear)
   tween = {p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...pos), t1: new THREE.Vector3(...target),
     via: via && new THREE.Vector3(...via), start: performance.now(), ms: reduce ? 1 : ms};
 }
 let current = null, opening = null;      // opening: the room's own loading (furniture, moodboard pictures)
+let here = null;                         // the stop last opened, whose hotspots show while the camera is inside
 function openRoom(id, fly = true) {
   const r = ROOMS.find(x => x.id === id); if (!r) return;
-  current = r;
+  current = r; here = r; hideTip();
   if (world) {
     opening = world.openRoom(r.room || r.id);
     world.prefetch((NEIGHBOURS[r.id] || []).map(id => { const x = ROOMS.find(s => s.id === id); return x ? x.room || x.id : id; }));
@@ -141,7 +154,7 @@ const prefetch = id => { const r = ROOMS.find(x => x.id === id); if (r && world)
 function renderPanel(r) {
   const i = ROOMS.indexOf(r);
   let h = `<div class="eyebrow">${r.area} · ${FLOOR_NAME[r.floor]}</div><h2>${r.title}</h2>`;
-  h += r.body.map(p => p.startsWith("<ul") ? p : `<p>${p}</p>`).join("");
+  h += r.body.map(p => /^<(ul|ol|div|p)[\s>]/.test(p) ? p : `<p>${p}</p>`).join("");
   if (r.links) h += `<div class="links">${r.links.map(([t, u, internal, ghost]) => `<a href="${u}" ${internal ? `data-go="${u.slice(1)}"` : `target="_blank" rel="noopener"`} class="${ghost ? "ghost" : ""}">${t}</a>`).join("")}</div>`;
   // Credits for any figure seated in this room; they come and go with the figure itself.
   for (const f of Object.values(world?.manifest.figures || {})) {
@@ -277,7 +290,13 @@ function stopUnder(e) {
   return null;
 }
 let press = null, lastHover = 0;
-canvas.addEventListener("pointerdown", e => { press = {x: e.clientX, y: e.clientY, t: performance.now()}; });
+canvas.addEventListener("pointerdown", e => { press = {x: e.clientX, y: e.clientY, t: performance.now()}; hideTip(); seenHint(); });
+// On a phone, looking around folds the panel down to its title, so the room can be seen; tapping the
+// title (or the handle) unfolds it again.
+canvas.addEventListener("pointermove", e => {
+  if (!press || press.folded || !(SHEET.matches || SIDE.matches) || $("panel").hidden) return;
+  if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 12) { press.folded = true; foldPanel(true); }
+});
 canvas.addEventListener("pointerup", e => {
   const p = press; press = null;
   // a drag to look around isn't a click
@@ -292,6 +311,239 @@ canvas.addEventListener("pointermove", e => {
   canvas.style.cursor = stopUnder(e) ? "pointer" : "";
 });
 
+/* ---------- Hotspots: small pulsing dots on things in the room you're in ----------
+   One per entry in HOTSPOTS (rooms.js), on its anchor from the model. A dot shows only while the
+   camera is inside the house and that stop is the one last opened, once its room's furniture is in,
+   and only where nothing solid stands between it and the camera. */
+const spots = HOTSPOTS.map(h => {
+  const el = document.createElement("button");
+  el.className = "spot"; el.hidden = true; el.setAttribute("aria-label", h.label);
+  const s = {...h, el, ready: false, clear: true, at: null, x: 0, y: 0};
+  el.onclick = () => useSpot(s);
+  $("spots").appendChild(el);
+  return s;
+});
+const tipEl = $("spotTip");
+let tipFor = null, tipTimer = 0;
+function hideTip() { if (!tipFor) return; tipFor = null; tipEl.hidden = true; clearTimeout(tipTimer); }
+function useSpot(s) {
+  seenHint();
+  if (s.resume) showResume(true);
+  else if (s.url) window.open(s.url, "_blank", "noopener");
+  else if (s.view) { hideTip(); flyTo(...s.view, 1400); }
+  else if (s.tip) {
+    if (tipFor === s) { hideTip(); return; }
+    tipFor = s; tipEl.textContent = s.tip; tipEl.hidden = false; placeTip(s);
+    clearTimeout(tipTimer); tipTimer = setTimeout(hideTip, 6000);
+  }
+}
+const spotRay = new THREE.Raycaster(), spotDir = new THREE.Vector3();
+let lastSpotCheck = 0;
+function updateSpots(t) {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  const check = t - lastSpotCheck > 250;          // whether anything hides a dot: a few times a second is plenty
+  if (check) lastSpotCheck = t;
+  for (const s of spots) {
+    let show = Boolean(world && inside && here && here.id === s.stop && s.ready && $("resume").hidden);
+    if (show) {
+      s.at ||= world.hotspot(s.anchor);
+      show = Boolean(s.at);
+    }
+    if (show) {
+      tmp.copy(s.at).project(camera);
+      show = tmp.z < 1 && Math.abs(tmp.x) < 1 && Math.abs(tmp.y) < 1;
+    }
+    if (show && check) {
+      // hidden if something solid is in front (the anchors sit on or just off their surfaces)
+      const d = spotDir.copy(s.at).sub(camera.position).length();
+      spotRay.set(camera.position, spotDir.normalize()); spotRay.far = d;
+      const hit = spotRay.intersectObjects(scene.children, true).find(x => shown(x.object) && !x.object.material.transparent);
+      s.clear = !hit || hit.distance > d - 0.15;
+    }
+    show = show && s.clear;
+    s.el.hidden = !show;
+    if (!show) { if (tipFor === s) hideTip(); continue; }
+    s.x = (tmp.x + 1) / 2 * w; s.y = (1 - tmp.y) / 2 * h;
+    s.el.style.transform = `translate(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px)`;
+    if (tipFor === s) placeTip(s);
+  }
+}
+// the note beside its dot, on whichever side has room
+function placeTip(s) {
+  const left = s.x + 18 + tipEl.offsetWidth > canvas.clientWidth - 8;
+  tipEl.style.transform = `translate(${(left ? s.x - 18 - tipEl.offsetWidth : s.x + 18).toFixed(1)}px, ${(s.y - tipEl.offsetHeight / 2).toFixed(1)}px)`;
+}
+
+/* ---------- Keyboard: look around, move and zoom ----------
+   Arrow keys orbit (left and right swing round, up and down tip the view), WASD pans across the
+   floor in the direction the camera faces, Q and E (or - and +) zoom out and in. Speeds follow
+   the distance to what the camera looks at, so it works the same in a room and over the house. */
+const NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "Equal", "Minus", "NumpadAdd", "NumpadSubtract"]);
+const held = new Set();
+const navKey = e => NAV_KEYS.has(e.code) ? e.code : e.key === "+" ? "Equal" : e.key === "-" ? "Minus" : null;
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") hideTip();
+  if (e.ctrlKey || e.metaKey || e.altKey || !controls.enabled || !$("resume").hidden) return;
+  if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+  const k = navKey(e); if (!k) return;
+  e.preventDefault(); held.add(k); tween = null; userMoved = true; seenHint();
+});
+window.addEventListener("keyup", e => { const k = navKey(e); if (k) held.delete(k); });
+window.addEventListener("blur", () => held.clear());
+const orbit = new THREE.Spherical(), offset = new THREE.Vector3(), ahead = new THREE.Vector3(), aside = new THREE.Vector3();
+function keyMove(dt) {
+  if (!held.size || !controls.enabled) return;
+  const on = (...ks) => ks.some(k => held.has(k)) ? 1 : 0;
+  const yaw = on("ArrowLeft") - on("ArrowRight"), tilt = on("ArrowUp") - on("ArrowDown");
+  const fwd = on("KeyW") - on("KeyS"), side = on("KeyD") - on("KeyA");
+  const zoom = on("KeyE", "Equal", "NumpadAdd") - on("KeyQ", "Minus", "NumpadSubtract");
+  offset.copy(camera.position).sub(controls.target);
+  orbit.setFromVector3(offset);
+  orbit.theta += yaw * 1.5 * dt;                         // about 85° a second
+  orbit.phi = Math.min(Math.max(orbit.phi + tilt * 1.0 * dt, controls.minPolarAngle + 0.02), controls.maxPolarAngle);
+  orbit.radius = Math.min(Math.max(orbit.radius * Math.exp(-zoom * 0.8 * dt), controls.minDistance), controls.maxDistance);
+  offset.setFromSpherical(orbit);
+  camera.getWorldDirection(ahead); ahead.y = 0;
+  if (ahead.lengthSq() < 1e-6) ahead.set(-offset.x, 0, -offset.z);
+  ahead.normalize(); aside.crossVectors(ahead, camera.up).normalize();
+  const speed = Math.min(Math.max(orbit.radius * 0.45, 0.9), 15) * dt;      // about 1 m/s in a room
+  controls.target.addScaledVector(ahead, fwd * speed).addScaledVector(aside, side * speed);
+  camera.position.copy(controls.target).add(offset);
+  // walking into something stops the walk (the point looked at stops too), rather than swinging round it
+  const push = keepClear();
+  if (push && (fwd || side)) controls.target.add(push);
+}
+
+/* ---------- Keeping the camera out of things ----------
+   Once the visitor moves the camera themselves (keys, a drag, a pinch, the wheel), it stays at least
+   CLEAR from every surface, furniture included: the near clipping plane is 0.3 m, so any closer and
+   the camera would see into what it's touching. The exact distance to every triangle near the camera
+   is measured (from either side, so nothing can be entered), and the camera is pushed straight away
+   from the nearest until it's clear. The triangles are filed once, by the 0.5 m cells they touch, the
+   first time the camera comes near their mesh (nothing in the house moves), so a check only looks at
+   a few cells. Flights to a stop and the stops' own views are left exactly as authored (the pool's
+   lounger has its back right behind the eye). */
+const CLEAR = 0.35, CELL = 0.5;
+const meshBox = new WeakMap();                     // each mesh's box, once
+const boxOf = o => { let b = meshBox.get(o); if (!b) { b = new THREE.Box3().setFromObject(o); meshBox.set(o, b); } return b; };
+const filedUpTo = new WeakMap(), cells = new Map();   // mesh -> how many of its triangles are filed; cell key -> triangle numbers
+let triPos = new Float32Array(9 * 65536), triMesh = [], triCount = 0, triSeen = new Uint32Array(65536), stamp = 0;
+const cellKey = (i, j, k) => (i + 512) * 1048576 + (j + 512) * 1024 + (k + 512);   // within 250 m of the middle (rooms are)
+const fileV = new THREE.Vector3();
+const isFiled = o => { const g = o.geometry; return filedUpTo.get(o) >= (g.index ? g.index.count : g.attributes.position.count); };
+// Files a mesh's triangles, carrying on from where it stopped, until done or `until` (a performance.now() time).
+function fileMesh(o, until = Infinity) {
+  const g = o.geometry, pos = g.attributes.position, idx = g.index, n = idx ? idx.count : pos.count;
+  if (!filedUpTo.has(o)) o.updateMatrixWorld(true);
+  const m = o.matrixWorld;
+  let t = filedUpTo.get(o) || 0;
+  for (; t < n; t += 3) {
+    if ((t & 255) === 0 && performance.now() > until) break;
+    if (triCount * 9 + 9 > triPos.length) {        // grow the store
+      const more = new Float32Array(triPos.length * 2); more.set(triPos); triPos = more;
+      const seen = new Uint32Array(triSeen.length * 2); seen.set(triSeen); triSeen = seen;
+    }
+    const base = triCount * 9;
+    for (let v = 0; v < 3; v++) {
+      fileV.fromBufferAttribute(pos, idx ? idx.getX(t + v) : t + v).applyMatrix4(m);
+      triPos[base + v * 3] = fileV.x; triPos[base + v * 3 + 1] = fileV.y; triPos[base + v * 3 + 2] = fileV.z;
+    }
+    triMesh.push(o);
+    const x0 = Math.floor(Math.min(triPos[base], triPos[base + 3], triPos[base + 6]) / CELL), x1 = Math.floor(Math.max(triPos[base], triPos[base + 3], triPos[base + 6]) / CELL);
+    const y0 = Math.floor(Math.min(triPos[base + 1], triPos[base + 4], triPos[base + 7]) / CELL), y1 = Math.floor(Math.max(triPos[base + 1], triPos[base + 4], triPos[base + 7]) / CELL);
+    const z0 = Math.floor(Math.min(triPos[base + 2], triPos[base + 5], triPos[base + 8]) / CELL), z1 = Math.floor(Math.max(triPos[base + 2], triPos[base + 5], triPos[base + 8]) / CELL);
+    // a huge triangle (the far hills, the open sand) would fill thousands of cells: those are left out;
+    // the camera never gets near them in a room, and outside it stays above what it looks at anyway
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1) <= 4096 && Math.min(x0, y0, z0) >= -500 && Math.max(x1, y1, z1) <= 500) {
+      for (let i = x0; i <= x1; i++) for (let j = y0; j <= y1; j++) for (let k = z0; k <= z1; k++) {
+        const key = cellKey(i, j, k);
+        let list = cells.get(key); if (!list) cells.set(key, list = []);
+        list.push(triCount);
+      }
+    }
+    triCount++;
+  }
+  filedUpTo.set(o, t);
+}
+// Filing ahead, in the browser's idle moments: everything in and around the house, nearest the camera
+// first, so the visitor's first move in a room doesn't stall while its triangles are filed.
+const HOUSE_BOX = new THREE.Box3(new THREE.Vector3(-14, -1, -10), new THREE.Vector3(14, 8, 10));
+const idle = window.requestIdleCallback || (f => setTimeout(() => f({timeRemaining: () => 8}), 50));
+function fileAhead(deadline) {
+  if (!world) return;
+  const p = camera.position, todo = [];
+  for (const list of Object.values(world.groups)) for (const o of list) if (!isFiled(o) && boxOf(o).intersectsBox(HOUSE_BOX)) todo.push(o);
+  todo.sort((a, b) => boxOf(a).distanceToPoint(p) - boxOf(b).distanceToPoint(p));
+  const until = performance.now() + Math.max(2, Math.min(deadline.timeRemaining(), 10));
+  for (const o of todo) { fileMesh(o, until); if (performance.now() > until) break; }
+  // rooms keep arriving for a while: look again later even when this pass finished everything
+  setTimeout(() => idle(fileAhead), todo.length ? 0 : 3000);
+}
+const triA = new THREE.Vector3(), triB = new THREE.Vector3(), triC = new THREE.Vector3(), closest = new THREE.Vector3();
+const tri = new THREE.Triangle(triA, triB, triC), pushed = new THREE.Vector3(), away = new THREE.Vector3();
+let userMoved = false;                            // set by the visitor's own moves, cleared by a flight
+controls.addEventListener("start", () => { userMoved = true; });
+function keepClear() {
+  if (!world || !userMoved || tween || reviewShot) return null;
+  const p = camera.position;
+  for (const list of Object.values(world.groups)) for (const o of list) {
+    if (o.visible && !isFiled(o) && boxOf(o).distanceToPoint(p) < CLEAR + CELL) fileMesh(o);   // not filed ahead yet: now
+  }
+  pushed.set(0, 0, 0);
+  const visible = new Map();                       // per mesh, for this check (a lifted roof doesn't count)
+  for (let pass = 0; pass < 3; pass++) {           // a corner can take two or three pushes
+    let gap = CLEAR; stamp++;
+    const i0 = Math.floor((p.x - CLEAR) / CELL), i1 = Math.floor((p.x + CLEAR) / CELL);
+    const j0 = Math.floor((p.y - CLEAR) / CELL), j1 = Math.floor((p.y + CLEAR) / CELL);
+    const k0 = Math.floor((p.z - CLEAR) / CELL), k1 = Math.floor((p.z + CLEAR) / CELL);
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) for (let k = k0; k <= k1; k++) {
+      for (const t of cells.get(cellKey(i, j, k)) || []) {
+        if (triSeen[t] === stamp) continue;
+        triSeen[t] = stamp;
+        const o = triMesh[t];
+        let vis = visible.get(o); if (vis === undefined) visible.set(o, vis = shown(o));
+        if (!vis) continue;
+        triA.fromArray(triPos, t * 9); triB.fromArray(triPos, t * 9 + 3); triC.fromArray(triPos, t * 9 + 6);
+        tri.closestPointToPoint(p, closest);
+        const d = closest.distanceTo(p);
+        if (d >= gap) continue;
+        gap = d;
+        if (d > 1e-5) away.subVectors(p, closest).divideScalar(d); else tri.getNormal(away);
+      }
+    }
+    if (gap >= CLEAR) break;
+    const step = CLEAR - gap + 0.002;
+    p.addScaledVector(away, step); pushed.addScaledVector(away, step);
+  }
+  return pushed.lengthSq() ? pushed : null;
+}
+// Inside a room the camera can tip past level (POLAR.room); this keeps it out of the floor.
+// (Not during a flight, which may pass through floors on its way.)
+function keepAboveFloor() {
+  if (!inside || reviewShot || tween) return;
+  const low = FLOOR_Y[inside] + 0.9;               // a little under a seated eye: never under the table
+  if (camera.position.y < low) camera.position.y = low;
+}
+
+/* A small hint about the keys (or, on a touch screen, fingers), once: the first time a room is
+   opened in the 3D. It goes after a few seconds, or as soon as the visitor moves. */
+const TOUCH = matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches;
+$("keysHint").innerHTML = TOUCH ? "One finger to look around · two to pan and zoom"
+  : "<kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> look around · <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Q</kbd><kbd>E</kbd> zoom";
+let hintState = "new", hintTimer = 0;
+try { if (localStorage.getItem("villa.keysHint")) hintState = "done"; } catch (e) {}
+function maybeHint() {
+  if (hintState !== "new" || !inside || !here || reviewing) return;
+  hintState = "showing"; $("keysHint").hidden = false;
+  try { localStorage.setItem("villa.keysHint", "1"); } catch (e) {}
+  hintTimer = setTimeout(seenHint, 7000);
+}
+function seenHint() {
+  if (hintState !== "showing") return;
+  hintState = "done"; clearTimeout(hintTimer); $("keysHint").classList.add("going");
+  setTimeout(() => { $("keysHint").hidden = true; }, 400);
+}
+
 /* ---------- Loop ---------- */
 // The camera's field of view follows the window's shape (src/still.js, cameraFov): 45° tall
 // on wider windows, a fixed sideways view on upright phones.
@@ -305,7 +557,10 @@ const UPRIGHT = {x: STILL.portrait.tanH / (T45 * 16 / 9), y: STILL.portrait.tanH
 let uprightFrame = null;                 // set while the stills tool draws a tall still
 const carryFrame = () => (uprightFrame ?? camera.aspect < STILL.portrait.below) ? UPRIGHT : null;
 window.addEventListener("resize", resize); resize();
+let lastFrame = 0;
 renderer.setAnimationLoop(t => {
+  const dt = Math.min(0.1, (t - (lastFrame || t)) / 1000); lastFrame = t;
+  keyMove(dt);
   if (tween) {
     const k = Math.min(1, (t - tween.start) / tween.ms), e = ease(k);
     if (tween.via) {
@@ -324,7 +579,8 @@ renderer.setAnimationLoop(t => {
     const r = stage && world.manifest.cameras[stage];
     world.carry(camera, Boolean(r && !tween && camera.position.distanceTo(tmpMoment.set(...r.pos)) < 1.2), carryFrame());
   }
-  controls.update(); shiftView(); renderer.render(scene, camera); updatePins();
+  controls.update(); keepAboveFloor(); keepClear(); shiftView(); renderer.render(scene, camera); updatePins(); updateSpots(t);
+  if (world && controls.enabled && !tween) maybeHint();
 });
 
 /* Deep links: #dining, #resume, ... */
@@ -438,6 +694,9 @@ async function capture(id, {height, quality = 0.8, og = false}) {
 loadWorld(renderer, scene, f => setProgress(f)).then(w => {
   world = w;
   performance.mark("world");
+  idle(fileAhead);                       // the camera's collision triangles (keepClear), a little at a time
+  // a room's hotspots show once its furniture is in
+  for (const s of spots) { const r = ROOMS.find(x => x.id === s.stop); w.roomReady(r.room || r.id).then(() => { s.ready = true; }); }
   if (still && still.on) {
     // the still is still up: the 3D draws underneath it, from its camera
     if (current) opening = w.openRoom(current.room || current.id);
@@ -455,7 +714,7 @@ loadWorld(renderer, scene, f => setProgress(f)).then(w => {
   if (params.get("view")) setView(params.get("view"), !shot);
   if (shot) {
     // the review cameras can sit below what they look at, which normal navigation forbids
-    controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
+    reviewShot = true; controls.maxPolarAngle = Math.PI; controls.minDistance = 0;
     camera.fov = shot.fov; camera.updateProjectionMatrix(); camera.position.set(...shot.pos); controls.target.set(...shot.target); controls.enableDamping = false;
     controls.update();      // aim it now: a page in a background tab gets no animation frames to do it
     if (params.get("shot").endsWith("_moment")) shotMoment = params.get("shot");
@@ -464,7 +723,7 @@ loadWorld(renderer, scene, f => setProgress(f)).then(w => {
   if (params.get("ui") === "0" || params.has("capture")) document.body.classList.add("bare");
   if (params.has("capture")) window.capture = capture;
 
-  if (params.has("debug")) window.villa = {THREE, scene, camera, controls, renderer, world: w};   // for poking around in the console
+  if (params.has("debug")) window.villa = {THREE, scene, camera, controls, renderer, world: w, keepClear, moved: () => { userMoved = true; }};   // for poking around in the console
   w.rooms.then(() => opening).then(() => {
     document.body.dataset.ready = "rooms";
     if (current && !$("panel").hidden) renderPanel(current);      // picks up a figure's credit

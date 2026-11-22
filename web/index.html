@@ -49,6 +49,8 @@
 </div>
 
 <div class="pins" id="pins"></div>
+<!-- hotspots: small dots on things in the room you're in (HOTSPOTS in src/rooms.js) -->
+<div class="spots" id="spots"><div class="spot-tip" id="spotTip" role="status" hidden></div></div>
 <nav class="rooms" id="rooms" hidden aria-label="Rooms"></nav>
 <aside class="panel" id="panel" hidden aria-live="polite">
   <button class="grab" id="panelGrab" aria-label="Fold the panel down" aria-expanded="true"></button>
@@ -57,6 +59,7 @@
   <div class="panel-nav"><button id="prevRoom">← Previous</button><button id="nextRoom">Next →</button></div>
 </aside>
 <div class="hint" id="hint" hidden>Drag to look around · scroll to zoom · click a label</div>
+<div class="keys-hint" id="keysHint" hidden></div>
 <div class="progress" id="progress" hidden role="status"><i id="progressBar"></i><span id="progressText">Loading the 3D house</span></div>
 
 <div class="resume" id="resume" hidden>

@@ -55,6 +55,7 @@ SPEED_BAG = dict(x=11.18, board_y=2.08, out=0.42)
 GEAR_BENCH = (7.18, 1.60)        # the oak bench on the gear wall: middle x, length
 RACK = dict(y=1.63, x=(6.40, 6.56, 6.76, 6.92, 7.12, 7.28))     # the glove rack's pegs
 HOOK = (7.66, 1.74)              # the hook the brown pair hangs from
+GLOVES_FRONT = (7.66, 1.25, ZN + 0.18)   # the hotspot anchor: the middle of the brown pair's front (measured on the site)
 BOARD = dict(x=(9.80, 10.70), y=(1.12, 1.72))
 ROUND_PLAN = [                   # the whiteboard, top to bottom; the starred line is boxed in red
     ("ROUND PLAN", "title"),
@@ -98,6 +99,7 @@ def build_gym(b):
         bottle(k, Frame((bx + 0.66, top, ZN + 0.12)))
         glove_rack(k)
         hung_pair(k)
+        b.anchor("gym_gloves", GLOVES_FRONT)
         whiteboard(k)
         bench(k, Frame((10.50, 0.0, ZF - 0.36)))                    # by the front glass, where the site's view sits
         light_bars(k)

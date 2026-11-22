@@ -441,6 +441,45 @@ Previews: `browser_study_painting`, `browser_kitchen`, `_shelf`, `_dish`, `brows
 `_belt`, `_wins`, `_lounge`, `browser_bedroom`, `_records`, `browser_landing`, and Blender's
 renders of the same cameras.
 
+**Interaction and copy** (approved 22 Nov 2026; no rebake, one export):
+- *Hotspots* (`HOTSPOTS` in `rooms.js`, `updateSpots` in `main.js`): small cream dots ringed in
+  brass with a soft pulse, no text (each has an aria-label). A dot shows only while the camera is
+  inside the house and its stop is the one last opened (never in the overviews), once that room's
+  furniture is in, and only when nothing solid is in front of it (a ray every 250 ms). Each does
+  one thing: `view` flies the camera, `resume`, `url` opens a new tab, `tip` shows a note by the
+  dot. The five: the sofa seat (a seated view facing the TV), the resume door (the resume), the
+  library's real books (a close-up of both eye-level shelves), the record player (your Spotify),
+  the brown gloves ("A gift from a mentor.", no camera move). `library_laptop` has no dot yet.
+  A test checks each sits on an anchor in its stop's room.
+- *The gloves' anchor* `gym_gloves` (`gym.GLOVES_FRONT`) was added to the baked scene by a one-off
+  script and exported, so no rebake. It is in `gym.py` too, but **not in `build/villa.blend`**:
+  start the full bake with `npm run scene` (or `npm run build`), or the export drops it and the
+  hotspot test fails.
+- *Keyboard* (`keyMove`): arrows orbit (left and right round what you look at, up and down tilt),
+  WASD pans across the floor the way the camera faces, Q/E or -/+ zoom; about 85°/s and 1 m/s in
+  a room, faster further out. *Touch:* one finger looks around, two pan and pinch-zoom
+  (`controls.touches`). A one-time hint (keys, or fingers on a touch screen) shows the first time
+  a room opens (`localStorage` `villa.keysHint`).
+- *In a room* the camera may tilt just past level (`POLAR.room`) and stays at least 0.9 m above the
+  floor (`keepAboveFloor`). Once the visitor moves it themselves, it also stays 0.35 m clear of
+  every surface, furniture and glass included (`keepClear`): the exact distance to each triangle
+  near the camera, from a grid of 0.5 m cells filled in idle time after load (`fileAhead`). A
+  check takes about 0.01 ms. Flights and the stops' own views are left as authored.
+- *Phones:* the bottom sheet is at most 40% of the screen tall, the sideways panel 40% wide. Both
+  fold to the eyebrow and title with the handle, and fold by themselves when the visitor drags to
+  look around; tapping the title unfolds them.
+- *Bedroom map:* a third pin, Paris, printed on the map picture (`PAINTED_PINS`, `paint_pins`),
+  sized and coloured like the modelled two. Texture only.
+- *Copy:* your text in every panel but the study, kitchen and resume. The gym is "Combat sports",
+  the bedroom "Languages and music" (with a Spotify button), the games room has a TomorrowLAN
+  button, and the trophy room has two groups (Boxing, Esports) and a line of small print
+  (`.wins`, `.fine`). A body line starting `<ul`, `<ol`, `<div` or `<p` goes in as it is.
+- *Fixed on the way:* a flight between floors whose frames skipped the stretch above the roof left
+  the page thinking the camera was still upstairs (`fitFloors` now notices it dropped through the
+  floor).
+Review shots (`previews/ui_*`, contact sheets `ui_sheet_*`) are kept locally, not in the repo
+(`.gitignore`); they're made by headless Chrome, the app's browser pane being hidden at the time.
+
 **The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
 committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
 touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
@@ -943,6 +982,15 @@ The traps hit so far, so they don't get rediscovered.
     (`still.cameraFov`). Anything placed for a 16:9 frame (the visitor's martini) has to be
     placed for the upright frame too (`UPRIGHT` in `main.js`), the same for every phone so the
     tall still matches.
+48. **The bake starts from `build/villa.blend`, not the baked file.** Anything added only to
+    `villa_baked.blend` (the gloves' anchor) is lost by the next `npm run bake` unless
+    `npm run scene` runs first.
+49. **Headless Chrome draws few frames with the whole house loaded.** A flight can jump from below
+    the roof to inside the next room in one frame, so code that watches the camera pass a height
+    has to cope with skipping it. Hold keys for a time and read the camera back, rather than
+    counting frames.
+50. **Raycasting the house is slow:** its meshes span every room, so a ray tests all their
+    triangles (about 150 ms for 14 short rays). `keepClear` files triangles by cell instead.
 
 ## Next
 
@@ -965,11 +1013,14 @@ The traps hit so far, so they don't get rediscovered.
    model has to be shipped encrypted or in a non-standard format: CGTrader's
    royalty-free license allows web use only if visitors can't pull the model out.
 5. **The remaining rooms: done** (batches 1 to 5 and the aquarium mech, 21 Nov 2026).
-6. **Polish: done, waiting for your review** (21 Nov 2026; see "Step 6" under Done). Left
-   for the session after your OK:
-   - **The full-quality bake** (`npm run bake`, about 17 minutes), then `npm run export`, then
-     `npm run stills` (gotcha 42), then `npm run loadtime` to see the landing's numbers with
-     2048 px lightmaps. Commit draft lightmaps only until then (your rule).
+6. **Polish: done** (21 Nov 2026), then the pre-bake changes and the interaction and copy pass
+   (22 Nov 2026), both approved. **Next: the final full bake**, in its own session:
+   - `npm run scene` first (gotcha 48: the gloves' anchor), then the full-quality bake
+     (`npm run bake`, about 17 minutes), then `npm run export`, then `npm run stills` (gotcha 42),
+     then `npm test` and `npm run loadtime` to see the landing's numbers with 2048 px lightmaps.
+     Your rule (18 Nov 2026) is to commit draft lightmaps only, never a full bake, about 16 MB of
+     history each time. How the full bake reaches the live site (Git LFS, gotcha 13, or an exception
+     to the rule) is yours to decide at the start of that session.
    - Not done in step 6, from the earlier notes, for later if wanted: a lower-resolution set of
      textures and lightmaps for phones; shared materials loading once (walnut veneer is
      fetched with each room that uses it); instancing the dining chairs; the living room is

@@ -21,20 +21,20 @@
 //          (the little door under the stairs, blender/villa/house.py, stairs)
 //   opens  (optional, with hit) "resume" opens the resume view; otherwise this stop's panel
 //
-// A body line is a paragraph, or, if it starts with "<ul" (a list), placed as it is.
+// A body line is a paragraph, or, if it starts with a block tag ("<ul", "<div", "<p"), placed as it is.
+
+const SPOTIFY = "https://open.spotify.com/user/1d28or5pw94npy3s8ogw5hs3d";
 
 export const ROOMS = [
   {id: "driveway", floor: "out", area: "The driveway", title: "Hi, I'm Aditya", at: [-3, 1.6, 13], view: [[-12, 3.2, 19], [-2.6, 1, 10.6]],
-    body: ["Fourth-year Computer Science co-op student at Dalhousie University, graduating in 2027.",
-      "I build software, run two small businesses and coach boxing. Every room in this house is something I've built or something I do. Use the labels, or the Rooms menu."],
+    body: ["Fourth-year Computer Science student at Dalhousie, graduating in 2027. I build software, run a small business, and compete as an amateur in boxing and Muay Thai. Every room in this house is something I’ve built or something I do."],
     links: [["Start the tour", "#dining", 1]]},
 
   {id: "dining", floor: "g", area: "Dining room", title: "Meruem Chess Coach", at: [-2.3, 1.9, -4.3],
     // the visitor's seat at the table, looking down over the board (blender/villa/dining.py, CHESS_CAM)
     view: [[-1.23, 1.30, -3.52], [-1.25, 0.77, -4.35]], near: 0.4,
-    body: ["A chess trainer that explains every move. Stockfish runs the analysis, Maia (a neural net trained on human games) plays like a real opponent at my rating, and Claude writes the explanations using the engine's lines.",
-      "Static site, no backend. Everything runs in the browser in Web Workers.",
-      "On the table: a Ruy Lopez, Chigorin variation, after 16...Bd7. White to move, and it's your seat."],
+    body: ["I started learning chess and wanted a coach that goes into the why: why one move is best, how to calculate a line, how to approach a position. So I built one. Stockfish grades every move, Maia plays like a real opponent at my rating, and Claude explains the engine’s lines in plain English. It runs entirely in the browser, with no server, and adapts as I improve.",
+      "On the table: a Ruy Lopez, Chigorin variation, after 16...Bd7."],
     links: [["Live site", "https://zvezda4994.github.io/Meruem-Chess-Coach/"], ["Code", "https://github.com/Zvezda4994/Meruem-Chess-Coach", 0, 1]]},
 
   {id: "study", floor: "g", area: "The study", title: "VAREK Systems", at: [3.75, 1.7, 4],
@@ -45,18 +45,18 @@ export const ROOMS = [
   {id: "garage", floor: "g", area: "The garage", title: "Turo", at: [-8.5, 1.7, 4],
     // inside the garage door, between the bays, looking at the keys and the screen (blender/villa/garage.py, GARAGE_CAM)
     view: [[-8.15, 1.6, 7.2], [-8.7, 1.12, 0]], near: 0.4,
-    body: ["A rental fleet on Turo that I run with my dad. All-Star Host three years running, 150+ five-star reviews, 5.0 average."]},
+    body: ["I run a four-car rental fleet on Turo: 150+ five-star reviews, a 5.0 average, and All-Star Host three years running. It’s been a real education in pricing, customer service and logistics."]},
 
-  {id: "gym", floor: "g", area: "Home gym", title: "Boxing", at: [9, 1.7, 4],
+  {id: "gym", floor: "g", area: "Home gym", title: "Combat sports", at: [9, 1.7, 4],
     // behind the heavy bag, looking at the gear wall (blender/villa/gym.py, GYM_CAM)
     view: [[8.75, 1.4, 6.3], [7.15, 1.0, 0.25]], near: 0.4,
-    body: ["I’ve boxed for over seven years and coach 30+ athletes at Grant’s Martial Arts in Halifax. I train Muay Thai there too. The brown gloves on the hook were handed down to me by an old boxer."]},
+    body: ["I’ve trained in combat sports since I was 14, mostly Muay Thai, kickboxing and boxing, at Grant’s Martial Arts in Dartmouth."]},
 
   {id: "living", floor: "g", area: "Living room", title: "The fish tank", at: [6.5, 1.9, -6.6],
     // by the study door, across the sofa to the tank, the moodboard on the right (blender/villa/living.py, LIVING_CAM).
     // The moodboard's frames get a fresh random pick from web/assets/moodboard/ each time the room opens.
     view: [[3.45, 1.45, -0.8], [9.4, 1.05, -6.2]], near: 0.4,
-    body: ["Floor-to-ceiling tank with a moss-covered mech resting on the bottom. Pure decoration, and the thing guests ask about first."]},
+    body: ["Learning Blender for this house was meant to be a means to an end. Somewhere along the way I started building things just because I enjoyed it, and this tank is my favourite."]},
 
   {id: "kitchen", floor: "g", area: "Kitchen", title: "Tools and stack", at: [-8.5, 1.7, -4],
     // sitting at the island, looking across it at the labelled shelves (blender/villa/kitchen.py, KITCHEN_CAM)
@@ -75,34 +75,55 @@ export const ROOMS = [
   {id: "library", floor: "u", area: "Library", title: "Books and writing", at: [6.75, 5.2, 4],
     // from the landing door, across to the east wall's shelves, the desk on the right (blender/villa/library.py, LIBRARY_CAM)
     view: [[2.55, 5.0, 5.75], [11.0, 4.7, 3.05]], near: 0.4,
-    body: ["Books I rate. I’m also writing one."]},
+    body: ["Reading has been a formative habit for as long as I can remember. I keep coming back to Dumas, Fleming and the old Travis McGee mysteries, and to anything that gives me new information or a new way to think. Ask me about the one I’m writing."]},
 
   {id: "trophy", floor: "u", area: "Trophy room", title: "Wins", at: [8, 5.2, -4],
     // inside the games room door, looking at the display wall, the terrace on the left (blender/villa/trophy.py, TROPHY_CAM)
     view: [[4.6, 5.05, -3], [11.7, 4.7, -4.6]], near: 0.4,
-    body: ["<ul><li>Sexton Scholar, Dalhousie.</li><li>Dean’s List, Fall 2023 and Winter 2024.</li><li>SGFI Youth, boxing, gold.</li><li>SAF Junior National Capital Championship, boxing, silver.</li><li>CCL playoffs with Dalhousie CS2, Spring 2026.</li></ul>"]},
+    // two prominent groups, then the small print (styles.css, .wins and .fine)
+    body: ["<div class='wins'><section><h3>Boxing</h3><ul><li>SGFI Youth, gold.</li><li>SAF Junior National Capital Championship, silver.</li></ul></section>" +
+        "<section><h3>Esports</h3><ul><li>7th at TomorrowLAN 2026 with Dalhousie Gold.</li><li>CCL playoffs, Spring 2026.</li></ul></section></div>",
+      "<p class='fine'>Sexton Scholar and Dean’s List at Dalhousie. In high school: Sarthak IT Fest winner, and a member of the student cabinet.</p>"]},
 
   {id: "games", floor: "u", area: "Games room", title: "CS2 and CounterPick", at: [-0.5, 5.2, -4],
     // behind the chair, looking at the screens, the PC on the floor at the left: games.py's DESK_CAM
     // ("games_desk"), drawn back along its line to frame the same at the site's 45° (it's 55°)
     view: [[-1.27, 5.04, -2.35], [-4.725, 4.6, -4.3]], near: 0.4,
     body: ["CounterPick is a Pick’Em optimizer for CS2 Majors. It turns betting odds into team strengths with a Bradley-Terry fit, simulates each Swiss stage 100,000 times under Valve’s rulebook (about a second in NumPy), and searches all 10 million legal cards for the one most likely to get at least 5 of 10 right. The simulator reproduces every pairing of the Austin 2025 Major. Built for the PGL Singapore Major; results go up as the event runs.",
-      "I also play on Dalhousie’s CS2 team. We made the CCL playoffs in Spring 2026."],
-    links: [["github.com/Zvezda4994/CounterPick", "https://github.com/Zvezda4994/CounterPick"]]},
+      "I also play on Dalhousie Gold. We finished 7th at TomorrowLAN 2026 and made the CCL playoffs in Spring 2026."],
+    links: [["github.com/Zvezda4994/CounterPick", "https://github.com/Zvezda4994/CounterPick"], ["TomorrowLAN", "https://www.instagram.com/p/DVyjCCAjaVB/", 0, 1]]},
 
-  {id: "bedroom", floor: "u", area: "Main bedroom", title: "Languages", at: [-8.5, 5.2, -3],
+  {id: "bedroom", floor: "u", area: "Main bedroom", title: "Languages and music", at: [-8.5, 5.2, -3],
     // from the corner by the glass, across the bed to the headboard, the map on the right (blender/villa/bedroom.py, BEDROOM_CAM)
     view: [[-10.55, 5.05, -6.55], [-5.6, 4.45, -1.2]], near: 0.4,
-    body: ["<b>Russian:</b> almost conversational, stronger at reading.",
-      "<b>Japanese:</b> kana (hiragana and katakana)."]},
+    body: ["<b>French:</b> C1. <b>Russian:</b> B1. <b>Japanese:</b> A2.",
+      "The easiest way into a language is usually its music and films."],
+    links: [["Spotify", SPOTIFY]]},
 
   {id: "pool", floor: "out", area: "Pool deck", title: "Get in touch", at: [-0.3, 2.1, -17.4],
     // the visitor's lounger, looking out over the pool to the house (blender/villa/pool.py, MOMENT_CAM)
     view: [[-1.351, 0.98, -18.062], [0.35, 0.56, -15.63]], near: 0.3, moment: "pool_moment",
     click: ["card", "card_back"],
-    body: ["Open to co-op and new-grad roles for 2027.",
-      "Pull up a lounger. My details are on the card on the table.",
+    body: ["Open to internships and software roles. Email is the fastest way to reach me.",
       "<a href='mailto:adityaviveksingh@icloud.com'>adityaviveksingh@icloud.com</a><br><a href='https://www.linkedin.com/in/aditya-singh' target='_blank' rel='noopener'>linkedin.com/in/aditya-singh</a><br><a href='https://github.com/Zvezda4994' target='_blank' rel='noopener'>github.com/Zvezda4994</a>"]},
+];
+
+// Hotspots: small pulsing dots on things in a room, shown only while the camera is inside
+// that stop's room (never in the overviews). Each sits on an anchor exported with its room
+// (blender/villa/geo.py, Builder.anchor; manifest.hotspots) and does one thing:
+//   view    flies the camera there: [camera position, point it looks at]
+//   resume  opens the resume view
+//   url     opens a page in a new tab
+//   tip     shows a small note beside the dot, with no camera move
+// `label` is for screen readers and the mouse's tooltip; the dot itself shows no text.
+export const HOTSPOTS = [
+  // sat on the sofa's middle seat, eyes about 0.7 m over the cushion, facing the TV (living.py, TV_X)
+  {anchor: "living_couch_seat", stop: "living", label: "Sit on the sofa", view: [[6.4, 1.12, -4.1], [6.3, 1.0, -0.1]]},
+  {anchor: "resume_door", stop: "stairs", label: "Open the resume", resume: true},
+  // the east wall's eye-level shelves, bays 3 and 4, where the real titles stand (library.py, SPINES_CAM)
+  {anchor: "library_real_books", stop: "library", label: "Look at the books", view: [[9.95, 4.98, 4.07], [11.34, 4.93, 4.07]]},
+  {anchor: "bedroom_record_player", stop: "bedroom", label: "Open my Spotify", url: SPOTIFY},
+  {anchor: "gym_gloves", stop: "gym", label: "The brown gloves", tip: "A gift from a mentor."},
 ];
 
 export const FLOOR_NAME = {out: "Outside", g: "Ground floor", u: "Upstairs"};

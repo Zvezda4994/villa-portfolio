@@ -480,11 +480,29 @@ renders of the same cameras.
 Review shots (`previews/ui_*`, contact sheets `ui_sheet_*`) are kept locally, not in the repo
 (`.gitignore`); they're made by headless Chrome, the app's browser pane being hidden at the time.
 
-**The lighting in the repo is a draft bake, all of it.** Only draft lightmaps are
-committed (your rule, 18 Nov 2026): `npm run bake:draft` before any commit that
-touches `web/assets/lightmaps/`. The full bake is run once, at the end. The draft
-looks blotchy on walls, floors and lightmapped furniture in the browser; the
-Blender previews show the intended look.
+**The final full bake: version 1 done** (22 Nov 2026). `npm run scene`, then `npm run bake` (768
+samples, 18 minutes), `npm run export`, `npm run stills`. Committed as a normal commit (about 14 MB
+of lightmaps in history), the one planned exception to the draft-only rule, no Git LFS.
+- *Bake noise:* walls lit only by bounced light came out with a 4-5 % speckle per texel (13 % in
+  the study's lightmap) that the Blender renders don't have. `blender/villa/denoise.py` smooths it
+  within each atlas chart, weighting neighbours by how close their brightness is (on a 3 x 3
+  median, so lone speckles don't count as edges). It runs on the raw bake in `build/bake/*.npy`,
+  so `npm run bake -- --encode-only` redoes it in about 7 minutes without baking again.
+- *The dining room's lightmap ships at 512 px* (`ship=512` in `ATLASES`): baked at 1024, the top
+  mip level dropped. Compared from the board close-up, only a slightly softer shadow under the
+  dropped pawn at 3x zoom. The room went from 5.04 to 4.24 MB.
+- *Load order:* the room a visitor opens now has the connection to itself while it loads
+  (`next()` in `world.js`). The sharp house lightmaps grew from 0.9 to 11.7 MB, and sharing with
+  them had doubled a room's wait (the living room by direct link: 25.7 s, now 15.3 s).
+- *Numbers* (throttled Fast 4G, cold): the landing is 7.68 MB, its still at 0.8 s and the 3D at
+  10.3 s on a desktop, 10.2 s on a phone. Rooms: living 4.35 MB, dining 4.24, library 3.52, study
+  3.49, kitchen 3.04, pool 2.57, trophy 2.20, foyer 1.83, games 1.55, bedroom 1.43, garage 0.92,
+  gym 0.78; by direct link their 3D is up 12-15 s after navigation, 1.5-5 s after the house.
+- Review shots: `previews/browser_final_*` (landing, pool moment, dining, study, games desk,
+  library, Ground overview).
+
+The draft-only rule (18 Nov 2026) still holds for any later change that touches the lighting:
+`npm run bake:draft` before committing lightmaps, unless you decide on another full bake.
 
 ## Decisions
 
@@ -791,8 +809,9 @@ appeared, and taking it down took 1.7 s. The stand-in was deleted afterwards.
   same version everywhere (a test checks this).
 - Textures are CC0 from Poly Haven, listed in `CREDITS.md`. Photo textures are
   evened out before tiling (`textures.py`) so the sand doesn't stripe.
-- Quick draft bakes are for checking work. The full bake (768 samples, about 17
-  minutes on this laptop's RTX 3070 Ti) happens once at the end.
+- Quick draft bakes are for checking work. The full bake (768 samples, 18 minutes on
+  this laptop's RTX 3070 Ti, 22 Nov 2026) is what the live site has. Both are smoothed
+  by `denoise.py` before encoding.
 - One lightmap can be baked at full quality on its own: `npm run bake -- ext pol`
   bakes only those two (5.3 minutes: `ext` 265 s at 2048 px, `pol` 47 s at
   1024 px). Run `npm run bake:draft` first after any change to the scene, since
@@ -832,8 +851,10 @@ The traps hit so far, so they don't get rediscovered.
    - Both find text inside three.js's shader code and log a warning if it has changed.
    - Check both whenever three.js is upgraded, along with the KTX2 transcoder
      path, which must use the same version.
-8. **Cycles can't denoise a bake.** Draft bakes look blotchy for that reason. The
-   full bake has enough samples that it doesn't matter.
+8. **Cycles can't denoise a bake.** Draft bakes look blotchy for that reason, and
+   so did the full bake indoors, which the earlier note here wrongly said it wouldn't:
+   768 samples left a few per cent of speckle on walls lit by bounced light.
+   `denoise.py` deals with it (see the final bake, above).
 9. **The sun in the sky model is nearly white at 15°.** It's tinted separately
    by subtracting a sun-less copy of the sky. Caustics are off, or glass throws
    speckles of sun into the bake.
@@ -991,48 +1012,42 @@ The traps hit so far, so they don't get rediscovered.
     counting frames.
 50. **Raycasting the house is slow:** its meshes span every room, so a ray tests all their
     triangles (about 150 ms for 14 short rays). `keepClear` files triangles by cell instead.
+51. **A bilateral filter keeps lone speckles.** Compared texel against texel, a bright
+    outlier has no similar neighbours and survives as if it were an edge; the ceilings stayed
+    grainy until the brightness was compared on a 3 x 3 median instead.
+52. **Background downloads compete with the room being opened.** The queue runs two jobs at a
+    time; after the full bake the second one could be 12 MB of lightmaps. A room that's been
+    asked for now runs alone.
+53. **A headless window isn't the size it was launched at.** `--window-size=1920,1080` gave a
+    1904 x 985 page, which changes the site's framing (the field of view follows the window's
+    shape). Set the size with `Emulation.setDeviceMetricsOverride` for review shots.
 
 ## Next
 
-**Waiting on you**
+**Version 1 is done** (22 Nov 2026): every room furnished, polished, fully baked and live at
+https://zvezda4994.github.io/villa-portfolio/.
 
-- The figure for the dining table: put the model you choose in
-  `assets_src/figures/`, fill in `FIGURE` with its credit and link, and run
-  `npm run figure` (steps above).
-- The car (step 2): pick a model and an engine sound from the options shown,
-  whenever you want to pick it back up.
-- For later steps:
-  - a choice of chess position for the dining table;
-  - approval before buying anything over about $60, most likely the car model.
+**Later**
 
-**Build order from here**
+- **The car.** A licensed model of the latest Vanquish in black or dark grey, parked on the
+  setts court facing the landing camera; headlights and a licensed engine start on click
+  (sound only after a click). It has to ship encrypted or in a non-standard format:
+  CGTrader's royalty-free license allows web use only if visitors can't pull the model out.
+  Pick a model and a sound from the options shown; buying it needs your approval (over $60).
+- **The Meruem figure** at the dining table, in the chair across the board: put the model in
+  `assets_src/figures/`, fill in `FIGURE` with its credit and link, and run `npm run figure`
+  (no rebake; steps under "The figure at the table").
+- **My character** on the pool deck, from a proper base mesh (not generated from primitives),
+  reclining on my lounger. Then the stepped-away setting comes off it: the sunglasses go back
+  on, the towel and loafers stay or go as suits the pose, and the visitor's hand and loafers in
+  `frozen/` are replaced to match. The reference photos are needed then.
+- **A message form at the library desk** (the `library_laptop` anchor is there, with no dot yet).
 
-2. **The car (on hold).** A licensed model of the latest Vanquish in black or
-   dark grey, parked on the setts court facing the landing camera. Headlights come
-   on and a licensed engine start plays on click (sound only after a click). The
-   model has to be shipped encrypted or in a non-standard format: CGTrader's
-   royalty-free license allows web use only if visitors can't pull the model out.
-5. **The remaining rooms: done** (batches 1 to 5 and the aquarium mech, 21 Nov 2026).
-6. **Polish: done** (21 Nov 2026), then the pre-bake changes and the interaction and copy pass
-   (22 Nov 2026), both approved. **Next: the final full bake**, in its own session:
-   - `npm run scene` first (gotcha 48: the gloves' anchor), then the full-quality bake
-     (`npm run bake`, about 17 minutes), then `npm run export`, then `npm run stills` (gotcha 42),
-     then `npm test` and `npm run loadtime` to see the landing's numbers with 2048 px lightmaps.
-     Your rule (18 Nov 2026) is to commit draft lightmaps only, never a full bake, about 16 MB of
-     history each time. How the full bake reaches the live site (Git LFS, gotcha 13, or an exception
-     to the rule) is yours to decide at the start of that session.
-   - Not done in step 6, from the earlier notes, for later if wanted: a lower-resolution set of
-     textures and lightmaps for phones; shared materials loading once (walnut veneer is
-     fetched with each room that uses it); instancing the dining chairs; the living room is
-     still 4.35 MB (a 512 px mech detail picture would bring it to about 4.0).
-7. **My character, at the end.** Redone from a proper base mesh (not generated
-   from primitives), reclining on my lounger. Then the stepped-away setting
-   comes off it: the sunglasses go back on, the towel and loafers stay or go as
-   suits the pose, and the visitor's hand and loafers in `frozen/` are replaced
-   to match. The reference photos are needed then.
+**Smaller things, if wanted**
 
-**Smaller things noted along the way**
-
+- A lower-resolution set of textures and lightmaps for phones; shared materials loading once
+  (walnut veneer is fetched with each room that uses it); instancing the dining chairs; a
+  512 px mech detail picture would bring the living room from 4.35 to about 4.0 MB.
 - The glass reflections could use a probe in front of the house, like the water.
 - The far hills are hazier in the browser than in Blender, on purpose.
 - Sand facing the sun lacks Cycles' faint sheen.

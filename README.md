@@ -1,20 +1,20 @@
 # Villa portfolio
 
-My portfolio as a modernist villa in the desert. Visitors look around the house,
-and each room holds one part of my work. `BUILD_BRIEF.md` is the plan this
-follows; `blockout.html` is the first prototype, kept for reference.
+My portfolio as a modern house in the desert at golden hour, which you can walk
+around in your browser. Each room holds one part of my work: a chess coach on the
+dining table, VAREK Systems on the study's whiteboard, a CS2 Pick'Em optimizer
+on the games room's screens, books, trophies, music, and a resume behind a little
+door under the stairs. Get in touch from the lounger by the pool.
 
-**Where it stands:** build step 1 (the house shell, grounds, sky and golden-hour
-lighting), step 3 (the dining room, fully furnished, with a game in progress
-on the table) and step 4 (the pool deck, furnished, with the "Get in touch"
-camera moment) are done. Step 5, the remaining rooms, is under way in batches: the
-study and the games room are furnished. My character on the deck comes last. The
-car (step 2) is on hold. See `PROGRESS.md` for the decisions made so far and what
-to watch out for.
+**Visit it: https://zvezda4994.github.io/villa-portfolio/** (works on a laptop or a
+phone; drag to look around, or pick a room from the Rooms menu).
 
-**The lighting in the repo is a quick draft bake**, so walls and floors look a
-little blotchy in the browser. Only draft lightmaps are committed; the full-quality
-bake (`npm run bake`) is run once all the rooms are built.
+![The villa at golden hour, from the drive](previews/browser_final_landing.jpg)
+
+It's built entirely from Python scripts in Blender, with the lighting worked out
+ahead of time, and shown with three.js. Version 1 is done; `PROGRESS.md` has the
+decisions, the traps found along the way and what comes later, and `BUILD_BRIEF.md`
+is the plan it followed.
 
 ## Look at it
 
@@ -110,6 +110,10 @@ the bake again.
 Each lightmap is saved twice: a small 512 px copy that loads straight away, and
 the sharp full-size one that replaces it a moment later.
 
+Cycles can't denoise a bake, so the bake script smooths the leftover grain itself
+(`blender/villa/denoise.py`), only within each surface and never across a sharp edge
+like a sun patch or a shadow.
+
 Reflections come from panoramas Blender renders at export time: one of the sky
 and desert for glass and paving, and one taken from just above the pool for the
 water (from there the house hides the bright sky around the sun, so the water
@@ -119,17 +123,17 @@ the way out and made the browser's sky look washed out.
 
 ## Download size
 
-About 10.8 MB loads before the landing view appears (model, colour textures, the
-small lightmaps, sky and water reflections). The sharp lightmaps follow in the
-background, then each furnished room: the dining room is about 5 MB more
-(furniture, its pictures, its lightmap). With the full-quality bake everything
-together comes to about 31 MB.
+About 7.7 MB loads before the landing view appears (model, colour textures, the
+small lightmaps, sky and water reflections): on a "Fast 4G" connection the
+picture of the house shows in under a second and the 3D takes over at about
+10 seconds, on a desktop or a phone. The sharp lightmaps (about 12 MB) follow in
+the background, and each room loads on its own: between 0.5 and 4.4 MB, a few
+seconds once the house is up. Everything together is about 50 MB.
 
-The brief sets targets rather than a total limit: the landing view interactive
-in about 10 MB, and each room's own download around 4 MB. The tests fail if the
-landing view needs more than 11 MB, or a new room more than 4.5 MB (the dining
-room is allowed 6.5 MB until the step 6 performance work).
-`web/assets/manifest.json` lists every file's size after each export.
+The brief's targets: the landing view interactive in about 10 MB, and each room's
+own download around 4 MB. The tests fail if the landing view needs more than 11 MB,
+or a room more than 4.5 MB. `npm run loadtime` measures a cold load;
+`web/assets/manifest.json` lists every file after each export.
 
 ## Review pictures
 
@@ -228,11 +232,13 @@ The forecourt, as reworked after step 1 (all in `blender/villa/exterior.py`):
 - The drive is pale granite setts with raised kerbs.
 - Sheer curtains hang inside the upstairs glass until those rooms are furnished.
 
-## Still to do (from the brief)
+## Later
 
-- Steps 2, 5 and 6: the car, the remaining rooms, and the polish pass (loading
-  screen with a still image, phone layout, link previews, performance).
-- My character on the pool deck, last, from a proper base mesh.
-- Final copy for the panels (see the `todo` notes in `web/src/rooms.js`).
+Version 1 is done (22 Nov 2026). Planned for later:
+
+- The car in the forecourt (a licensed model, headlights and an engine start on click).
+- The Meruem figure at the dining table, across the board from the visitor.
+- My character on the pool deck, from a proper base mesh.
+- A form on the library desk for leaving me a message.
 
 Assets and their licenses are listed in `CREDITS.md`.
